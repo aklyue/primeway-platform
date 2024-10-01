@@ -1,0 +1,69 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 500" width="750" height="500">
+	<title>5179949</title>
+	<defs>
+		<radialGradient id="g1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-76.37,0,0,12.634,422.766,251.807)">
+			<stop offset="0" stop-color="#38246d"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</radialGradient>
+		<linearGradient id="g2" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-108.77,-18.926,25.465,-146.355,487.599,280.625)">
+			<stop offset="0" stop-color="#ff6382"/>
+			<stop offset="1" stop-color="#fc8a8f"/>
+		</linearGradient>
+		<linearGradient id="g3" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-106.17,9.531,-5.335,-59.432,448.351,207.503)">
+			<stop offset="0" stop-color="#fc8a8f"/>
+			<stop offset="1" stop-color="#ff6382"/>
+		</linearGradient>
+		<linearGradient id="g4" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-42.506,100.77,-135.593,-57.194,511.817,114.141)">
+			<stop offset="0" stop-color="#ff6382"/>
+			<stop offset="1" stop-color="#fc8a8f"/>
+		</linearGradient>
+		<linearGradient id="g5" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(130.695,27.471,-15.378,73.161,334.941,132.236)">
+			<stop offset="0" stop-color="#824230"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="g6" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-108.77,-18.926,25.465,-146.355,487.599,280.625)">
+			<stop offset="0" stop-color="#824230"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="g7" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-29.041,102.148,-137.447,-39.076,506.01,104.392)">
+			<stop offset="0" stop-color="#824230"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+	</defs>
+	<style>
+		tspan { white-space:pre } 
+		.s0 { opacity: .4;mix-blend-mode: multiply;fill: url(#g1) } 
+		.s1 { fill: url(#g2) } 
+		.s2 { fill: url(#g3) } 
+		.s3 { fill: url(#g4) } 
+		.s4 { opacity: .4;mix-blend-mode: multiply;fill: url(#g5) } 
+		.s5 { opacity: .2;mix-blend-mode: multiply;fill: url(#g6) } 
+		.s6 { opacity: .3;mix-blend-mode: multiply;fill: url(#g7) } 
+		.s7 { mix-blend-mode: overlay;fill: #ff929a } 
+	</style>
+	<g id="OBJECTS">
+		<g id="&lt;Group&gt;">
+			<g id="&lt;Group&gt;">
+				<g id="&lt;Group&gt;">
+					<path id="&lt;Path&gt;" class="s0" d="m325.5 251.8c0 7.8 43.5 14.2 97.3 14.2 53.7 0 97.3-6.4 97.3-14.2 0-7.8-43.6-14.1-97.3-14.1-53.8 0-97.3 6.3-97.3 14.1z"/>
+					<g id="&lt;Group&gt;">
+						<g id="&lt;Group&gt;">
+							<path id="&lt;Path&gt;" class="s1" d="m464.6 226.4l-48.8 18.2 4.8-30.9 6.7-44.1 48.8-18.2z"/>
+							<path id="&lt;Path&gt;" class="s2" d="m427.3 169.6l-57.9-49.1-11.5 75 57.9 49.1z"/>
+							<path id="&lt;Path&gt;" class="s3" d="m369.4 120.5l106.7 30.9-48.8 18.2"/>
+							<path id="&lt;Path&gt;" class="s4" d="m427.3 169.6l-57.9-49.1-11.5 75 57.9 49.1z"/>
+							<path id="&lt;Path&gt;" class="s5" d="m464.6 226.4l-48.8 18.2 4.8-30.9 6.7-44.1 48.8-18.2z"/>
+							<path id="&lt;Path&gt;" class="s6" d="m427.3 169.6l48.8-18.2-106.7-30.9z"/>
+						</g>
+						<path id="&lt;Path&gt;" class="s7" d="m369.4 120.5l57 49.5q-3 18.4-5.6 37l-2.6 18.8c-0.9 6.2-1.7 12.5-2.4 18.8 1.2-6.2 2.3-12.4 3.4-18.7l3.1-18.7q3.1-18.5 5.8-37l11.7-4.4 12.1-4.7c4.1-1.6 8.1-3.2 12.1-4.8 4.1-1.7 8.1-3.3 12.1-4.9-4.1 1.3-8.2 2.8-12.3 4.2-4.1 1.4-8.2 2.8-12.3 4.3l-12.3 4.4-11.7 4.2z"/>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+	<g id="TEXTURE">
+	</g>
+</svg>

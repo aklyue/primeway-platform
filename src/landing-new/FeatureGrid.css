@@ -1,0 +1,43 @@
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px; /* Restrict the width of the entire grid */
+    margin: 0 auto; /* Center the grid */
+  }
+  
+  .feature-card {
+    position: relative;
+    border: 1px solid #ccc; /* Light border instead of background */
+    color: white;
+    border-radius: 12px; /* Border-radius for smooth corners */
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 350px; /* Restrict width of each card */
+    margin: 0 auto; /* Center individual cards in their grid space */
+  }
+  
+  .feature-icon {
+    position: absolute; /* Allow absolute positioning */
+    top: 5px; /* Adjust as necessary */
+    left: 5px; /* Adjust as necessary */
+
+  }
+  
+  .feature-icon img {
+    display: block; /* Ensure the image takes up the full div space */
+    width: 20px;
+  }
+  
+  .feature-title {
+    font-size: 16px; /* Reduced font size */
+    margin-bottom: 10px;
+  }
+  
+  .feature-description {
+    font-size: 14px; /* Reduced font size for description */
+    color: #e7e7e7; /* Keep text color light */
+  }
+  

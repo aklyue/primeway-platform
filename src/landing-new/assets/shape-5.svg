@@ -1,0 +1,82 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 500" width="750" height="500">
+	<title>5179949</title>
+	<defs>
+		<linearGradient id="g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0,.012,.012,0,326.346,254.497)">
+			<stop offset="0" stop-color="#ff6382"/>
+			<stop offset="1" stop-color="#fc8a8f"/>
+		</linearGradient>
+		<radialGradient id="g2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-94.283,0,0,15.597,383.879,298.942)">
+			<stop offset="0" stop-color="#38246d"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</radialGradient>
+		<linearGradient id="g3" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-80.271,30.907,60.829,157.984,424.58,100.439)">
+			<stop offset="0" stop-color="#4830c0"/>
+			<stop offset="1" stop-color="#5e52e6"/>
+		</linearGradient>
+		<linearGradient id="g4" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-122.878,15.684,30.869,241.839,460.863,66.123)">
+			<stop offset=".192" stop-color="#270a7b"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="g5" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-92.294,47.583,-93.651,-181.648,427.562,292.823)">
+			<stop offset="0" stop-color="#5e52e6"/>
+			<stop offset="1" stop-color="#4830c0"/>
+		</linearGradient>
+		<linearGradient id="g6" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(144.797,4.363,-8.588,284.981,266.485,81.118)">
+			<stop offset=".192" stop-color="#270a7b"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+		<linearGradient id="g7" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-40.65,-94.507,-52.904,22.755,434.614,280.271)">
+			<stop offset="0" stop-color="#4830c0"/>
+			<stop offset="1" stop-color="#5e52e6"/>
+		</linearGradient>
+		<linearGradient id="g8" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-40.65,-94.507,-52.904,22.755,434.614,280.271)">
+			<stop offset=".192" stop-color="#270a7b"/>
+			<stop offset=".729" stop-color="#ffffff" stop-opacity="0"/>
+			<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+		</linearGradient>
+	</defs>
+	<style>
+		tspan { white-space:pre } 
+		.s0 { fill: url(#g1) } 
+		.s1 { opacity: .4;mix-blend-mode: multiply;fill: url(#g2) } 
+		.s2 { fill: url(#g3) } 
+		.s3 { opacity: .3;mix-blend-mode: multiply;fill: url(#g4) } 
+		.s4 { fill: url(#g5) } 
+		.s5 { opacity: .3;mix-blend-mode: multiply;fill: url(#g6) } 
+		.s6 { fill: url(#g7) } 
+		.s7 { opacity: .3;mix-blend-mode: multiply;fill: url(#g8) } 
+		.s8 { fill: #9292f4 } 
+	</style>
+	<g id="OBJECTS">
+		<g id="&lt;Group&gt;">
+			<g id="&lt;Group&gt;">
+				<g id="&lt;Group&gt;">
+					<path id="&lt;Path&gt;" class="s0" d="m326.4 254.5h-0.1 0.1z"/>
+					<path id="&lt;Path&gt;" class="s1" d="m263.8 298.9c0 9.7 53.7 17.5 120.1 17.5 66.3 0 120.1-7.8 120.1-17.5 0-9.6-53.8-17.4-120.1-17.4-66.4 0-120.1 7.8-120.1 17.4z"/>
+					<g id="&lt;Group&gt;">
+						<g id="&lt;Group&gt;">
+							<path id="&lt;Path&gt;" class="s2" d="m405.1 289.3l-60.8-158 123.8 82.2z"/>
+							<path id="&lt;Path&gt;" class="s3" d="m405.1 289.3l-60.8-158 123.8 82.2z"/>
+							<path id="&lt;Path&gt;" class="s4" d="m405.1 289.3l-60.8-158-36.7 144z"/>
+							<path id="&lt;Path&gt;" class="s5" d="m405.1 289.3l-60.8-158-36.7 144z"/>
+							<path id="&lt;Path&gt;" class="s6" d="m370.5 199.5l97.6 14-63 75.8-97.5-14z"/>
+							<path id="&lt;Path&gt;" class="s7" d="m370.5 199.5l97.6 14-63 75.8-97.5-14z"/>
+						</g>
+						<g id="&lt;Group&gt;" style="mix-blend-mode: overlay">
+							<g id="&lt;Group&gt;">
+								<path id="&lt;Path&gt;" class="s8" d="m344.3 131.3c2.4 5.7 4.6 11.3 7 16.9 2.3 5.6 4.5 11.3 6.8 17 2.2 5.6 4.5 11.2 6.7 16.9l6.6 17-0.7-0.6 12.2 1.7 12.2 1.8 24.3 3.6 24.4 3.8c4.1 0.7 8.1 1.4 12.2 2q6 1 12.1 2.1-6.1-0.7-12.2-1.5c-4.1-0.5-8.2-0.9-12.3-1.5l-24.4-3.2-24.4-3.4-12.2-1.7-12.2-1.8-0.6-0.1-0.2-0.5-6.4-17.1c-2.2-5.6-4.3-11.3-6.4-17-2.1-5.8-4.3-11.4-6.3-17.2-2.1-5.7-4.2-11.4-6.2-17.2z"/>
+							</g>
+							<g id="&lt;Group&gt;">
+								<path id="&lt;Path&gt;" class="s8" d="m307.6 275.3l62.2-76.5 1.5 1.3z"/>
+							</g>
+						</g>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+	<g id="TEXTURE">
+	</g>
+</svg>

@@ -1,0 +1,58 @@
+.menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: none; /* No background */
+  }
+  
+  .menu-left, .menu-center, .menu-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .menu-left {
+    justify-content: flex-start;
+  }
+  
+  .menu-right {
+    justify-content: flex-end;
+  }
+  
+  .text-logo {
+    font-size: 30px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #3f3aff, #3bff59, #00a1ff99); /* Define your gradient colors here */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+  }
+  
+  .image-logo {
+    height: 60px; /* Adjust size as needed */
+  }
+  
+  .menu-button {
+    margin-left: 10px;
+    font-size: 16px;
+    padding: 8px 15px; /* Adjusted padding for better appearance */
+    background-image: radial-gradient(circle, #0087ff, #0009b3); /* Radial gradient background */
+    color: white; /* Button text color */
+    border: none; /* Remove border */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add transition for box-shadow */
+  }
+  
+    /* Hover effect */
+.menu-button:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow when hovering */
+    background-image: radial-gradient(circle, #0075e6, #00089d); /* Darken gradient on hover */
+}
+  
+  /* Press (active) effect */
+  .menu-button:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Shadow when button is pressed */
+    background-image: radial-gradient(circle, #0064cc, #000787); /* Further darken gradient on active */
+  }

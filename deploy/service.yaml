@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prime-platform-service
+  annotations:
+    ingress.alb.yc.io/protocol: http
+    ingress.alb.yc.io/health-checks: port=32213,http-path=/healthz,timeout=30s,interval=60s,healthy-threshold=2,unhealthy-threshold=5,http2=false,expected-codes=200
+    ingress.alb.yc.io/transport-security: none
+spec:
+  selector:
+    app: prime-platform
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 32213

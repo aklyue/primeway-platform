@@ -195,7 +195,7 @@ function CompletedJobs() {
             <CardContent>
               {/* Button to open logs modal */}
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 onClick={() => handleOpenModal(job.job_id)}
                 startIcon={<LogsIcon />}
@@ -233,7 +233,7 @@ function CompletedJobs() {
                 sx={{
                   maxHeight: '300px', // Restrict the height
                   overflowY: 'auto', // Add vertical scroll if logs exceed the height
-                  backgroundColor: '#f5f5f5', // Background color for the logs area
+                  backgroundColor: "background.default", // Background color for the logs area
                   padding: '16px', // Padding around the logs
                   marginTop: '16px',
                   borderRadius: '4px',

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -15,11 +15,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import LogsIcon from '@mui/icons-material/Description';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { OrganizationContext } from './Organization/OrganizationContext';
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LogsIcon from "@mui/icons-material/Description";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { OrganizationContext } from "./Organization/OrganizationContext";
 
 function RunningJobs() {
   const [runningJobs, setRunningJobs] = useState([]);
@@ -27,7 +27,7 @@ function RunningJobs() {
   const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [currentJobId, setCurrentJobId] = useState(null);
-  const [currentJobLogs, setCurrentJobLogs] = useState('');
+  const [currentJobLogs, setCurrentJobLogs] = useState("");
   const [logStream, setLogStream] = useState(null); // For managing SSE stream
   const [isCopied, setIsCopied] = useState(false); // To manage copy state
 
@@ -36,7 +36,7 @@ function RunningJobs() {
 
   const { currentOrganization } = useContext(OrganizationContext);
 
-  const token = 'visionx-nlOm2e3vwv_rjakw286mzg'; // Replace this with how you store your token
+  const token = "visionx-nlOm2e3vwv_rjakw286mzg"; // Replace this with how you store your token
 
   // Переменная для переключения между бэкендом и моковыми данными
   const useMockData = true; // Установите в false, чтобы использовать реальные данные с бэкенда
@@ -57,14 +57,14 @@ function RunningJobs() {
           setLoading(false);
         })
         .catch((error) => {
-          console.error('Error fetching mock running jobs:', error);
-          setError('Error fetching mock running jobs');
+          console.error("Error fetching mock running jobs:", error);
+          setError("Error fetching mock running jobs");
           setLoading(false);
         });
     } else {
       // Запрашиваем данные с бэкенда
       axios
-        .get('http://localhost:8888/api/jobs?status=running', {
+        .get("http://localhost:8888/api/jobs?status=running", {
           headers: {
             Authorization: `Bearer ${token}`, // Add the Bearer token to the request
           },
@@ -74,8 +74,8 @@ function RunningJobs() {
           setLoading(false);
         })
         .catch((error) => {
-          console.error('Error fetching running jobs:', error);
-          setError('Error fetching running jobs');
+          console.error("Error fetching running jobs:", error);
+          setError("Error fetching running jobs");
           setLoading(false);
         });
     }
@@ -98,11 +98,13 @@ function RunningJobs() {
       // Эмулируем удаление задачи из моковых данных
       terminateMockJob(jobId)
         .then(() => {
-          setRunningJobs((prevJobs) => prevJobs.filter((job) => job.job_id !== jobId));
+          setRunningJobs((prevJobs) =>
+            prevJobs.filter((job) => job.job_id !== jobId)
+          );
         })
         .catch((error) => {
-          console.error('Error terminating mock job:', error);
-          setError('Error terminating mock job');
+          console.error("Error terminating mock job:", error);
+          setError("Error terminating mock job");
         });
     } else {
       // Отправляем реальный запрос к бэкенду
@@ -113,11 +115,13 @@ function RunningJobs() {
           },
         })
         .then(() => {
-          setRunningJobs((prevJobs) => prevJobs.filter((job) => job.job_id !== jobId));
+          setRunningJobs((prevJobs) =>
+            prevJobs.filter((job) => job.job_id !== jobId)
+          );
         })
         .catch((error) => {
-          console.error('Error terminating job:', error);
-          setError('Error terminating job');
+          console.error("Error terminating job:", error);
+          setError("Error terminating job");
         });
     }
   };
@@ -125,7 +129,7 @@ function RunningJobs() {
   const handleOpenModal = (jobId) => {
     setOpenModal(true);
     setCurrentJobId(jobId);
-    setCurrentJobLogs(''); // Reset logs
+    setCurrentJobLogs(""); // Reset logs
     setIsCopied(false); // Reset copy state
 
     if (useMockData) {
@@ -135,21 +139,23 @@ function RunningJobs() {
           setCurrentJobLogs(logs);
         })
         .catch((error) => {
-          console.error('Error fetching mock job logs:', error);
-          setCurrentJobLogs('Error fetching logs');
+          console.error("Error fetching mock job logs:", error);
+          setCurrentJobLogs("Error fetching logs");
         });
     } else {
       // Start the SSE connection for real-time logs
-      const eventSource = new EventSource(`http://localhost:8888/api/resume-logs/${jobId}`);
+      const eventSource = new EventSource(
+        `http://localhost:8888/api/resume-logs/${jobId}`
+      );
       setLogStream(eventSource);
 
       eventSource.onmessage = (event) => {
-        console.log('event', event);
-        setCurrentJobLogs((prevLogs) => prevLogs + '\n' + event.data); // Append new logs
+        console.log("event", event);
+        setCurrentJobLogs((prevLogs) => prevLogs + "\n" + event.data); // Append new logs
       };
 
       eventSource.onerror = () => {
-        console.error('Error in log streaming');
+        console.error("Error in log streaming");
         eventSource.close();
       };
     }
@@ -171,7 +177,14 @@ function RunningJobs() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -179,7 +192,14 @@ function RunningJobs() {
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <Typography color="error">{error}</Typography>
       </Box>
     );
@@ -197,13 +217,16 @@ function RunningJobs() {
       )}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column', // Set to column layout for cards
+          display: "flex",
+          flexDirection: "column", // Set to column layout for cards
           gap: 2, // Space between cards
         }}
       >
         {runningJobs.map((job) => (
-          <Card key={job.job_id} sx={{ width: '100%', boxShadow: 3, borderRadius: 2 }}>
+          <Card
+            key={job.job_id}
+            sx={{ width: "100%", boxShadow: 3, borderRadius: 2 }}
+          >
             {/* Each card takes full width */}
             <CardContent>
               <Typography variant="h6" component="div">
@@ -212,15 +235,15 @@ function RunningJobs() {
 
               <Box
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
                   gap: 2,
                   mt: 2,
                 }}
               >
                 {/* Column 1 */}
-                <Box sx={{ flex: '1' }}>
+                <Box sx={{ flex: "1" }}>
                   <Typography color="textSecondary">
                     Created at: {new Date(job.createdAt).toLocaleString()}
                   </Typography>
@@ -228,28 +251,28 @@ function RunningJobs() {
                 </Box>
 
                 {/* Column 2 */}
-                <Box sx={{ flex: '1' }}>
+                <Box sx={{ flex: "1" }}>
                   <Typography>GPU Count: {job.gpu_count}</Typography>
                   <Typography>CPU Count: {job.cpu_count}</Typography>
                 </Box>
 
                 {/* Column 3 */}
-                <Box sx={{ flex: '1' }}>
+                <Box sx={{ flex: "1" }}>
                   <Typography>Memory: {job.memory} GB</Typography>
                   <Typography>Disk Space: {job.disk_space} GB</Typography>
                 </Box>
 
                 {/* Column 4 */}
-                <Box sx={{ flex: '1' }}>
+                <Box sx={{ flex: "1" }}>
                   <Typography>Price per hour: ${job.pricePerHour}</Typography>
                 </Box>
               </Box>
             </CardContent>
 
-            <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+            <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
               <Button
-                variant="contained"
-                color="primary"
+                variant="outlined"
+                
                 onClick={() => handleOpenModal(job.job_id)}
                 startIcon={<LogsIcon />}
               >
@@ -280,20 +303,26 @@ function RunningJobs() {
           </Typography>
           <Box
             sx={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              backgroundColor: '#f5f5f5',
-              padding: '16px',
-              marginTop: '16px',
-              borderRadius: '4px',
-              whiteSpace: 'pre-wrap',
+              maxHeight: "300px",
+              overflowY: "auto",
+              backgroundColor: "background.default",
+              padding: "16px",
+              marginTop: "16px",
+              borderRadius: "4px",
+              whiteSpace: "pre-wrap",
             }}
           >
-            {currentJobLogs || 'No logs available yet.'}
+            {currentJobLogs || "No logs available yet."}
           </Box>
 
           {/* Copy button and message */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "16px",
+            }}
+          >
             <Button
               onClick={handleCopyLogs}
               variant="outlined"
@@ -302,16 +331,23 @@ function RunningJobs() {
               sx={
                 isCopied
                   ? {
-                      color: 'green',
-                      borderColor: 'green',
-                      '&.Mui-disabled': { color: 'green', borderColor: 'green' },
+                      color: "green",
+                      borderColor: "green",
+                      "&.Mui-disabled": {
+                        color: "green",
+                        borderColor: "green",
+                      },
                     }
                   : {}
               }
             >
-              {isCopied ? 'Copied' : 'Copy Logs'}
+              {isCopied ? "Copied" : "Copy Logs"}
             </Button>
-            <Button onClick={handleCloseModal} variant="contained" color="secondary">
+            <Button
+              onClick={handleCloseModal}
+              variant="contained"
+              color="secondary"
+            >
               Close
             </Button>
           </Box>
@@ -325,7 +361,9 @@ function RunningJobs() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{'Confirm Termination'}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">
+          {"Confirm Termination"}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             Are you sure you want to terminate this job?
@@ -335,7 +373,11 @@ function RunningJobs() {
           <Button onClick={handleCloseDialog} color="primary">
             Cancel
           </Button>
-          <Button onClick={() => terminateJob(jobToTerminate)} color="secondary" autoFocus>
+          <Button
+            onClick={() => terminateJob(jobToTerminate)}
+            color="secondary"
+            autoFocus
+          >
             Terminate
           </Button>
         </DialogActions>
@@ -346,15 +388,15 @@ function RunningJobs() {
 
 // Modal styles
 const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 600,
-  bgcolor: 'background.paper',
+  bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
-  borderRadius: '8px',
+  borderRadius: "8px",
 };
 
 export default RunningJobs;
@@ -367,9 +409,9 @@ function fetchMockRunningJobs() {
       // Моковые данные запущенных задач
       const mockData = [
         {
-          job_id: 'job-1',
-          createdAt: '2023-08-05T10:00:00Z',
-          gpu_type: 'NVIDIA Tesla V100',
+          job_id: "job-1",
+          createdAt: "2023-08-05T10:00:00Z",
+          gpu_type: "NVIDIA Tesla V100",
           gpu_count: 2,
           cpu_count: 16,
           memory: 64,
@@ -377,9 +419,9 @@ function fetchMockRunningJobs() {
           pricePerHour: 5.0,
         },
         {
-          job_id: 'job-2',
-          createdAt: '2023-08-06T09:15:00Z',
-          gpu_type: 'NVIDIA Tesla P100',
+          job_id: "job-2",
+          createdAt: "2023-08-06T09:15:00Z",
+          gpu_type: "NVIDIA Tesla P100",
           gpu_count: 1,
           cpu_count: 8,
           memory: 32,
@@ -391,7 +433,7 @@ function fetchMockRunningJobs() {
       // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
       const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
       if (shouldFail) {
-        reject(new Error('Failed to fetch mock running jobs'));
+        reject(new Error("Failed to fetch mock running jobs"));
       } else {
         resolve(mockData);
       }
@@ -407,7 +449,7 @@ function terminateMockJob(jobId) {
       // Эмулируем успешное завершение задачи
       const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
       if (shouldFail) {
-        reject(new Error('Failed to terminate mock job'));
+        reject(new Error("Failed to terminate mock job"));
       } else {
         resolve();
       }
@@ -425,7 +467,7 @@ function fetchMockJobLogs(jobId) {
       // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
       const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
       if (shouldFail) {
-        reject(new Error('Failed to fetch mock job logs'));
+        reject(new Error("Failed to fetch mock job logs"));
       } else {
         resolve(mockLogs);
       }

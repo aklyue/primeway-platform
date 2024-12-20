@@ -47,6 +47,7 @@ const Login = () => {
         onChange={(e) => setUsername(e.target.value)}
         fullWidth
         margin="normal"
+        
       />
       <TextField
         label="Password"
@@ -56,7 +57,7 @@ const Login = () => {
         fullWidth
         margin="normal"
       />
-      <Button variant="contained" color="primary" onClick={handleLogin} fullWidth>
+      <Button variant="contained" color="secondary" onClick={handleLogin} fullWidth>
         Login
       </Button>
     </Box>

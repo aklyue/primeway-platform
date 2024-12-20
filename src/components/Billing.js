@@ -1,23 +1,38 @@
+// Billing.jsx
+
 import React, { useState } from 'react';
-import { Box, Typography, Button, TextField } from '@mui/material';
+import { Box, Typography, Button, TextField, Modal } from '@mui/material';
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import PaymentForm from './PaymentForm'; // Импортируем наш PaymentForm
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Billing() {
-  const [currentMonth] = useState('September');
+  const [currentMonth] = useState('Сентябрь');
   const [walletBalance, setWalletBalance] = useState(1000); // Default wallet balance
-  const [addFunds, setAddFunds] = useState(0); // For adding funds
+  const [addFunds, setAddFunds] = useState(''); // For adding funds
+  const [paymentOpen, setPaymentOpen] = useState(false); // Контролируем отображение PaymentForm
 
   // Mock data for spending in September
   const spendingData = {
-    labels: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'], // Days of the month
+    labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Days of the month
     datasets: [
       {
-        label: 'Daily Spending ($)',
-        data: [50, 100, 75, 200, 125, 90, 60, 130, 80, 150, 120, 170, 140, 60, 110, 95, 180, 75, 90, 130, 160, 120, 100, 140, 180, 110, 90, 100, 170, 160], // Mock spending data for each day
+        label: 'Ежедневные расходы (₽)',
+        data: [
+          50, 100, 75, 200, 125, 90, 60, 130, 80, 150, 120, 170, 140, 60, 110, 95,
+          180, 75, 90, 130, 160, 120, 100, 140, 180, 110, 90, 100, 170, 160,
+        ], // Mock spending data for each day
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
@@ -26,9 +41,22 @@ function Billing() {
   };
 
   const handleAddFunds = () => {
-    const newBalance = walletBalance + parseFloat(addFunds);
-    setWalletBalance(newBalance);
-    setAddFunds(0); // Reset the add funds field after adding
+    if (!addFunds || parseFloat(addFunds) <= 0) {
+      alert('Пожалуйста, введите корректную сумму для пополнения.');
+      return;
+    }
+    // Открываем PaymentForm
+    setPaymentOpen(true);
+  };
+
+  const handlePaymentClose = () => {
+    // Закрываем PaymentForm
+    setPaymentOpen(false);
+    // Обновляем баланс кошелька
+    // Здесь необходимо дополнительно реализовать проверку успешности платежа
+    // Для демонстрации просто увеличим баланс на сумму пополнения
+    setWalletBalance(walletBalance + parseFloat(addFunds));
+    setAddFunds('');
   };
 
   return (
@@ -38,8 +66,15 @@ function Billing() {
       </Typography>
 
       {/* Wallet Balance Section */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <Typography variant="h6">Current Wallet Balance: ${walletBalance}</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '16px',
+        }}
+      >
+        <Typography variant="h6">Current Wallet Balance: {walletBalance}₽</Typography>
         <Box sx={{ display: 'flex', gap: '8px' }}>
           <TextField
             type="number"
@@ -55,7 +90,7 @@ function Billing() {
 
       {/* Spending Chart for Current Month */}
       <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-        <Box sx={{ width: '600px' }}>  {/* Set max width for the chart */}
+        <Box sx={{ width: '600px' }}> {/* Set max width for the chart */}
           <Typography variant="h6" gutterBottom>
             Spending for {currentMonth}
           </Typography>
@@ -76,6 +111,29 @@ function Billing() {
           />
         </Box>
       </Box>
+
+      {/* Модальное окно для PaymentForm */}
+      <Modal
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        aria-labelledby="payment-modal-title"
+        aria-describedby="payment-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            outline: 'none',
+          }}
+        >
+          <PaymentForm amount={addFunds} onClose={handlePaymentClose} />
+        </Box>
+      </Modal>
     </Box>
   );
 }

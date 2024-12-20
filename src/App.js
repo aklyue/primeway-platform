@@ -6,7 +6,6 @@ import {
   Link,
   useLocation,
   useNavigate,
-  Navigate,
 } from "react-router-dom";
 import {
   Drawer,
@@ -24,9 +23,8 @@ import {
   Box,
   Button,
   Typography,
-  ThemeProvider,
 } from "@mui/material";
-import { green, grey } from "@mui/material/colors";
+import { green } from "@mui/material/colors";
 import RunningJobs from "./components/RunningJobs";
 import CompletedJobs from "./components/CompletedJobs";
 import Billing from "./components/Billing";
@@ -35,12 +33,10 @@ import Settings from "./components/Settings";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LogoutButton from "./components/LogoutButton";
 import { AuthContext } from "./AuthContext";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
 import CreateOrganization from "./components/Organization/CreateOrganization";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
-
 
 const drawerWidth = 240;
 
@@ -100,17 +96,17 @@ function Layout() {
         sx={{
           padding: 0,
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: grey[100], // Светло-серый цвет
-          color: "black", // Цвет текста для контраста
+          backgroundColor: "#000000",
+          borderBottom: '1px solid #353740'
         }}
       >
         <Toolbar>
           <Typography
-            variant="h6"
+            variant="h5"
             noWrap
             component={Link}
             to="/"
-            sx={{ color: "inherit", textDecoration: "none" }}
+            sx={{ textDecoration: "none" }}
           >
             Platform
           </Typography>
@@ -133,7 +129,9 @@ function Layout() {
                   horizontal: "right",
                 }}
               >
-                <MenuItem onClick={handleLogout}>Выйти</MenuItem>
+                <MenuItem sx={{ color: "red" }} onClick={handleLogout}>
+                  Log out
+                </MenuItem>
               </Menu>
             </>
           ) : (
@@ -143,10 +141,10 @@ function Layout() {
                 component={Link}
                 to="/login"
                 sx={{
-                  color: "black",
+                  color: "#FFFFFF",
+                  borderColor: "#353740",
                   "&:hover": {
-                    borderColor: grey[900],
-                    backgroundColor: grey[400],
+                    backgroundColor: "#353740",
                   },
                 }}
               >
@@ -157,7 +155,7 @@ function Layout() {
                 component={Link}
                 to="/register"
                 sx={{
-                  backgroundColor: green[500],
+                  backgroundColor: "#1A7F64",
                   color: "#fff",
                   "&:hover": {
                     backgroundColor: green[700],
@@ -175,9 +173,11 @@ function Layout() {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
+
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
+            backgroundColor: "#000000",
           },
         }}
       >
@@ -192,7 +192,6 @@ function Layout() {
                   alignItems: "center",
                   mb: 2,
                   justifyContent: "space-between",
-                  alignItems: "center",
                 }}
               >
                 <OrganizationSwitcher />
@@ -248,10 +247,10 @@ function Layout() {
         sx={{
           flexGrow: 1,
           p: 3,
-          background: "inherit",
           margin: 0,
           width: "100%",
-          minHeight: "100vh",
+          maxHeight: "100vh",
+          backgroundColor: "#202123",
         }}
       >
         <Toolbar />

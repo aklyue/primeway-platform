@@ -35,7 +35,7 @@ const CreateOrganization = () => {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleOpen}>
+      <IconButton color="inherit" onClick={handleOpen} sx={{color: '#353740'}}>
         <AddIcon />
       </IconButton>
       <Dialog
@@ -57,8 +57,8 @@ const CreateOrganization = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleCreate} color="primary">
+          <Button sx={{color: '#ACACBE'}} onClick={handleClose}>Cancel</Button>
+          <Button sx={{color: '#ACACBE'}} onClick={handleCreate} color="primary">
             Create
           </Button>
         </DialogActions>

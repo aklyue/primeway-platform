@@ -47,7 +47,7 @@ const OrganizationSwitcher = () => {
         sx={{
           textAlign: "left",
           width: "100%",
-          border: "1px solid rgba(0,0,0,0.2)",
+          border: "1px solid #353740",
           borderRadius: "10px",
           ml: "2px",
         }}
@@ -64,7 +64,7 @@ const OrganizationSwitcher = () => {
           }}
         >
           {/* Иконка перед текстом */}
-          <BusinessIcon sx={{ mr: 1, fontSize: "20px" }} />
+          <BusinessIcon sx={{ mr: 1, fontSize: "20px", color:'#ACACBE' }} />
 
           {/* Контейнер с вертикальным расположением текста */}
           <Box
@@ -98,7 +98,7 @@ const OrganizationSwitcher = () => {
           </Box>
 
           {/* Иконка в конце кнопки */}
-          <ArrowDropDownIcon sx={{ ml: "auto" }} />
+          <ArrowDropDownIcon sx={{ ml: "auto", color: '#353740' }} />
         </Button>
       </Box>
       <Menu

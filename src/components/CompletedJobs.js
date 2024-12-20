@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, Button, IconButton, Box, Modal, CircularProgress } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  IconButton,
+  Box,
+  Modal,
+  CircularProgress,
+} from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import LogsIcon from '@mui/icons-material/Description';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -14,28 +23,48 @@ function CompletedJobs() {
   const [logsLoading, setLogsLoading] = useState(false); // Logs loading state
   const [isCopied, setIsCopied] = useState(false); // State for handling copy status
 
-  const token = "visionx-nlOm2e3vwv_rjakw286mzg"; // Use your hardcoded token here
+  const token = 'visionx-nlOm2e3vwv_rjakw286mzg'; // Use your hardcoded token here
+
+  // Переменная для переключения между бэкендом и моковыми данными
+  const useMockData = true; // Установите в false, чтобы использовать реальные данные с бэкенда
 
   useEffect(() => {
-    // Fetch completed jobs from the backend
-    axios.get('http://localhost:8888/api/jobs?status=completed', {
-      headers: {
-        Authorization: `Bearer ${token}`, // Add the Bearer token to the request
-      },
-    })
-      .then(response => {
-        setCompletedJobs(response.data); // Set the data to the state
-        setLoading(false); // Set loading to false once data is fetched
-      })
-      .catch(error => {
-        console.error('Error fetching completed jobs:', error);
-        setError('Error fetching completed jobs');
-        setLoading(false);
-      });
-  }, [token]);
+    setLoading(true);
+
+    if (useMockData) {
+      // Используем моковые данные
+      fetchMockCompletedJobs()
+        .then((data) => {
+          setCompletedJobs(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching mock completed jobs:', error);
+          setError('Error fetching mock completed jobs');
+          setLoading(false);
+        });
+    } else {
+      // Запрашиваем данные с бэкенда
+      axios
+        .get('http://localhost:8888/api/jobs?status=completed', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the Bearer token to the request
+          },
+        })
+        .then((response) => {
+          setCompletedJobs(response.data); // Set the data to the state
+          setLoading(false); // Set loading to false once data is fetched
+        })
+        .catch((error) => {
+          console.error('Error fetching completed jobs:', error);
+          setError('Error fetching completed jobs');
+          setLoading(false);
+        });
+    }
+  }, [token, useMockData]);
 
   const downloadData = (jobId) => {
-    // Simulate data download or implement real API call to download job data
+    // Здесь вы можете эмулировать скачивание данных или добавить реальную логику
     alert(`Data for job ${jobId} has been downloaded.`);
   };
 
@@ -43,21 +72,38 @@ function CompletedJobs() {
     setOpenModal(true);
     setLogsLoading(true);
     setIsCopied(false); // Reset copied status when opening new modal
-    axios.get(`http://localhost:8888/api/resume-logs/${jobId}?stream=false`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Add the Bearer token to the request
-      },
-    })
-      .then(response => {
-        console.log('Fetched job logs:', response.data);
-        setCurrentJobLogs(response.data); // Set the fetched logs
-        setLogsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching job logs:', error);
-        setCurrentJobLogs('Error fetching logs');
-        setLogsLoading(false);
-      });
+
+    if (useMockData) {
+      // Используем моковые данные для логов
+      fetchMockJobLogs(jobId)
+        .then((logs) => {
+          setCurrentJobLogs(logs);
+          setLogsLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching mock job logs:', error);
+          setCurrentJobLogs('Error fetching logs');
+          setLogsLoading(false);
+        });
+    } else {
+      // Запрашиваем логи с бэкенда
+      axios
+        .get(`http://localhost:8888/api/resume-logs/${jobId}?stream=false`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the Bearer token to the request
+          },
+        })
+        .then((response) => {
+          console.log('Fetched job logs:', response.data);
+          setCurrentJobLogs(response.data); // Set the fetched logs
+          setLogsLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching job logs:', error);
+          setCurrentJobLogs('Error fetching logs');
+          setLogsLoading(false);
+        });
+    }
   };
 
   const handleCloseModal = () => {
@@ -73,7 +119,9 @@ function CompletedJobs() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -81,7 +129,9 @@ function CompletedJobs() {
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+      >
         <Typography color="error">{error}</Typography>
       </Box>
     );
@@ -93,19 +143,30 @@ function CompletedJobs() {
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',  // Set to column layout for cards
-          gap: '16px',  // Space between cards
+          flexDirection: 'column', // Set to column layout for cards
+          gap: '16px', // Space between cards
         }}
       >
         {completedJobs.map((job) => (
-          <Card key={job.job_id} sx={{ width: '100%' }}>  {/* Each card takes full width */}
+          <Card key={job.job_id} sx={{ width: '100%' }}>
             <CardContent>
-              <Typography variant="h6" component="div">{job.job_id}</Typography>
+              <Typography variant="h6" component="div">
+                {job.job_id}
+              </Typography>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                }}
+              >
                 {/* Column 1 */}
                 <Box sx={{ flex: '1' }}>
-                  <Typography color="textSecondary">Created at: {new Date(job.created_at).toLocaleString()}</Typography>
+                  <Typography color="textSecondary">
+                    Created at: {new Date(job.created_at).toLocaleString()}
+                  </Typography>
                   <Typography>GPU Type: {job.gpu_type}</Typography>
                 </Box>
 
@@ -124,23 +185,25 @@ function CompletedJobs() {
                 {/* Column 4 */}
                 <Box sx={{ flex: '1' }}>
                   <Typography>Total Cost: ${job.total_cost}</Typography>
-                  <Typography>Completed at: {new Date(job.completed_at).toLocaleString()}</Typography>
+                  <Typography>
+                    Completed at: {new Date(job.completed_at).toLocaleString()}
+                  </Typography>
                 </Box>
               </Box>
             </CardContent>
 
             <CardContent>
               {/* Button to open logs modal */}
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={() => handleOpenModal(job.job_id)} 
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => handleOpenModal(job.job_id)}
                 startIcon={<LogsIcon />}
               >
                 View Logs
               </Button>
-              <IconButton 
-                color="primary" 
+              <IconButton
+                color="primary"
                 onClick={() => downloadData(job.job_id)}
                 aria-label="download"
               >
@@ -168,10 +231,10 @@ function CompletedJobs() {
             <>
               <Box
                 sx={{
-                  maxHeight: '300px',  // Restrict the height
-                  overflowY: 'auto',  // Add vertical scroll if logs exceed the height
-                  backgroundColor: '#f5f5f5',  // Background color for the logs area
-                  padding: '16px',  // Padding around the logs
+                  maxHeight: '300px', // Restrict the height
+                  overflowY: 'auto', // Add vertical scroll if logs exceed the height
+                  backgroundColor: "background.default", // Background color for the logs area
+                  padding: '16px', // Padding around the logs
                   marginTop: '16px',
                   borderRadius: '4px',
                 }}
@@ -187,7 +250,11 @@ function CompletedJobs() {
                   <Button
                     variant="outlined"
                     disabled
-                    sx={{ color: 'green', borderColor: 'green', "&.Mui-disabled": { color: 'green', borderColor: 'green' } }}
+                    sx={{
+                      color: 'green',
+                      borderColor: 'green',
+                      '&.Mui-disabled': { color: 'green', borderColor: 'green' },
+                    }}
                   >
                     Copied
                   </Button>
@@ -222,3 +289,63 @@ const modalStyle = {
 };
 
 export default CompletedJobs;
+
+// Функция для получения моковых данных завершённых задач
+function fetchMockCompletedJobs() {
+  return new Promise((resolve, reject) => {
+    // Эмулируем задержку запроса
+    setTimeout(() => {
+      // Моковые данные завершённых задач
+      const mockData = [
+        {
+          job_id: 'job-1',
+          created_at: '2023-08-01T10:00:00Z',
+          gpu_type: 'NVIDIA Tesla V100',
+          gpu_count: 2,
+          cpu_count: 16,
+          memory: 64,
+          disk_space: 500,
+          total_cost: 120.5,
+          completed_at: '2023-08-01T12:30:00Z',
+        },
+        {
+          job_id: 'job-2',
+          created_at: '2023-08-02T09:15:00Z',
+          gpu_type: 'NVIDIA Tesla P100',
+          gpu_count: 1,
+          cpu_count: 8,
+          memory: 32,
+          disk_space: 250,
+          total_cost: 80.75,
+          completed_at: '2023-08-02T11:45:00Z',
+        },
+        // Добавьте больше тестовых данных при необходимости
+      ];
+      // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
+      const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
+      if (shouldFail) {
+        reject(new Error('Failed to fetch mock completed jobs'));
+      } else {
+        resolve(mockData);
+      }
+    }, 1000); // Задержка в 1 секунду
+  });
+}
+
+// Функция для получения моковых логов задачи
+function fetchMockJobLogs(jobId) {
+  return new Promise((resolve, reject) => {
+    // Эмулируем задержку запроса
+    setTimeout(() => {
+      // Моковые логи задачи
+      const mockLogs = `Logs for ${jobId}:\n\n[INFO] Job started...\n[INFO] Processing data...\n[INFO] Job completed successfully.`;
+      // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
+      const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
+      if (shouldFail) {
+        reject(new Error('Failed to fetch mock job logs'));
+      } else {
+        resolve(mockLogs);
+      }
+    }, 500); // Задержка в 0.5 секунды
+  });
+}

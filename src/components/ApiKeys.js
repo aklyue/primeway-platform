@@ -51,7 +51,7 @@ function ApiKeys() {
       </Typography>
 
       {/* Create New API Key Button */}
-      <Button variant="contained" color="primary" onClick={handleOpen}>
+      <Button variant="contained" color="secondary" onClick={handleOpen}>
         Create New API Key
       </Button>
 
@@ -63,7 +63,7 @@ function ApiKeys() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={{ ...modalStyle }}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          <Typography id="modal-modal-title" variant="h6" component="h2" >
             Create New API Key
           </Typography>
           <TextField
@@ -82,7 +82,7 @@ function ApiKeys() {
               <Typography variant="body1">
                 Your new API key is:
               </Typography>
-              <Typography variant="body2" sx={{ backgroundColor: '#f0f0f0', padding: '8px' }}>
+              <Typography variant="body2" sx={{  backgroundColor: "background.default", padding: '8px' }}>
                 {newApiKey}
               </Typography>
               <Button 

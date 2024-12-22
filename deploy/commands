@@ -1,5 +1,5 @@
-docker build -f deploy/Dockerfile -t cr.yandex/crpa3u3frrtfcv7iqaan/prime-ui-app-image .
-docker push cr.yandex/crpa3u3frrtfcv7iqaan/prime-ui-app-image
+docker build -f deploy/Dockerfile -t cr.yandex/crpa3u3frrtfcv7iqaan/prime-platform-image .
+docker push cr.yandex/crpa3u3frrtfcv7iqaan/prime-platform-image
 
 kubectl apply -f deploy/deployment.yaml
 kubectl apply -f deploy/service.yaml

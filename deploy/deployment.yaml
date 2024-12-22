@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: prime-platform-container
-          image: cr.yandex/crpa3u3frrtfcv7iqaan/prime-ui-app-image:mnxcbkjsd
+          image: cr.yandex/crpa3u3frrtfcv7iqaan/prime-platform-image:20241221-140958
           ports:
             - containerPort: 80

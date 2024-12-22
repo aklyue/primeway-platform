@@ -2,9 +2,9 @@
 
 # Configuration
 REGISTRY="cr.yandex/crpa3u3frrtfcv7iqaan"
-IMAGE_NAME="prime-landing-image"
+IMAGE_NAME="prime-platform-image"
 DOCKERFILE_PATH="deploy/Dockerfile"
-DEPLOYMENT_NAME="landing-deployment"
+DEPLOYMENT_NAME="platform-deployment"
 
 TAG=$(date +%Y%m%d-%H%M%S)
 
@@ -31,6 +31,6 @@ fi
 
 # Update the deployment image using kubectl set
 echo "Updating deployment image..."
-kubectl set image deployment/$DEPLOYMENT_NAME prime-landing-container=$FULL_IMAGE_NAME
+kubectl set image deployment/$DEPLOYMENT_NAME prime-platform-container=$FULL_IMAGE_NAME
 
 echo "Complete! New image tag: $TAG"

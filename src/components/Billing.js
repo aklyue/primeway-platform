@@ -1,5 +1,3 @@
-// Billing.jsx
-
 import React, { useState } from 'react';
 import { Box, Typography, Button, TextField, Modal } from '@mui/material';
 import { Bar } from 'react-chartjs-2';
@@ -12,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import PaymentForm from './PaymentForm'; // Импортируем наш PaymentForm
+import TPaymentWidget from './TPaymentWidget';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -21,7 +19,7 @@ function Billing() {
   const [currentMonth] = useState('Сентябрь');
   const [walletBalance, setWalletBalance] = useState(1000); // Default wallet balance
   const [addFunds, setAddFunds] = useState(''); // For adding funds
-  const [paymentOpen, setPaymentOpen] = useState(false); // Контролируем отображение PaymentForm
+  const [paymentOpen, setPaymentOpen] = useState(false); // Control PaymentForm visibility
 
   // Mock data for spending in September
   const spendingData = {
@@ -41,22 +39,27 @@ function Billing() {
   };
 
   const handleAddFunds = () => {
-    if (!addFunds || parseFloat(addFunds) <= 0) {
-      alert('Пожалуйста, введите корректную сумму для пополнения.');
+    const amount = parseFloat(addFunds);
+    console.log("amount", amount)
+    if (!addFunds || isNaN(amount) || amount < 1) {
+      alert('Пожалуйста, введите сумму не менее 1 рубля для пополнения.');
       return;
     }
     // Открываем PaymentForm
     setPaymentOpen(true);
   };
 
-  const handlePaymentClose = () => {
-    // Закрываем PaymentForm
+  const handlePaymentSuccess = (orderId) => {
+    console.log('Payment successful, order ID:', orderId);
+    setWalletBalance(prev => prev + parseFloat(addFunds));
     setPaymentOpen(false);
-    // Обновляем баланс кошелька
-    // Здесь необходимо дополнительно реализовать проверку успешности платежа
-    // Для демонстрации просто увеличим баланс на сумму пополнения
-    setWalletBalance(walletBalance + parseFloat(addFunds));
     setAddFunds('');
+  };
+
+  const handlePaymentError = (error) => {
+    console.error('Payment failed:', error);
+    alert('Оплата не прошла. Пожалуйста, попробуйте снова.');
+    setPaymentOpen(false);
   };
 
   return (
@@ -76,12 +79,15 @@ function Billing() {
       >
         <Typography variant="h6">Current Wallet Balance: {walletBalance}₽</Typography>
         <Box sx={{ display: 'flex', gap: '8px' }}>
-          <TextField
-            type="number"
-            label="Add Funds"
-            value={addFunds}
-            onChange={(e) => setAddFunds(e.target.value)}
-          />
+        <TextField
+          type="number"
+          label="Add Funds"
+          value={addFunds}
+          onChange={(e) => setAddFunds(e.target.value)}
+          InputProps={{ inputProps: { min: 1, step: 1 } }}
+          helperText="Минимальная сумма пополнения: 1 ₽"
+          error={parseFloat(addFunds) < 1}
+        />
           <Button variant="contained" color="primary" onClick={handleAddFunds}>
             Add to Wallet
           </Button>
@@ -112,7 +118,7 @@ function Billing() {
         </Box>
       </Box>
 
-      {/* Модальное окно для PaymentForm */}
+      {/* Modal for PaymentForm */}
       <Modal
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
@@ -128,10 +134,19 @@ function Billing() {
             bgcolor: 'background.paper',
             boxShadow: 24,
             p: 4,
+            borderRadius: 2,
             outline: 'none',
+            minWidth: 320,
           }}
         >
-          <PaymentForm amount={addFunds} onClose={handlePaymentClose} />
+          <TPaymentWidget
+            amount={parseFloat(addFunds)}
+            description="Пополнение кошелька"
+            email = 'customer@example.com'
+            phone = '+79991234567'
+            onSuccess={handlePaymentSuccess}
+            onError={handlePaymentError}
+          />
         </Box>
       </Modal>
     </Box>

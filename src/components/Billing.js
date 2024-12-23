@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// Billing.js
+import React, { useState, useContext } from "react";
 import { Box, Typography, Button, TextField, Modal } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
@@ -11,8 +12,9 @@ import {
   Legend,
 } from "chart.js";
 import TPaymentWidget from "./TPaymentWidget";
+import { AuthContext } from '../AuthContext'; // Импортируем AuthContext
 
-// Register Chart.js components
+// Регистрируем компоненты Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,17 +25,23 @@ ChartJS.register(
 );
 
 function Billing() {
+  const { user } = useContext(AuthContext); // Получаем пользователя из контекста
+
+  // Используем опциональную цепочку для безопасного доступа к свойствам пользователя
+  const userId = user?.id || ''; // Получаем userId из данных пользователя
+  const userEmail = user?.email || ''; 
+
+  // Состояние для email, инициализируем email пользователя
+  const [email, setEmail] = useState(userEmail);
+
   const [currentMonth] = useState("Сентябрь");
-  const [walletBalance, setWalletBalance] = useState(1000); // Баланс кошелька
-  const [addFunds, setAddFunds] = useState(""); // Сумма для пополнения
-  const [paymentOpen, setPaymentOpen] = useState(false); // Контроль видимости модального окна
+  const [walletBalance, setWalletBalance] = useState(1000); 
+  const [addFunds, setAddFunds] = useState("");
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
-  const [email, setEmail] = useState(""); // Email пользователя
-  const [modalAmount, setModalAmount] = useState(""); // Сумма в модальном окне
-  const [orderId, setOrderId] = useState(""); // OrderId для платежа
-  const userId = "USER_ID_HERE"; // Замените это на реальный ID пользователя
+  const [modalAmount, setModalAmount] = useState(""); 
+  const [orderId, setOrderId] = useState(""); 
 
-  // Данные для графика расходов
   const spendingData = {
     labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Дни месяца
     datasets: [
@@ -57,38 +65,34 @@ function Billing() {
       alert("Пожалуйста, введите сумму не менее 1 рубля для пополнения.");
       return;
     }
-    // Сгенерируйте уникальный OrderId
     const generatedOrderId = Date.now().toString();
     setOrderId(generatedOrderId);
-    // Округляем сумму и устанавливаем начальное значение в модальном окне
     setModalAmount(amount);
-    setEmail(""); // Вы можете установить email по умолчанию, если необходимо
-    // Открываем модальное окно
+    setEmail(userEmail);
     setPaymentOpen(true);
   };
 
-  // Обработчик успешной оплаты
   const handlePaymentSuccess = (paymentResult) => {
-    console.log("Payment successful, paymentResult:", orderId);
-    const paymentId = paymentResult.PaymentId;
+    console.log("Payment successful, paymentResult:", paymentResult);
+
     const returnedOrderId = paymentResult.OrderId || orderId;
 
     setWalletBalance((prev) => prev + parseFloat(modalAmount));
     setPaymentOpen(false);
     setAddFunds("");
 
-    // Подготовьте данные для отправки на эндпоинт
     const data = {
       OrderId: returnedOrderId,
       email: email,
-      userId: userId,
+      userId: userId, 
     };
 
-    // Отправьте POST-запрос на эндпоинт
     fetch('/tbank/inner/payments/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
+
+        // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify(data),
     })
@@ -101,12 +105,15 @@ function Billing() {
     });
   };
 
-  // Обработчик ошибки оплаты
   const handlePaymentError = (error) => {
     console.error("Payment failed:", error);
     alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
     setPaymentOpen(false);
   };
+
+  if (!user) {
+    return <div>Пожалуйста, войдите в систему</div>;
+  }
 
   return (
     <Box sx={{ padding: "16px" }}>
@@ -114,11 +121,10 @@ function Billing() {
         Billing and Wallet
       </Typography>
 
-      {/* Раздел баланса кошелька */}
       <Box
         sx={{
           display: "flex",
-          flexWrap: "wrap", // Для адаптации на небольших экранах
+          flexWrap: "wrap", 
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "16px",
@@ -148,7 +154,6 @@ function Billing() {
         </Box>
       </Box>
 
-      {/* График расходов за текущий месяц */}
       <Box
         sx={{ display: "flex", justifyContent: "center", marginTop: "16px" }}
       >
@@ -199,7 +204,6 @@ function Billing() {
           <Typography variant="h6" gutterBottom>
             Пополнение кошелька
           </Typography>
-          {/* Поле для ввода email */}
           <TextField
             fullWidth
             label="Email"
@@ -208,7 +212,6 @@ function Billing() {
             onChange={(e) => setEmail(e.target.value)}
             sx={{ marginBottom: 2 }}
           />
-          {/* Поле для ввода суммы */}
           <TextField
             fullWidth
             label="Сумма пополнения (₽)"
@@ -234,12 +237,11 @@ function Billing() {
             error={modalAmount === "" || parseFloat(modalAmount) < 1}
             sx={{ marginBottom: 2 }}
           />
-          {/* Платежный виджет */}
           <TPaymentWidget
-            amount={parseFloat(modalAmount)} // Передаем округленное значение
+            amount={parseFloat(modalAmount)} 
             description="Пополнение кошелька"
             email={email}
-            phone="+79991234567" // Вы можете добавить поле для телефона, если необходимо
+            phone="+79991234567"
             orderId={orderId}
             onSuccess={handlePaymentSuccess}
             onError={handlePaymentError}

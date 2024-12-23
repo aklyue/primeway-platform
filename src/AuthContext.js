@@ -18,7 +18,6 @@ const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         if (useMockData) {
-          // Используем моковую функцию для получения данных пользователя
           const userData = await mockFetchUserData(token);
           setUser(userData);
           setIsLoggedIn(true);
@@ -62,8 +61,6 @@ const AuthProvider = ({ children }) => {
     } else {
       setUser(userData);
       setIsLoggedIn(true);
-      // Опционально: получить актуальные данные пользователя с сервера
-      // await fetchUserData();
     }
   };
 
@@ -90,12 +87,16 @@ async function mockFetchUserData(token) {
       // Моковые токены и соответствующие пользователи
       const mockUsers = {
         mock_token_user1: {
+          id: '123456', // Добавили userId
           username: 'user1',
+          email: 'user1@example.com', // Добавили email
           avatarUrl:
             'https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?semt=ais_hybrid',
         },
         mock_token_user2: {
+          id: '654321', // Добавили userId
           username: 'user2',
+          email: 'user2@example.com', // Добавили email
           avatarUrl: '',
         },
       };
@@ -113,12 +114,10 @@ async function mockFetchUserData(token) {
   });
 }
 
-// Моковая функция для эмуляции логина пользователя
 async function mockLogin(token, userData) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Возвращаем данные пользователя, которые были переданы
       resolve(userData);
-    }, 500); // Задержка в 0.5 секунды
+    }, 500);
   });
 }

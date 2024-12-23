@@ -1,3 +1,4 @@
+// Login.js
 import React, { useState, useContext } from 'react';
 import axios from '../axios'; // Используйте ваш настроенный экземпляр axios
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [error, setError] = useState(''); // Состояние для обработки ошибок
+  const [error, setError] = useState(''); 
 
   // Переменная для переключения между бэкендом и моковыми данными
   const useMockData = true; // Установите в false, чтобы использовать реальные данные с бэкенда
@@ -20,7 +21,9 @@ const Login = () => {
         // Используем моковую функцию для эмуляции запроса
         const response = await mockLogin(username, password);
         const { access_token, user } = response.data;
-        await login(access_token, user); // Передаем данные пользователя в функцию login
+
+        // Передаем данные пользователя в функцию login
+        await login(access_token, user);
         navigate('/running-jobs'); // Перенаправляем после успешного входа
       } else {
         // Отправляем реальный запрос к бэкенду
@@ -47,7 +50,6 @@ const Login = () => {
         onChange={(e) => setUsername(e.target.value)}
         fullWidth
         margin="normal"
-        
       />
       <TextField
         label="Password"
@@ -77,8 +79,11 @@ async function mockLogin(username, password) {
           password: 'password1',
           access_token: 'mock_token_user1',
           user: {
+            id: '123456',
             username: 'user1',
-            avatarUrl: 'https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?semt=ais_hybrid', // Укажите URL аватара, если нужно
+            email: 'user1@example.com',
+            avatarUrl:
+              'https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?semt=ais_hybrid',
           },
         },
         {
@@ -86,24 +91,23 @@ async function mockLogin(username, password) {
           password: 'password2',
           access_token: 'mock_token_user2',
           user: {
+            id: '654321',
             username: 'user2',
-            avatarUrl: '', // Укажите URL аватара, если нужно
+            email: 'user2@example.com',
+            avatarUrl: '',
           },
         },
       ];
 
-      // Проверяем, соответствует ли введённый пользователем логин и пароль моковым данным
       const user = mockUsers.find(
         (u) => u.username === username && u.password === password
       );
 
       if (user) {
-        // Успешный вход
         resolve({ data: { access_token: user.access_token, user: user.user } });
       } else {
-        // Эмуляция ошибки неверного логина или пароля
         reject(new Error('Invalid username or password'));
       }
-    }, 1000); // Задержка в 1 секунду
+    }, 1000);
   });
 }

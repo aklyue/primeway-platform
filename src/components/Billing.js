@@ -24,23 +24,25 @@ ChartJS.register(
 
 function Billing() {
   const [currentMonth] = useState("Сентябрь");
-  const [walletBalance, setWalletBalance] = useState(1000); // Default wallet balance
-  const [addFunds, setAddFunds] = useState(""); // For adding funds
-  const [paymentOpen, setPaymentOpen] = useState(false); // Control PaymentForm visibility
+  const [walletBalance, setWalletBalance] = useState(1000); // Баланс кошелька
+  const [addFunds, setAddFunds] = useState(""); // Сумма для пополнения
+  const [paymentOpen, setPaymentOpen] = useState(false); // Контроль видимости модального окна
 
-  const [email, setEmail] = useState(""); // New state for email
-  const [modalAmount, setModalAmount] = useState(""); // New state for amount in modal
+  const [email, setEmail] = useState(""); // Email пользователя
+  const [modalAmount, setModalAmount] = useState(""); // Сумма в модальном окне
+  const [orderId, setOrderId] = useState(""); // OrderId для платежа
+  const userId = "USER_ID_HERE"; // Замените это на реальный ID пользователя
 
-  // Mock data for spending in September
+  // Данные для графика расходов
   const spendingData = {
-    labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Days of the month
+    labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Дни месяца
     datasets: [
       {
         label: "Ежедневные расходы (₽)",
         data: [
           50, 100, 75, 200, 125, 90, 60, 130, 80, 150, 120, 170, 140, 60, 110,
           95, 180, 75, 90, 130, 160, 120, 100, 140, 180, 110, 90, 100, 170, 160,
-        ], // Mock spending data for each day
+        ],
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
@@ -48,27 +50,58 @@ function Billing() {
     ],
   };
 
+  // Обработчик нажатия кнопки "Add to Wallet"
   const handleAddFunds = () => {
     const amount = parseFloat(addFunds);
-    console.log("amount", amount);
     if (!addFunds || isNaN(amount) || amount < 1) {
       alert("Пожалуйста, введите сумму не менее 1 рубля для пополнения.");
       return;
     }
-    // Set initial values in modal
-    setModalAmount(addFunds);
-    setEmail(""); // Optionally, set a default email here
-    // Open the PaymentForm modal
+    // Сгенерируйте уникальный OrderId
+    const generatedOrderId = Date.now().toString();
+    setOrderId(generatedOrderId);
+    // Округляем сумму и устанавливаем начальное значение в модальном окне
+    setModalAmount(amount);
+    setEmail(""); // Вы можете установить email по умолчанию, если необходимо
+    // Открываем модальное окно
     setPaymentOpen(true);
   };
 
-  const handlePaymentSuccess = (orderId) => {
-    console.log("Payment successful, order ID:", orderId);
+  // Обработчик успешной оплаты
+  const handlePaymentSuccess = (paymentResult) => {
+    console.log("Payment successful, paymentResult:", orderId);
+    const paymentId = paymentResult.PaymentId;
+    const returnedOrderId = paymentResult.OrderId || orderId;
+
     setWalletBalance((prev) => prev + parseFloat(modalAmount));
     setPaymentOpen(false);
     setAddFunds("");
+
+    // Подготовьте данные для отправки на эндпоинт
+    const data = {
+      OrderId: returnedOrderId,
+      email: email,
+      userId: userId,
+    };
+
+    // Отправьте POST-запрос на эндпоинт
+    fetch('/tbank/inner/payments/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log('Данные платежа успешно отправлены', result);
+    })
+    .catch(error => {
+      console.error('Ошибка при отправке данных платежа:', error);
+    });
   };
 
+  // Обработчик ошибки оплаты
   const handlePaymentError = (error) => {
     console.error("Payment failed:", error);
     alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
@@ -81,7 +114,7 @@ function Billing() {
         Billing and Wallet
       </Typography>
 
-      {/* Wallet Balance Section */}
+      {/* Раздел баланса кошелька */}
       <Box
         sx={{
           display: "flex",
@@ -115,7 +148,7 @@ function Billing() {
         </Box>
       </Box>
 
-      {/* Spending Chart for Current Month */}
+      {/* График расходов за текущий месяц */}
       <Box
         sx={{ display: "flex", justifyContent: "center", marginTop: "16px" }}
       >
@@ -141,7 +174,7 @@ function Billing() {
         </Box>
       </Box>
 
-      {/* Modal for PaymentForm */}
+      {/* Модальное окно для оплаты */}
       <Modal
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
@@ -166,7 +199,7 @@ function Billing() {
           <Typography variant="h6" gutterBottom>
             Пополнение кошелька
           </Typography>
-          {/* Input for email */}
+          {/* Поле для ввода email */}
           <TextField
             fullWidth
             label="Email"
@@ -175,24 +208,39 @@ function Billing() {
             onChange={(e) => setEmail(e.target.value)}
             sx={{ marginBottom: 2 }}
           />
-          {/* Input for amount */}
+          {/* Поле для ввода суммы */}
           <TextField
             fullWidth
             label="Сумма пополнения (₽)"
             type="number"
             value={modalAmount}
-            onChange={(e) => setModalAmount(e.target.value)}
-            InputProps={{ inputProps: { min: 1, step: 1 } }}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value);
+              if (!isNaN(value) && value >= 1) {
+                setModalAmount(Math.round(value));
+              } else {
+                setModalAmount("");
+              }
+            }}
+            InputProps={{
+              inputProps: {
+                min: 1,
+                step: 1,
+                inputMode: "numeric",
+                pattern: "[0-9]*",
+              },
+            }}
             helperText="Минимальная сумма пополнения: 1 ₽"
-            error={parseFloat(modalAmount) < 1}
+            error={modalAmount === "" || parseFloat(modalAmount) < 1}
             sx={{ marginBottom: 2 }}
           />
-          {/* Payment Widget */}
+          {/* Платежный виджет */}
           <TPaymentWidget
-            amount={parseFloat(modalAmount)}
+            amount={parseFloat(modalAmount)} // Передаем округленное значение
             description="Пополнение кошелька"
             email={email}
             phone="+79991234567" // Вы можете добавить поле для телефона, если необходимо
+            orderId={orderId}
             onSuccess={handlePaymentSuccess}
             onError={handlePaymentError}
           />

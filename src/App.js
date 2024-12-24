@@ -33,7 +33,7 @@ import Settings from "./components/Settings";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthContext } from "./AuthContext";
+import AuthProvider, { AuthContext } from "./AuthContext";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
 import CreateOrganization from "./components/Organization/CreateOrganization";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
@@ -57,22 +57,19 @@ const HealthCheck = () => {
 };
 
 function Layout() {
-  const { isLoggedIn, user, logout } = useContext(AuthContext); // Получаем состояние авторизации и данные пользователя
-  const location = useLocation(); // Получаем текущий путь
+  const { isLoggedIn, user, logout } = useContext(AuthContext);
+  const location = useLocation();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null); // Для управления меню аватара
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  // Обработчик клика по аватару
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Закрытие меню аватара
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // Обработчик выхода из аккаунта
   const handleLogout = () => {
     handleMenuClose();
     logout();
@@ -80,24 +77,15 @@ function Layout() {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        padding: 0,
-        margin: 0,
-        width: "100%",
-        height: "100%",
-      }}
-    >
+    <Box sx={{ display: "flex", width: "100%", height: "100%" }}>
       <CssBaseline />
 
       <AppBar
         position="fixed"
         sx={{
-          padding: 0,
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backgroundColor: "#000000",
-          borderBottom: '1px solid #353740'
+          borderBottom: "1px solid #353740",
         }}
       >
         <Toolbar>
@@ -106,7 +94,7 @@ function Layout() {
             noWrap
             component={Link}
             to="/"
-            sx={{ textDecoration: "none" }}
+            sx={{ textDecoration: "none", color: "#FFFFFF" }}
           >
             Platform
           </Typography>
@@ -129,9 +117,7 @@ function Layout() {
                   horizontal: "right",
                 }}
               >
-                <MenuItem sx={{ color: "red" }} onClick={handleLogout}>
-                  Log out
-                </MenuItem>
+                <MenuItem onClick={handleLogout}>Log out</MenuItem>
               </Menu>
             </>
           ) : (
@@ -168,86 +154,83 @@ function Layout() {
           )}
         </Toolbar>
       </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
 
-          "& .MuiDrawer-paper": {
+      {isLoggedIn && (
+        <Drawer
+          variant="permanent"
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-            backgroundColor: "#000000",
-          },
-        }}
-      >
-        <Toolbar />
-        <Divider />
-        <List>
-          {isLoggedIn && (
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  mb: 2,
-                  justifyContent: "space-between",
-                }}
-              >
-                <OrganizationSwitcher />
-                <CreateOrganization sx={{ marginLeft: 1 }} />
-              </Box>
-              <ListItem
-                button
-                component={Link}
-                to="/running-jobs"
-                selected={location.pathname === "/running-jobs"}
-              >
-                <ListItemText primary="Running Jobs" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/completed-jobs"
-                selected={location.pathname === "/completed-jobs"}
-              >
-                <ListItemText primary="Completed Jobs" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/billing"
-                selected={location.pathname === "/billing"}
-              >
-                <ListItemText primary="Billing" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/api-keys"
-                selected={location.pathname === "/api-keys"}
-              >
-                <ListItemText primary="API Keys" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/settings"
-                selected={location.pathname === "/settings"}
-              >
-                <ListItemText primary="Settings" />
-              </ListItem>
-            </>
-          )}
-        </List>
-      </Drawer>
-      
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+              backgroundColor: "#000000",
+            },
+          }}
+        >
+          <Toolbar />
+          <Divider />
+          <List>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 2,
+                justifyContent: "space-between",
+              }}
+            >
+              <OrganizationSwitcher />
+              <CreateOrganization sx={{ marginLeft: 1 }} />
+            </Box>
+            <ListItem
+              button
+              component={Link}
+              to="/running-jobs"
+              selected={location.pathname === "/running-jobs"}
+            >
+              <ListItemText primary="Running Jobs" />
+            </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/completed-jobs"
+              selected={location.pathname === "/completed-jobs"}
+            >
+              <ListItemText primary="Completed Jobs" />
+            </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/billing"
+              selected={location.pathname === "/billing"}
+            >
+              <ListItemText primary="Billing" />
+            </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/api-keys"
+              selected={location.pathname === "/api-keys"}
+            >
+              <ListItemText primary="API Keys" />
+            </ListItem>
+            <ListItem
+              button
+              component={Link}
+              to="/settings"
+              selected={location.pathname === "/settings"}
+            >
+              <ListItemText primary="Settings" />
+            </ListItem>
+          </List>
+        </Drawer>
+      )}
+
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          margin: 0,
           width: "100%",
           maxHeight: "100vh",
           backgroundColor: "#202123",
@@ -305,7 +288,8 @@ function Layout() {
           />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/healthz" element={<HealthCheck />} />
+
+          {/* Добавьте дополнительные маршруты, если необходимо */}
         </Routes>
       </Box>
     </Box>
@@ -315,9 +299,11 @@ function Layout() {
 function App() {
   return (
     <OrganizationProvider>
-      <Router>
-        <Layout />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Layout />
+        </Router>
+      </AuthProvider>
     </OrganizationProvider>
   );
 }

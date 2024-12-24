@@ -1,23 +1,19 @@
-// axios.js
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:8888', 
+  baseURL: 'http://localhost:8888', // Замените на ваш базовый URL
 });
 
+// Добавляем перехватчик для добавления токена в заголовки запросов
 instance.interceptors.request.use(
-  function (config) {
-    // Добавляем токен в заголовки, если он есть
-    const token = localStorage.getItem('token');
+  (config) => {
+    const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  function (error) {
-    // Обработка ошибки запроса
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default instance;

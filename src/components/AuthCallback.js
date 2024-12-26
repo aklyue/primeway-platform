@@ -12,7 +12,7 @@ const AuthCallback = () => {
     script.onload = () => {
       if (window.YaSendSuggestToken) {
         window.YaSendSuggestToken(
-          'https://platform.primeway.io',
+          'https://platform.primeway.io/auth/callback',
           { status: 'success' }
         );
       }

@@ -36,9 +36,9 @@ const YandexAuth = () => {
         {
           client_id: '12b9a3c475d8488987bd2efadd1181c6',
           response_type: 'token',
-          redirect_uri: 'https://primeway.io/auth/callback',
+          redirect_uri: 'https://platform.primeway.io/auth/callback',
         },
-        'https://primeway.io',
+        'https://platform.primeway.io',
         {
           view: 'button',
           parentId: 'yandex-auth-container',

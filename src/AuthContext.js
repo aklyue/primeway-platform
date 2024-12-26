@@ -15,7 +15,7 @@ const AuthProvider = ({ children }) => {
   // Function to fetch user data
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token'); // Используем 'auth_token' вместо 'token'
       if (token) {
         if (useMockData) {
           const userData = await mockFetchUserData(token);
@@ -28,7 +28,7 @@ const AuthProvider = ({ children }) => {
               Authorization: `Bearer ${token}`,
             },
           });
-          setUser(response.data);
+          setUser(response.data.user); // Предполагается, что данные пользователя в response.data.user
           setIsLoggedIn(true);
         }
       } else {
@@ -38,7 +38,7 @@ const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Ошибка при получении данных пользователя:', error);
       // Если ошибка (например, токен недействителен), очищаем данные
-      localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
       setUser(null);
       setIsLoggedIn(false);
     }
@@ -52,7 +52,7 @@ const AuthProvider = ({ children }) => {
 
   // Function to log in the user (set token and user data)
   const login = async (token, userData) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem('auth_token', token);
     if (useMockData) {
       // Используем моковую функцию для эмуляции логина
       const mockUserData = await mockLogin(token, userData);
@@ -66,7 +66,7 @@ const AuthProvider = ({ children }) => {
 
   // Function to log out the user (remove token)
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('auth_token');
     setUser(null);
     setIsLoggedIn(false);
   };
@@ -87,16 +87,16 @@ async function mockFetchUserData(token) {
       // Моковые токены и соответствующие пользователи
       const mockUsers = {
         mock_token_user1: {
-          id: '123456', // Добавили userId
+          id: '123456',
           username: 'user1',
-          email: 'user1@example.com', // Добавили email
+          email: 'user1@example.com',
           avatarUrl:
             'https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?semt=ais_hybrid',
         },
         mock_token_user2: {
-          id: '654321', // Добавили userId
+          id: '654321',
           username: 'user2',
-          email: 'user2@example.com', // Добавили email
+          email: 'user2@example.com',
           avatarUrl: '',
         },
       };

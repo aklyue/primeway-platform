@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 function TPaymentWidget(props) {
   const { amount, description, email, phone, orderId, onSuccess, onError } =
     props;
-
+    const navigate = useNavigate();
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -27,18 +28,19 @@ function TPaymentWidget(props) {
     e.preventDefault();
 
     const completeCallback = (paymentResult) => {
-      console.log("Платеж завершен", paymentResult);
       if (paymentResult.Success) {
-        console.log("Платеж завершен");
+        // Обработка успешного платежа
         if (onSuccess) {
           onSuccess(paymentResult);
         }
+        // Перенаправление пользователя
+        navigate('/billing');
       } else {
-        console.log("Платеж не завершен");
-        // Платеж не удался или был отменен
+        // Обработка ошибки платежа
         if (onError) {
           onError(paymentResult);
         }
+        navigate('/billing');
       }
     };
 
@@ -67,12 +69,13 @@ function TPaymentWidget(props) {
       <input type="hidden" name="terminalkey" value="1734697526905DEMO" />
       <input type="hidden" name="frame" value="false" />
       <input type="hidden" name="language" value="ru" />
-      <input type="hidden" name="redirect" value="true" />
       <input type="hidden" name="amount" value={amount} />
       <input type="hidden" name="description" value={description} />
       {orderId && <input type="hidden" name="OrderId" value={orderId} />}
       {email && <input type="hidden" name="email" value={email} />}
       {phone && <input type="hidden" name="phone" value={phone} />}
+      {/* <input type="hidden" name="SuccessURL" value="/" />
+      <input type="hidden" name="FailURL" value="/" /> */}
       <button
         style={{
           width: "100%",

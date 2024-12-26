@@ -40,6 +40,7 @@ import CreateOrganization from "./components/Organization/CreateOrganization";
 import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
+import AuthCallback from "./components/AuthCallback";
 // Удалили ошибочный импорт:
 // import { Router } from "express";
 
@@ -315,6 +316,7 @@ export function Layout() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
         </Routes>
 
         {/* Модальное окно регистрации для незарегистрированных пользователей */}

@@ -7,7 +7,7 @@ import {
   Link,
   useLocation,
   useNavigate,
-  BrowserRouter as Router,
+  BrowserRouter as Router, // Добавлено здесь
 } from "react-router-dom";
 import {
   Drawer,
@@ -40,6 +40,8 @@ import CreateOrganization from "./components/Organization/CreateOrganization";
 import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
+// Удалили ошибочный импорт:
+// import { Router } from "express";
 
 const drawerWidth = 240;
 
@@ -66,10 +68,19 @@ export function Layout() {
   const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
   const [openCaptchaModal, setOpenCaptchaModal] = useState(false);
 
-  // Функция `checkCaptcha` теперь всегда требует прохождения капчи
+  // Определяем функцию `checkCaptcha` вне `useEffect`
   const checkCaptcha = () => {
-    setOpenCaptchaModal(true);
-    return true; // Капча всегда требуется
+    const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
+    const currentTime = Date.now();
+    const thirtyMinutes = 30 * 60 * 1000; // 30 минут в миллисекундах
+
+    if (!lastCaptchaTime || currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes) {
+      setOpenCaptchaModal(true);
+      return true; // Капча требуется
+    } else {
+      setOpenCaptchaModal(false);
+      return false; // Капча не требуется
+    }
   };
 
   // Проверяем капчу и обновляем состояния при изменении маршрута или авторизации
@@ -78,8 +89,10 @@ export function Layout() {
 
     if (!isLoggedIn) {
       if (!captchaRequired) {
+        // Если капча не требуется (уже пройдена недавно), открываем модальное окно регистрации
         setOpenRegistrationModal(true);
       } else {
+        // Если капча требуется, закрываем модальное окно регистрации до прохождения капчи
         setOpenRegistrationModal(false);
       }
     } else {
@@ -99,10 +112,7 @@ export function Layout() {
     handleMenuClose();
     logout();
     navigate("/login");
-
-    // Удаляем удаление из localStorage
-    // localStorage.removeItem("lastCaptchaTime");
-
+    localStorage.removeItem("lastCaptchaTime");
     setOpenCaptchaModal(false);
     setOpenRegistrationModal(false);
   };
@@ -110,12 +120,12 @@ export function Layout() {
   // Обработчик успешного прохождения капчи
   const handleCaptchaSuccess = () => {
     setOpenCaptchaModal(false);
-
-    // Удаляем сохранение времени в localStorage
-    // const currentTime = Date.now();
-    // localStorage.setItem('lastCaptchaTime', currentTime.toString());
+    // Сохраняем текущее время прохождения капчи
+    const currentTime = Date.now();
+    localStorage.setItem('lastCaptchaTime', currentTime.toString());
 
     if (!isLoggedIn) {
+      // Если пользователь не авторизован, после капчи открываем модальное окно регистрации
       setOpenRegistrationModal(true);
     }
   };

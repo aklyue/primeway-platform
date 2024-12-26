@@ -1,7 +1,5 @@
 // Layout.js
 
-// Layout.js
-
 import React, { useContext, useState, useEffect } from "react";
 import {
   Routes,
@@ -68,7 +66,7 @@ export function Layout() {
   const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
   const [openCaptchaModal, setOpenCaptchaModal] = useState(false);
 
-  // Новая функция `checkCaptcha`, которая всегда открывает капчу
+  // Функция `checkCaptcha` теперь всегда требует прохождения капчи
   const checkCaptcha = () => {
     setOpenCaptchaModal(true);
     return true; // Капча всегда требуется
@@ -76,11 +74,14 @@ export function Layout() {
 
   // Проверяем капчу и обновляем состояния при изменении маршрута или авторизации
   useEffect(() => {
-    checkCaptcha();
+    const captchaRequired = checkCaptcha();
 
     if (!isLoggedIn) {
-      // Если пользователь не авторизован, скрываем модальное окно регистрации до прохождения капчи
-      setOpenRegistrationModal(false);
+      if (!captchaRequired) {
+        setOpenRegistrationModal(true);
+      } else {
+        setOpenRegistrationModal(false);
+      }
     } else {
       setOpenRegistrationModal(false);
     }
@@ -98,17 +99,23 @@ export function Layout() {
     handleMenuClose();
     logout();
     navigate("/login");
-    localStorage.removeItem("lastCaptchaTime");
-    setOpenCaptchaModal(true);
+
+    // Удаляем удаление из localStorage
+    // localStorage.removeItem("lastCaptchaTime");
+
+    setOpenCaptchaModal(false);
     setOpenRegistrationModal(false);
   };
 
   // Обработчик успешного прохождения капчи
   const handleCaptchaSuccess = () => {
-    setOpenCaptchaModal(true);
+    setOpenCaptchaModal(false);
+
+    // Удаляем сохранение времени в localStorage
+    // const currentTime = Date.now();
+    // localStorage.setItem('lastCaptchaTime', currentTime.toString());
 
     if (!isLoggedIn) {
-      // Если пользователь не авторизован, после капчи открываем модальное окно регистрации
       setOpenRegistrationModal(true);
     }
   };
@@ -366,5 +373,3 @@ function App() {
 }
 
 export default App;
-
-

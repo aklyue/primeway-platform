@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children }) => {
   const { isLoggedIn } = useContext(AuthContext);
 
   if (!isLoggedIn) {
-    return <Navigate to="/register" replace />;
+    return <Navigate to="/running-jobs" replace />;
   }
 
   return children;

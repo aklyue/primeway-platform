@@ -143,14 +143,15 @@ function Billing() {
             helperText="Минимальная сумма пополнения: 1 ₽"
             error={parseFloat(addFunds) < 1}
           />
-          <Button
-            sx={{ maxHeight: "53px" }}
-            variant="contained"
-            color="primary"
-            onClick={handleAddFunds}
-          >
-            Add to Wallet
-          </Button>
+          <TPaymentWidget
+            amount={addFunds} 
+            description="Пополнение кошелька"
+            email={email}
+            phone="+79991234567"
+            orderId={orderId}
+            onSuccess={handlePaymentSuccess}
+            onError={handlePaymentError}
+          />
         </Box>
       </Box>
 
@@ -178,76 +179,6 @@ function Billing() {
           />
         </Box>
       </Box>
-
-      {/* Модальное окно для оплаты */}
-      <Modal
-        open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        aria-labelledby="payment-modal-title"
-        aria-describedby="payment-modal-description"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-            outline: "none",
-            minWidth: 320,
-            maxWidth: 400,
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Пополнение кошелька
-          </Typography>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{ marginBottom: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Сумма пополнения (₽)"
-            type="number"
-            value={modalAmount}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value);
-              if (!isNaN(value) && value >= 1) {
-                setModalAmount(Math.round(value));
-              } else {
-                setModalAmount("");
-              }
-            }}
-            InputProps={{
-              inputProps: {
-                min: 1,
-                step: 1,
-                inputMode: "numeric",
-                pattern: "[0-9]*",
-              },
-            }}
-            helperText="Минимальная сумма пополнения: 1 ₽"
-            error={modalAmount === "" || parseFloat(modalAmount) < 1}
-            sx={{ marginBottom: 2 }}
-          />
-          <TPaymentWidget
-            amount={parseFloat(modalAmount)} 
-            description="Пополнение кошелька"
-            email={email}
-            phone="+79991234567"
-            orderId={orderId}
-            onSuccess={handlePaymentSuccess}
-            onError={handlePaymentError}
-          />
-        </Box>
-      </Modal>
     </Box>
   );
 }

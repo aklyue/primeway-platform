@@ -16,16 +16,20 @@ export const SubscriptionToCaptcha = ({ onSuccess, open, onClose }) => {
 
   const handleSuccess = useCallback(
     (token) => {
-      // if (onSuccess) {
-      //   onSuccess();
-      // }
-  
-      // Убираем вызов onClose(), чтобы модальное окно не закрывалось
-      // if (onClose) {
-      //   onClose();
-      // }
+      // Сохраняем время последней успешной верификации
+      const currentTime = new Date().getTime();
+      localStorage.setItem('lastCaptchaTime', currentTime);
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      // Закрываем модальное окно после успешной капчи
+      if (onClose) {
+        onClose();
+      }
     },
-    [onSuccess]
+    [onSuccess, onClose]
   );
 
   const handleTokenExpired = useCallback(() => {
@@ -91,7 +95,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open, onClose }) => {
           }}
         >
           <SmartCaptcha
-          test
+          
             sitekey="ysc1_gqgKVnVKv2a4UJDjpKdVoIEJ7A13CfJRYEJsBwma03ab7254" // Замените на ваш реальный sitekey
             onChallengeVisible={handleChallengeVisible}
             onChallengeHidden={handleChallengeHidden}

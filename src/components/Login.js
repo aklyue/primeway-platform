@@ -60,106 +60,15 @@ const Login = () => {
       }}
     >
       <Typography align="center" variant="h4" gutterBottom>
-        Вход
+        Добро пожаловать
       </Typography>
       {error && (
         <Alert severity="error" onClose={() => setError("")}>
           {error}
         </Alert>
       )}
-      {/* Компонент для входа через Яндекс */}
       <YandexAuth />
-      {!showEmailForm ? (
-        <>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleShowEmailForm}
-            fullWidth
-            style={{
-              width: "450px",
-              borderRadius: "20px",
-              padding: "10px 13px",
-            }}
-          >
-            Войти по электронной почте
-          </Button>
-          <Box
-            sx={{
-              display: "flex",
-              gap: "5px",
-              mt: "15px",
-              justifyContent: "center",
-            }}
-          >
-            <Typography>Нет аккаунта?</Typography>
-            <Typography
-              component={Link}
-              to="/register"
-              sx={{
-                color: "secondary.main",
-                "&:hover": {
-                  color: "#1c8a6c",
-                },
-              }}
-            >
-              Создать
-            </Typography>
-          </Box>
-        </>
-      ) : (
-        // Форма входа по электронной почте
-        <form onSubmit={handleLogin}>
-          <TextField
-            label="Имя пользователя или email"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Пароль"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <Button
-            variant="contained"
-            color="secondary"
-            type="submit"
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            Войти
-          </Button>
-          <Box
-            sx={{
-              display: "flex",
-              gap: "5px",
-              mt: "15px",
-              justifyContent: "center",
-            }}
-          >
-            <Typography>Нет аккаунта?</Typography>
-            <Typography
-              component={Link}
-              to="/register"
-              sx={{
-                color: "secondary.main",
-                "&:hover": {
-                  color: "#1c8a6c",
-                },
-              }}
-            >
-              Создать
-            </Typography>
-          </Box>
-        </form>
-      )}
+
     </Box>
   );
 };

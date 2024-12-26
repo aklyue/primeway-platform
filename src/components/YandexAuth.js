@@ -87,7 +87,7 @@ const YandexAuth = () => {
       id="yandex-auth-container"
       style={{
         margin: '20px',
-        minWidth: '450px',
+        minWidth: '430px',
         minHeight: '36px',
       }}
     />

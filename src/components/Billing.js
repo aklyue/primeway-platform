@@ -131,7 +131,7 @@ function Billing() {
         }}
       >
         <Typography variant="h6">
-          Current Wallet Balance: {walletBalance}₽
+          Current Wallet Balance: <Box component="span" sx={{color:'secondary.main'}}>{walletBalance}₽</Box>
         </Typography>
         <Box sx={{ display: "flex", gap: "8px", marginTop: "8px" }}>
           <TextField
@@ -160,7 +160,7 @@ function Billing() {
       >
         <Box sx={{ width: "600px" }}>
           <Typography variant="h6" gutterBottom>
-            Расходы за {currentMonth}
+            Расходы за <Box component="span" sx={{color:'secondary.main'}}>{currentMonth}</Box>
           </Typography>
           <Bar
             data={spendingData}

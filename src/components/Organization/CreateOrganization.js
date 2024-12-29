@@ -42,7 +42,7 @@ const CreateOrganization = () => {
         open={open}
         onClose={handleClose}
         PaperProps={{
-          sx: { padding: "20px 34px" }, 
+          sx: { padding: "20px 64px" }, 
         }}
       >
         <DialogTitle>Create New Organization</DialogTitle>
@@ -57,8 +57,8 @@ const CreateOrganization = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button sx={{color: '#ACACBE'}} onClick={handleClose}>Cancel</Button>
-          <Button sx={{color: '#ACACBE'}} onClick={handleCreate} color="primary">
+          <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+          <Button variant="outlined" onClick={handleCreate} color="primary">
             Create
           </Button>
         </DialogActions>

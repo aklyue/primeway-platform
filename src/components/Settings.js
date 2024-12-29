@@ -43,7 +43,7 @@ function Settings() {
 
       {/* Display User Information */}
       <Box sx={{ marginBottom: '16px' }}>
-        <Typography variant="h6">Profile Information</Typography>
+        <Typography variant="h6" gutterBottom>Profile Information</Typography>
         <TextField
           fullWidth
           label="Name"
@@ -105,8 +105,8 @@ function Settings() {
         )}
 
         <Button
-          variant="contained"
-          color="primary"
+          variant="outlined"
+          color="secondary"
           onClick={handlePasswordChange}
         >
           Update Password

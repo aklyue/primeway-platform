@@ -139,7 +139,7 @@ function CompletedJobs() {
 
   return (
     <div>
-      <h2>Completed Jobs</h2>
+      <Typography variant="h4" gutterBottom>Completed Jobs</Typography>
       <Box
         sx={{
           display: 'flex',
@@ -148,10 +148,10 @@ function CompletedJobs() {
         }}
       >
         {completedJobs.map((job) => (
-          <Card key={job.job_id} sx={{ width: '100%' }}>
+          <Card key={job.job_id} sx={{ width: '100%', boxShadow:4 }}>
             <CardContent>
               <Typography variant="h6" component="div">
-                {job.job_id}
+                <Box component="span" sx={{color:'secondary.main'}}>{job.job_id}</Box>
               </Typography>
 
               <Box
@@ -167,7 +167,7 @@ function CompletedJobs() {
                   <Typography color="textSecondary">
                     Created at: {new Date(job.created_at).toLocaleString()}
                   </Typography>
-                  <Typography>GPU Type: {job.gpu_type}</Typography>
+                  <Typography>GPU Type: <Box component="span" sx={{color:'secondary.main'}}>{job.gpu_type}</Box></Typography>
                 </Box>
 
                 {/* Column 2 */}
@@ -203,9 +203,15 @@ function CompletedJobs() {
                 View Logs
               </Button>
               <IconButton
-                color="primary"
+                color="secondary"
                 onClick={() => downloadData(job.job_id)}
                 aria-label="download"
+                sx={{
+                  p:'5px',
+                  "&:hover": {
+                    background: "rgba(0,0,0,0.1)",
+                  },
+                }}
               >
                 <DownloadIcon />
               </IconButton>

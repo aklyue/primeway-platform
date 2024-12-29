@@ -8,6 +8,7 @@ export const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  //localStorage.setItem('auth_token', 'mock_token_user1');
 
   // Переменная для переключения между бэкендом и моковыми данными
   const useMockData = true; // Установите в false, чтобы использовать реальные данные с бэкенда
@@ -53,15 +54,8 @@ const AuthProvider = ({ children }) => {
   // Function to log in the user (set token and user data)
   const login = async (token, userData) => {
     localStorage.setItem('auth_token', token);
-    if (useMockData) {
-      // Используем моковую функцию для эмуляции логина
-      const mockUserData = await mockLogin(token, userData);
-      setUser(mockUserData);
-      setIsLoggedIn(true);
-    } else {
-      setUser(userData);
-      setIsLoggedIn(true);
-    }
+    setUser(userData);
+    setIsLoggedIn(true);
   };
 
   // Function to log out the user (remove token)

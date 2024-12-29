@@ -26,6 +26,10 @@ function TPaymentWidget(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!amount || isNaN(amount) || amount < 1) {
+      alert("Пожалуйста, введите сумму не менее 1 рубля для пополнения.");
+      return;
+    }
 
     const completeCallback = (paymentResult) => {
       if (paymentResult.Success) {
@@ -90,7 +94,6 @@ function TPaymentWidget(props) {
           display:'flex',
           justifyContent:'center',
           alignItems:'center',
-
         }}
         type="submit"
         className="payform-tbank-btn"

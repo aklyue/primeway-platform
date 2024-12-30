@@ -34,7 +34,7 @@ const YandexAuth = () => {
 
       window.YaAuthSuggest.init(
         {
-          client_id: '12b9a3c475d8488987bd2efadd1181c6',
+          client_id: '2bd62af38e644a86968d1b791431d881',
           response_type: 'token',
           redirect_uri: 'https://platform.primeway.io/auth/callback',
         },

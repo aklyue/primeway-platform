@@ -31,6 +31,7 @@ function Billing() {
   const [orderId, setOrderId] = useState(""); // ID платежа
   const [paymentData, setPaymentData] = useState(null); // Данные для платежа
   const [loading, setLoading] = useState(false); // Индикатор загрузки
+
   const spendingData = {
     labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Дни месяца
     datasets: [
@@ -51,11 +52,12 @@ function Billing() {
   const createPaymentOnBackend = async (amount) => {
     try {
       setLoading(true);
-      const response = await fetch('/tbank/inner/create-payment', {
+      const response = await fetch('https://api.primeway.io/tbank/inner/create-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          // Если требуется авторизация, раскомментируйте следующую строку
+          // 'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           billing_account_id: user?.billing_account_id || '',
@@ -81,6 +83,7 @@ function Billing() {
       setLoading(false);
     }
   };
+
   // Обработчик создания и начала оплаты
   const handleStartPayment = async () => {
     const amount = parseFloat(addFunds);
@@ -107,32 +110,10 @@ function Billing() {
   // Обработчик успешной оплаты
   const handlePaymentSuccess = (paymentResult) => {
     console.log("Оплата успешна:", paymentResult);
-    setWalletBalance((prev) => prev + parseFloat(addFunds)); // Обновляем баланс кошелька
+    // setWalletBalance((prev) => prev + parseFloat(addFunds)); // Обновляем баланс кошелька
     setAddFunds("");
 
-    // Отправляем данные платежа на сервер
-    fetch("/tbank/inner/payments/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        OrderId: paymentResult.OrderId || orderId,
-        email: user?.email || "",
-        userId: user?.id || "",
-        organization_id: user?.organization_id || "",
-        billing_account_id: user?.billing_account_id || "",
-        amount: addFunds,
-      }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        console.log("Данные платежа успешно отправлены:", result);
-      })
-      .catch((error) => {
-        console.error("Ошибка при отправке данных платежа:", error);
-      });
+    
   };
 
   // Обработчик ошибки оплаты
@@ -144,7 +125,7 @@ function Billing() {
   return (
     <Box sx={{ padding: "16px" }}>
       <Typography variant="h4" gutterBottom>
-      Billing and Wallet
+        Billing and Wallet
       </Typography>
 
       <Box
@@ -179,7 +160,7 @@ function Billing() {
             helperText="Минимальная сумма: 1 ₽"
           />
           <Button
-          sx={{height:'50px', backgroundColor: "#FFDD2D"}}
+            sx={{ height: '50px', backgroundColor: "#FFDD2D" }}
             variant="contained"
             color="primary"
             onClick={handleStartPayment}

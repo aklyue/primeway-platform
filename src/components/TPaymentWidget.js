@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 function TPaymentWidget(props) {
   const { amount, description, email, phone, orderId, onSuccess, onError } =
     props;
-    const navigate = useNavigate();
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -38,13 +37,11 @@ function TPaymentWidget(props) {
           onSuccess(paymentResult);
         }
         // Перенаправление пользователя
-        navigate('/billing');
       } else {
         // Обработка ошибки платежа
         if (onError) {
           onError(paymentResult);
         }
-        navigate('/billing');
       }
     };
 

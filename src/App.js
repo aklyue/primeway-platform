@@ -71,7 +71,10 @@ export function Layout() {
   const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
   const [openCaptchaModal, setOpenCaptchaModal] = useState(false);
 
-  // Определяем функцию `checkCaptcha` вне `useEffect`
+  useEffect(() => {
+    setOpenRegistrationModal(!isLoggedIn);
+  }, [isLoggedIn]);
+
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
     const currentTime = Date.now();
@@ -351,15 +354,7 @@ export function Layout() {
         {/* Модальное окно регистрации для незарегистрированных пользователей */}
         <Modal
           open={openRegistrationModal}
-          onClose={(event, reason) => {
-            if (
-              reason &&
-              (reason === "backdropClick" || reason === "escapeKeyDown")
-            ) {
-              return;
-            }
-            setOpenRegistrationModal(false);
-          }}
+          onClose={() => {}}
           BackdropProps={{
             style: { backgroundColor: "rgba(0, 0, 0, 0.8)" },
           }}

@@ -5,7 +5,7 @@ const theme = createTheme({
   palette: {
     background: {
       default: "#202123", // Основной фоновый цвет
-      paper: "#353740", // Второй фоновый цвет
+      paper: "#191A1B", // #282828 #17252a #222629
     },
     primary: {
       main: "#353740", // Основной цвет
@@ -14,7 +14,7 @@ const theme = createTheme({
       main: "#1A7F64", // Третий цвет, добавленный в палитру
     },
     text: {
-      primary: "#FFFFFF", // Белый текст на тёмном фоне
+      primary: "#9AA0A6", // Белый текст на тёмном фоне
       secondary: "#6E6E80",
     },
   },
@@ -27,49 +27,49 @@ const theme = createTheme({
       fontSize: "2.5rem",
       fontWeight: 700,
       lineHeight: 1.2,
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     h2: {
       fontSize: "2rem",
       fontWeight: 700,
       lineHeight: 1.3,
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     h3: {
       fontSize: "1.75rem",
       fontWeight: 700,
       lineHeight: 1.3,
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     h4: {
       fontSize: "1.5rem",
       fontWeight: 600,
       lineHeight: 1.35,
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     h5: {
       fontSize: "1.25rem",
       fontWeight: 600,
       lineHeight: 1.4,
-      color: "white",
+      color: "#d1e8e2",
     },
     h6: {
       fontSize: "1rem",
       fontWeight: 600,
       lineHeight: 1.5,
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     body1: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     body2: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
-      color: "#ACACBE;",
+      color: "#d1e8e2;",
     },
     button: {
       textTransform: "none",
@@ -80,16 +80,16 @@ const theme = createTheme({
     },
   },
   components: {
-    MuiListItem: {
+    MuiListItemButton: {
       styleOverrides: {
         root: {
           borderRadius: "15px",
           "&:hover": {
-            backgroundColor: "#6E6E80",
+            backgroundColor: "#282828",
           },
           // Стили для активного (выбранного) состояния
           "&.Mui-selected": {
-            backgroundColor: "#6E6E80",
+            backgroundColor: "#282828",
             // Сохранение цвета при наведении на выбранный элемент
             "&:hover": {
               backgroundColor: "#6E6E80",
@@ -102,7 +102,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: "#000000", // Цвет шапки (чёрный)
-          color: "#FFFFFF", // Цвет текста в шапке (белый для контраста)
+          color: "#d1e8e2", // Цвет текста в шапке (белый для контраста)
           boxShadow: "none",
         },
       },
@@ -126,7 +126,7 @@ const theme = createTheme({
           },
         },
         outlined: {
-          color: '#FFFFFF',
+          color: '#d1e8e2',
           borderColor: '#6E6E80',
           '&:hover': {
             borderColor: '#FFFFFF',
@@ -156,7 +156,7 @@ const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: "#ACACBE",
+          color: "#DEF2F1",
           fontFamily: "Söhне, Arial, sans-serif",
         },
       },

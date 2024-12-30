@@ -25,6 +25,8 @@ import {
   Box,
   Typography,
   Modal,
+  Tooltip,
+  ListItemButton,
 } from "@mui/material";
 import RunningJobs from "./components/RunningJobs";
 import CompletedJobs from "./components/CompletedJobs";
@@ -75,7 +77,10 @@ export function Layout() {
     const currentTime = Date.now();
     const thirtyMinutes = 30 * 60 * 1000; // 30 минут в миллисекундах
 
-    if (!lastCaptchaTime || currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes) {
+    if (
+      !lastCaptchaTime ||
+      currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes
+    ) {
       setOpenCaptchaModal(true);
       return true; // Капча требуется
     } else {
@@ -112,7 +117,7 @@ export function Layout() {
   const handleLogout = () => {
     handleMenuClose();
     logout();
-    navigate("/login");
+    navigate("/");
     localStorage.removeItem("lastCaptchaTime");
     setOpenCaptchaModal(false);
     setOpenRegistrationModal(false);
@@ -123,7 +128,7 @@ export function Layout() {
     setOpenCaptchaModal(false);
     // Сохраняем текущее время прохождения капчи
     const currentTime = Date.now();
-    localStorage.setItem('lastCaptchaTime', currentTime.toString());
+    localStorage.setItem("lastCaptchaTime", currentTime.toString());
 
     if (!isLoggedIn) {
       // Если пользователь не авторизован, после капчи открываем модальное окно регистрации
@@ -139,7 +144,7 @@ export function Layout() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "#000000",
+          backgroundColor: "#0C0C0C",
           borderBottom: "1px solid #353740",
         }}
       >
@@ -149,7 +154,14 @@ export function Layout() {
             noWrap
             component={Link}
             to="/"
-            sx={{ textDecoration: "none", color: "#FFFFFF" }}
+            sx={{
+              textDecoration: "none",
+
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "translateY(-2px)",
+              },
+            }}
           >
             Platform
           </Typography>
@@ -157,9 +169,11 @@ export function Layout() {
 
           {isLoggedIn && (
             <>
-              <IconButton onClick={handleAvatarClick} color="inherit">
-                <Avatar alt={user?.username} src={user?.avatarUrl} />
-              </IconButton>
+              <Tooltip title={user?.username || "Пользователь"}>
+                <IconButton onClick={handleAvatarClick} color="inherit">
+                  <Avatar alt={user?.username} src={user?.avatarUrl} />
+                </IconButton>
+              </Tooltip>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -173,7 +187,9 @@ export function Layout() {
                   horizontal: "right",
                 }}
               >
-                <MenuItem onClick={handleLogout}>Выйти</MenuItem>
+                <MenuItem sx={{ color: "red" }} onClick={handleLogout}>
+                  Выйти
+                </MenuItem>
               </Menu>
             </>
           )}
@@ -188,7 +204,7 @@ export function Layout() {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            backgroundColor: "#000000",
+            backgroundColor: "#0C0C0C",
           },
         }}
       >
@@ -209,45 +225,57 @@ export function Layout() {
             </Box>
           )}
           {/* Список элементов меню */}
-          <ListItem
-            button
-            component={Link}
-            to="/running-jobs"
-            selected={location.pathname === "/running-jobs"}
-          >
-            <ListItemText primary="Running Jobs" />
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/running-jobs"
+              selected={
+                location.pathname === "/running-jobs" ||
+                location.pathname === "/"
+              }
+            >
+              <ListItemText primary="Running Jobs" />
+            </ListItemButton>
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to="/completed-jobs"
-            selected={location.pathname === "/completed-jobs"}
-          >
-            <ListItemText primary="Completed Jobs" />
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/completed-jobs"
+              selected={location.pathname === "/completed-jobs"}
+            >
+              <ListItemText primary="Completed Jobs" />
+            </ListItemButton>
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to="/billing"
-            selected={location.pathname === "/billing"}
-          >
-            <ListItemText primary="Billing" />
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/billing"
+              selected={location.pathname === "/billing"}
+            >
+              <ListItemText primary="Billing" />
+            </ListItemButton>
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to="/api-keys"
-            selected={location.pathname === "/api-keys"}
-          >
-            <ListItemText primary="API Keys" />
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/api-keys"
+              selected={location.pathname === "/api-keys"}
+            >
+              <ListItemText primary="API Keys" />
+            </ListItemButton>
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to="/settings"
-            selected={location.pathname === "/settings"}
-          >
-            <ListItemText primary="Settings" />
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/settings"
+              selected={location.pathname === "/settings"}
+            >
+              <ListItemText primary="Settings" />
+            </ListItemButton>
           </ListItem>
         </List>
       </Drawer>
@@ -260,6 +288,7 @@ export function Layout() {
           width: "100%",
           maxHeight: "100vh",
           backgroundColor: "#202123",
+          padding: "40px",
         }}
       >
         <Toolbar />
@@ -314,8 +343,8 @@ export function Layout() {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} /> */}
           <Route path="/auth/callback" element={<AuthCallback />} />
         </Routes>
 

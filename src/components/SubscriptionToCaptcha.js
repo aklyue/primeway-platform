@@ -1,14 +1,13 @@
-// SubscriptionToCaptcha.jsx
-
 import React from "react";
 import { SmartCaptcha } from "@yandex/smart-captcha";
 import { Modal, Box, Typography } from "@mui/material";
 
-export const SubscriptionToCaptcha = ({ onSuccess, open, onClose }) => {
+export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={() => {}}
+      disableEscapeKeyDown
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
       BackdropProps={{
@@ -45,7 +44,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open, onClose }) => {
           }}
         >
           <SmartCaptcha
-            sitekey="ysc1_gqgKVnVKv2a4UJDjpKdVoIEJ7A13CfJRYEJsBwma03ab7254" // Замените на ваш реальный sitekey
+            sitekey="ysc1_gqgKVnVKv2a4UJDjpKdVoIEJ7A13CfJRYEJsBwma03ab7254"
             onSuccess={onSuccess}
           />
         </Box>

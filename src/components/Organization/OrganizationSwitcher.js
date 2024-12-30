@@ -64,7 +64,7 @@ const OrganizationSwitcher = () => {
           }}
         >
           {/* Иконка перед текстом */}
-          <BusinessIcon sx={{ mr: 1, fontSize: "20px", color:'#ACACBE' }} />
+          <BusinessIcon sx={{ mr: 1, fontSize: "20px", }} />
 
           {/* Контейнер с вертикальным расположением текста */}
           <Box
@@ -112,7 +112,7 @@ const OrganizationSwitcher = () => {
             onClick={() => handleOrganizationSelect(org)}
           >
             <ListItemIcon>
-              <BusinessIcon fontSize="small" />
+              <BusinessIcon fontSize="small" sx={{color:'text.primary'}} />
             </ListItemIcon>
             <ListItemText>{org.name}</ListItemText>
           </MenuItem>

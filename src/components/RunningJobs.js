@@ -206,13 +206,13 @@ function RunningJobs() {
   }
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box>
       <Typography variant="h4" gutterBottom>
         Running Jobs
       </Typography>
       {currentOrganization && (
         <Typography variant="h5" gutterBottom>
-          Running Jobs for {currentOrganization.name}
+          Running Jobs for <Box component="span" sx={{color:'secondary.main'}}>{currentOrganization.name}</Box>
         </Typography>
       )}
       <Box
@@ -225,12 +225,12 @@ function RunningJobs() {
         {runningJobs.map((job) => (
           <Card
             key={job.job_id}
-            sx={{ width: "100%", boxShadow: 3, borderRadius: 2 }}
+            sx={{ width: "100%", boxShadow: 4, borderRadius: 2 }}
           >
             {/* Each card takes full width */}
             <CardContent>
               <Typography variant="h6" component="div">
-                {job.job_id}
+              <Box component="span" sx={{color:'secondary.main'}}>{job.job_id}</Box>
               </Typography>
 
               <Box
@@ -247,7 +247,7 @@ function RunningJobs() {
                   <Typography color="textSecondary">
                     Created at: {new Date(job.createdAt).toLocaleString()}
                   </Typography>
-                  <Typography>GPU Type: {job.gpu_type}</Typography>
+                  <Typography>GPU Type: <Box component="span" sx={{color:'secondary.main'}}>{job.gpu_type}</Box></Typography>
                 </Box>
 
                 {/* Column 2 */}
@@ -272,7 +272,6 @@ function RunningJobs() {
             <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
               <Button
                 variant="outlined"
-                
                 onClick={() => handleOpenModal(job.job_id)}
                 startIcon={<LogsIcon />}
               >
@@ -282,6 +281,11 @@ function RunningJobs() {
                 color="secondary"
                 onClick={() => handleOpenDialog(job.job_id)}
                 aria-label="terminate"
+                sx={{
+                  "&:hover": {
+                    background: "rgba(0,0,0,0.1)",
+                  },
+                }}
               >
                 <DeleteIcon />
               </IconButton>
@@ -305,7 +309,7 @@ function RunningJobs() {
             sx={{
               maxHeight: "300px",
               overflowY: "auto",
-              backgroundColor: "background.default",
+              background: "background.default",
               padding: "16px",
               marginTop: "16px",
               borderRadius: "4px",

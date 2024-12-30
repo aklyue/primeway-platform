@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Box, Typography, Button, TextField } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -26,11 +26,21 @@ ChartJS.register(
 function Billing() {
   const { user, authToken: token } = useContext(AuthContext); // Получаем данные пользователя из контекста
   const [walletBalance, setWalletBalance] = useState(1000); // Баланс кошелька
-  const [addFunds, setAddFunds] = useState(""); // Сумма пополнения
-  const [currentMonth, setCurrentMonth] = useState("Сентябрь");
-  const [orderId, setOrderId] = useState(""); // ID платежа
-  const [paymentData, setPaymentData] = useState(null); // Данные для платежа
-  const [loading, setLoading] = useState(false); // Индикатор загрузки
+  const [currentMonth] = useState("Сентябрь");
+
+  // Обработчик успешной оплаты
+  const handlePaymentSuccess = (paymentResult) => {
+    console.log("Оплата успешна:", paymentResult);
+    // Здесь вы можете обновить баланс кошелька или выполнить другие действия
+    // Например, обновить баланс:
+    // setWalletBalance((prev) => prev + parseFloat(paymentResult.Amount) / 100);
+  };
+
+  // Обработчик ошибки оплаты
+  const handlePaymentError = (error) => {
+    console.error("Ошибка оплаты:", error);
+    alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
+  };
 
   const spendingData = {
     labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()), // Дни месяца
@@ -46,80 +56,6 @@ function Billing() {
         borderWidth: 1,
       },
     ],
-  };
-
-  // Функция для создания оплаты на сервере
-  const createPaymentOnBackend = async (amount) => {
-    try {
-      setLoading(true);
-      const response = await fetch('https://api.primeway.io/tbank/inner/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Если требуется авторизация, раскомментируйте следующую строку
-          // 'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          billing_account_id: user?.billing_account_id || '',
-          organization_id: user?.organization_id || '',
-          user_id: user?.id || '',
-          credits: amount,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result?.orderId) {
-        setOrderId(result.orderId);
-        return result.orderId;
-      } else {
-        throw new Error(result.message || 'Ошибка при создании оплаты.');
-      }
-    } catch (error) {
-      console.error('Ошибка создания оплаты:', error);
-      alert('Ошибка при создании оплаты: ' + error.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Обработчик создания и начала оплаты
-  const handleStartPayment = async () => {
-    const amount = parseFloat(addFunds);
-    if (!amount || isNaN(amount) || amount < 1) {
-      alert("Пожалуйста, введите сумму не менее 1 рубля.");
-      return;
-    }
-
-    // Создание оплаты на сервере
-    const createdOrderId = await createPaymentOnBackend(amount);
-
-    if (createdOrderId) {
-      // Устанавливаем данные для TPaymentWidget
-      setPaymentData({
-        amount: amount * 100, // Сумма в копейках
-        description: "Пополнение кошелька",
-        email: user?.email || "",
-        phone: user?.phone || "",
-        orderId: createdOrderId,
-      });
-    }
-  };
-
-  // Обработчик успешной оплаты
-  const handlePaymentSuccess = (paymentResult) => {
-    console.log("Оплата успешна:", paymentResult);
-    // setWalletBalance((prev) => prev + parseFloat(addFunds)); // Обновляем баланс кошелька
-    setAddFunds("");
-
-    
-  };
-
-  // Обработчик ошибки оплаты
-  const handlePaymentError = (error) => {
-    console.error("Ошибка оплаты:", error);
-    alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
   };
 
   return (
@@ -143,46 +79,16 @@ function Billing() {
             {walletBalance} ₽
           </Box>
         </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "16px",
-            marginTop: "16px",
-          }}
-        >
-          <TextField
-            type="number"
-            label="Сумма пополнения"
-            value={addFunds}
-            onChange={(e) => setAddFunds(e.target.value)}
-            InputProps={{ inputProps: { min: 1, step: 1 } }}
-            helperText="Минимальная сумма: 1 ₽"
-          />
-          <Button
-            sx={{ height: '50px', backgroundColor: "#FFDD2D" }}
-            variant="contained"
-            color="primary"
-            onClick={handleStartPayment}
-            disabled={!addFunds || parseFloat(addFunds) < 1 || loading}
-          >
-            {loading ? "Создание оплаты..." : "Пополнить"}
-          </Button>
-        </Box>
+        {/* Поле суммы и кнопка перемещены в TPaymentWidget */}
       </Box>
 
       {/* Виджет оплаты */}
-      {paymentData && (
-        <TPaymentWidget
-          amount={paymentData.amount}
-          description={paymentData.description}
-          email={paymentData.email}
-          phone={paymentData.phone}
-          orderId={paymentData.orderId}
-          onSuccess={handlePaymentSuccess}
-          onError={handlePaymentError}
-        />
-      )}
+      <TPaymentWidget
+        user={user}
+        token={token}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
+      />
 
       <Box
         sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}

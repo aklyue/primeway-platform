@@ -1,6 +1,6 @@
 // AuthContext.js
-import React, { createContext, useState, useEffect } from "react";
-import axios from "./axios.js"; // Ваш настроенный экземпляр axios
+import React, { createContext, useState, useEffect } from 'react';
+import axios from './axios.js'; // Ваш настроенный экземпляр axios
 
 export const AuthContext = createContext();
 
@@ -13,10 +13,10 @@ const AuthProvider = ({ children }) => {
   // Function to fetch user data
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem('auth_token');
       if (token) {
         // Запрос к бэкенду для получения данных пользователя
-        const response = await axios.get("/user/profile", {
+        const response = await axios.get('/user/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -30,9 +30,9 @@ const AuthProvider = ({ children }) => {
         setIsLoggedIn(false);
       }
     } catch (error) {
-      console.error("Ошибка при получении данных пользователя:", error);
+      console.error('Ошибка при получении данных пользователя:', error);
       // Если ошибка (например, токен недействителен), очищаем данные
-      localStorage.removeItem("auth_token");
+      localStorage.removeItem('auth_token');
       setUser(null);
       setAuthToken(null);
       setIsLoggedIn(false);
@@ -45,25 +45,23 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   // Функция для входа пользователя (устанавливает токен и данные пользователя)
-  const login = (token, userData) => {
-    setAuthToken(token);
-    setUser(userData);
-    setIsLoggedIn(true);
-    localStorage.setItem("auth_token", token);
-  };
+const login = (token, userData) => {
+  setAuthToken(token);
+  setUser(userData);
+  setIsLoggedIn(true);
+  localStorage.setItem('auth_token', token);
+};
 
   // Функция для выхода пользователя (удаляет токен)
   const logout = () => {
-    localStorage.removeItem("auth_token");
+    localStorage.removeItem('auth_token');
     setUser(null);
     setAuthToken(null);
     setIsLoggedIn(false);
   };
 
   return (
-    <AuthContext.Provider
-      value={{ isLoggedIn, user, login, logout, authToken }}
-    >
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, authToken }}>
       {children}
     </AuthContext.Provider>
   );

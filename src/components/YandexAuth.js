@@ -4,10 +4,8 @@ import { AuthContext } from '../AuthContext';
 
 const YandexAuth = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, authToken } = useContext(AuthContext);
   const isInitialized = useRef(false);
-
-  const authToken = localStorage.getItem('auth_token');
 
   useEffect(() => {
     if (authToken) {
@@ -24,60 +22,89 @@ const YandexAuth = () => {
         return;
       }
 
-
-      if (!window.YaAuthSuggest) {
-        console.error('YaAuthSuggest is not loaded');
-        return;
-      }
-
-      isInitialized.current = true;
-
-      window.YaAuthSuggest.init(
-        {
-          client_id: '2bd62af38e644a86968d1b791431d881',
-          response_type: 'token',
-          redirect_uri: 'https://platform.primeway.io/auth/callback',
-        },
-        'https://platform.primeway.io',
-        {
-          view: 'button',
-          parentId: 'yandex-auth-container',
-          buttonView: 'main',
-          buttonTheme: 'dark',
-          buttonSize: 'm',
-          buttonBorderRadius: '20',
-          buttonIcon: 'yaEng',
-        }
-      )
-        .then(({ handler }) => handler())
-        .then((data) => {
-          console.log('Auth data:', data);
-          if (data.access_token) {
-            fetch('https://api.primeway.io/auth/yandex', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ token: data.access_token }),
-            })
-              .then((response) => response.json())
-              .then((userData) => {
-                const token = userData.jwt_token;
-                const user = userData.user;
-                login(token, user);
-                navigate('/running-jobs');
-              })
-              .catch((error) => {
-                console.error('Error fetching user data:', error);
-              });
+      // Загружаем скрипт YaAuthSuggest, если он не загружен
+      const loadYaAuthSuggestScript = () => {
+        return new Promise((resolve, reject) => {
+          if (window.YaAuthSuggest) {
+            resolve();
+            return;
           }
+          const script = document.createElement('script');
+          script.src =
+            'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-latest.js';
+          script.async = true;
+          script.onload = () => {
+            resolve();
+          };
+          script.onerror = () => {
+            reject(new Error('Не удалось загрузить скрипт YaAuthSuggest'));
+          };
+          document.body.appendChild(script);
+        });
+      };
+
+      loadYaAuthSuggestScript()
+        .then(() => {
+          if (!window.YaAuthSuggest) {
+            console.error('YaAuthSuggest не доступен после загрузки скрипта');
+            return;
+          }
+
+          isInitialized.current = true;
+
+          window.YaAuthSuggest.init(
+            {
+              client_id: '2bd62af38e644a86968d1b791431d881',
+              response_type: 'token',
+              redirect_uri: 'https://platform.primeway.io/auth/callback',
+            },
+            'https://platform.primeway.io',
+            {
+              view: 'button',
+              parentId: 'yandex-auth-container',
+              buttonView: 'main',
+              buttonTheme: 'dark',
+              buttonSize: 'm',
+              buttonBorderRadius: '20',
+              buttonIcon: 'yaEng',
+            }
+          )
+            .then(({ handler }) => handler())
+            .then((data) => {
+              console.log('Auth data:', data);
+              if (data.access_token) {
+                fetch('https://api.primeway.io/auth/yandex', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ token: data.access_token }),
+                })
+                  .then((response) => response.json())
+                  .then((userData) => {
+                    console.log('Полученные данные пользователя:', userData);
+                    const token = userData.jwt_token;
+                    const user = userData.user;
+                    login(token, user);
+                    navigate('/running-jobs');Ы
+                  })
+                  .catch((error) => {
+                    console.error('Ошибка получения данных пользователя:', error);
+                  });
+              } else {
+                console.error('Не удалось получить access_token');
+              }
+            })
+            .catch((error) => {
+              if (error.code === 'in_progress') {
+                console.warn('Инициализация уже выполняется.');
+              } else {
+                console.error('Ошибка аутентификации:', error);
+              }
+            });
         })
         .catch((error) => {
-          if (error.code === 'in_progress') {
-            console.warn('Initialization is already in progress.');
-          } else {
-            console.error('Auth error:', error);
-          }
+          console.error('Не удалось загрузить скрипт YaAuthSuggest:', error);
         });
     }
   }, [authToken, login, navigate]);

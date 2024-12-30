@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Box, TextField } from "@mui/material";
 
 function TPaymentWidget(props) {
-  const { amount, description, email, phone, orderId, onSuccess, onError } =
-    props;
+  const { user, token, onSuccess, onError } = props;
+  const [addFunds, setAddFunds] = useState(""); // Сумма пополнения
+  const [orderId, setOrderId] = useState(""); // ID платежа
+  const [loading, setLoading] = useState(false); // Индикатор загрузки
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -23,82 +25,146 @@ function TPaymentWidget(props) {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  // Функция для создания оплаты на сервере
+  const createPaymentOnBackend = async (amount) => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://api.primeway.io/tbank/inner/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Если требуется авторизация, раскомментируйте следующую строку
+          // 'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          billing_account_id: user?.billing_account_id || '',
+          user_id: user?.id || '',
+          credits: amount,
+        }),
+      });
+      console.log('User в TPaymentWidget:', user);
+      console.log('billing_account_id:', user?.billing_account_id);
+      const result = await response.json();
+
+      if (response.ok && result?.orderId) {
+        setOrderId(result.orderId);
+        return result.orderId;
+      } else {
+        throw new Error(result.message || 'Ошибка при создании оплаты.');
+      }
+    } catch (error) {
+      console.error('Ошибка создания оплаты:', error);
+      alert('Ошибка при создании оплаты: ' + error.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartPayment = async (e) => {
     e.preventDefault();
+
+    const amount = parseFloat(addFunds);
     if (!amount || isNaN(amount) || amount < 1) {
-      alert("Пожалуйста, введите сумму не менее 1 рубля для пополнения.");
+      alert("Пожалуйста, введите сумму не менее 1 рубля.");
       return;
     }
 
-    const completeCallback = (paymentResult) => {
-      if (paymentResult.Success) {
-        // Обработка успешного платежа
-        if (onSuccess) {
-          onSuccess(paymentResult);
-        }
-        // Перенаправление пользователя
-      } else {
-        // Обработка ошибки платежа
-        if (onError) {
-          onError(paymentResult);
-        }
-      }
-    };
+    // Создание оплаты на бэкенде
+    const createdOrderId = await createPaymentOnBackend(amount);
 
-    if (window.pay && formRef.current) {
-      try {
-        window.pay(formRef.current, {
-          completeCallback,
-        });
-      } catch (error) {
-        console.error("Ошибка при инициации платежа:", error);
-        if (onError) {
-          onError(error);
+    if (createdOrderId) {
+      // Обновляем значение orderId в форме
+      if (formRef.current) {
+        const orderIdInput = formRef.current.querySelector('input[name="OrderId"]');
+        if (orderIdInput) {
+          orderIdInput.value = createdOrderId;
         }
       }
-    } else {
-      console.error("Функция pay недоступна");
+
+      // Запускаем платеж через Tinkoff Pay
+      if (window.pay && formRef.current) {
+        try {
+          window.pay(formRef.current, {
+            completeCallback: (paymentResult) => {
+              if (paymentResult.Success) {
+                // Платеж успешен
+                if (onSuccess) {
+                  onSuccess(paymentResult);
+                }
+              } else {
+                // Платеж неуспешен
+                if (onError) {
+                  onError(paymentResult);
+                }
+              }
+            },
+          });
+        } catch (error) {
+          console.error("Ошибка при инициации платежа:", error);
+          if (onError) {
+            onError(error);
+          }
+        }
+      } else {
+        console.error("Функция pay недоступна");
+      }
     }
   };
 
   return (
     <form
       ref={formRef}
-      onSubmit={handleSubmit}
+      onSubmit={handleStartPayment}
       className="payform-tbank"
     >
       <input type="hidden" name="terminalkey" value="1734697526905DEMO" />
       <input type="hidden" name="frame" value="false" />
       <input type="hidden" name="language" value="ru" />
-      <input type="hidden" name="amount" value={amount} />
-      <input type="hidden" name="description" value={description} />
-      {orderId && <input type="hidden" name="OrderId" value={orderId} />}
-      {email && <input type="hidden" name="email" value={email} />}
-      {phone && <input type="hidden" name="phone" value={phone} />}
-      {/* <input type="hidden" name="SuccessURL" value="/" />
-      <input type="hidden" name="FailURL" value="/" /> */}
-      <button
-        style={{
-          width: "100%",
-          minHeight: '50px',
-          backgroundColor: "#FFDD2D", //#fab619
-          color: "#333",
-          fontSize: '15px',
-          padding: "6px 12px",
-          borderRadius: "10px",
-          border: "none",
-          cursor: "pointer",
-          display:'flex',
-          justifyContent:'center',
-          alignItems:'center',
+      <input type="hidden" name="amount" value={parseFloat(addFunds) * 100} />
+      <input type="hidden" name="description" value="Пополнение кошелька" />
+      <input type="hidden" name="OrderId" value={orderId} />
+      {user?.email && <input type="hidden" name="email" value={user.email} />}
+      {user?.phone && <input type="hidden" name="phone" value={user.phone} />}
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "16px",
+          marginTop: "16px",
         }}
-        type="submit"
-        className="payform-tbank-btn"
       >
-        Оплатить c 
-        <img width={80} height={40} src="./tbank.svg" alt="Tbank" />
-        
-      </button>
+        <TextField
+          type="number"
+          label="Сумма пополнения"
+          value={addFunds}
+          onChange={(e) => setAddFunds(e.target.value)}
+          InputProps={{ inputProps: { min: 1, step: 1 } }}
+          helperText="Минимальная сумма: 1 ₽"
+        />
+        <button
+          style={{
+            height: '50px',
+            backgroundColor: "#FFDD2D", //#fab619
+            color: "#333",
+            fontSize: '15px',
+            padding: "6px 12px",
+            borderRadius: "10px",
+            border: "none",
+            cursor: "pointer",
+            display:'flex',
+            justifyContent:'center',
+            alignItems:'center',
+          }}
+          type="submit"
+          className="payform-tbank-btn"
+          disabled={loading}
+        >
+          {loading ? "Создание оплаты..." : "Оплатить c "}
+          <img width={80} height={40} src="./tbank.svg" alt="Tbank" />
+        </button>
+      </Box>
     </form>
   );
 }

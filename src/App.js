@@ -1,5 +1,3 @@
-// Layout.js
-
 import React, { useContext, useState, useEffect } from "react";
 import {
   Routes,
@@ -33,8 +31,6 @@ import CompletedJobs from "./components/CompletedJobs";
 import Billing from "./components/Billing";
 import ApiKeys from "./components/ApiKeys";
 import Settings from "./components/Settings";
-import Register from "./components/Register";
-import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./AuthContext";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
@@ -43,8 +39,6 @@ import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
-// Удалили ошибочный импорт:
-// import { Router } from "express";
 
 const drawerWidth = 240;
 
@@ -174,7 +168,7 @@ export function Layout() {
             <>
               <Tooltip title={user?.username || "Пользователь"}>
                 <IconButton onClick={handleAvatarClick} color="inherit">
-                  <Avatar alt={user?.username} src={user?.avatarUrl} />
+                  <Avatar alt={user?.username} src={user?.avatar_url} />
                 </IconButton>
               </Tooltip>
               <Menu

@@ -72,16 +72,19 @@ function TPaymentWidget(props) {
 
     // Создание оплаты на бэкенде
     const createdOrderId = await createPaymentOnBackend(amount);
+    console.log("createdOrderId", createdOrderId)
 
     if (createdOrderId) {
       // Обновляем значение orderId в форме
       if (formRef.current) {
-        const orderIdInput = formRef.current.querySelector('input[name="OrderId"]');
+        const orderIdInput = formRef.current.querySelector('input[name="order"]');
+        console.log("orderIdInput", orderIdInput)
         if (orderIdInput) {
           orderIdInput.value = createdOrderId;
         }
       }
 
+      
       // Запускаем платеж через Tinkoff Pay
       if (window.pay && formRef.current) {
         try {
@@ -90,6 +93,7 @@ function TPaymentWidget(props) {
               if (paymentResult.Success) {
                 // Платеж успешен
                 if (onSuccess) {
+                  console.log("paymentResult", paymentResult)
                   onSuccess(paymentResult);
                 }
               } else {
@@ -112,6 +116,7 @@ function TPaymentWidget(props) {
     }
   };
 
+  console.log("orderId", orderId)
   return (
     <form
       ref={formRef}
@@ -123,7 +128,7 @@ function TPaymentWidget(props) {
       <input type="hidden" name="language" value="ru" />
       <input type="hidden" name="amount" value={parseFloat(addFunds) * 100} />
       <input type="hidden" name="description" value="Пополнение кошелька" />
-      <input type="hidden" name="OrderId" value={orderId} />
+      <input type="hidden" name="order" value={orderId} />
       {user?.email && <input type="hidden" name="email" value={user.email} />}
       {user?.phone && <input type="hidden" name="phone" value={user.phone} />}
 

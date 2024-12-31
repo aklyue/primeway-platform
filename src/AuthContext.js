@@ -1,6 +1,6 @@
 // AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
-import axios from './axios.js'; // Ваш настроенный экземпляр axios
+import api from './api.js'; // Ваш настроенный экземпляр axios
 
 export const AuthContext = createContext();
 
@@ -15,13 +15,9 @@ const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (token) {
-        // Запрос к бэкенду для получения данных пользователя
-        const response = await axios.get('/user/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUser(response.data.user); // Предполагается, что данные пользователя в response.data.user
+        const response = await api.get('/auth/me');
+        console.log("fetchUserData response", response)
+        setUser(response.data);
         setAuthToken(token);
         setIsLoggedIn(true);
       } else {

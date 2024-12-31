@@ -86,7 +86,7 @@ const YandexAuth = () => {
                     const token = userData.jwt_token;
                     const user = userData.user;
                     login(token, user);
-                    navigate('/running-jobs');Ы
+                    navigate('/running-jobs');
                   })
                   .catch((error) => {
                     console.error('Ошибка получения данных пользователя:', error);

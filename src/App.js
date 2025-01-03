@@ -12,12 +12,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
   Toolbar,
   IconButton,
   Avatar,
-  Menu,
-  MenuItem,
   CssBaseline,
   AppBar,
   Box,
@@ -34,12 +31,12 @@ import Settings from "./components/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./AuthContext";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
-import CreateOrganization from "./components/Organization/CreateOrganization";
 import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
+import Snowfall from "react-snowfall";
 
 const drawerWidth = 240;
 
@@ -49,7 +46,7 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 600,
-  bgcolor: "#1e1e1e",
+  bgcolor: "#e3e3e3",
   border: "2px solid #000",
   boxShadow: 24,
   borderRadius: "10px",
@@ -57,17 +54,22 @@ const modalStyle = {
 };
 
 export function Layout() {
-  const { isLoggedIn, user, logout } = useContext(AuthContext);
+  const {
+    isLoggedIn,
+    user,
+    openCaptchaModal,
+    setOpenCaptchaModal,
+    openRegistrationModal,
+    setOpenRegistrationModal,
+    loading, // Получаем состояние загрузки
+  } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  // Состояния для управления модальными окнами
-  const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
-  const [openCaptchaModal, setOpenCaptchaModal] = useState(false);
 
   useEffect(() => {
-    setOpenRegistrationModal(!isLoggedIn);
+    if (!loading) {
+      setOpenRegistrationModal(!isLoggedIn);
+    }
   }, [isLoggedIn]);
 
   const checkCaptcha = () => {
@@ -103,22 +105,25 @@ export function Layout() {
       setOpenRegistrationModal(false);
     }
   }, [isLoggedIn, location]);
+  if (loading) {
+    // Отображаем плейсхолдер или спиннер
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          height: "100vh",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6">Загрузка...</Typography>
+      </Box>
+    );
+  }
 
-  const handleAvatarClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    handleMenuClose();
-    logout();
-    navigate("/");
-    localStorage.removeItem("lastCaptchaTime");
-    setOpenCaptchaModal(false);
-    setOpenRegistrationModal(false);
+  const handleAvatarClick = () => {
+    navigate("/billing");
   };
 
   // Обработчик успешного прохождения капчи
@@ -135,15 +140,23 @@ export function Layout() {
   };
 
   return (
-    <Box sx={{ display: "flex", width: "100%", height: "100%" }}>
+    
+    <Box
+      sx={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#F5F5F5",
+      }}
+    >
       <CssBaseline />
-
+      <Snowfall color="#d1d1dc" snowflakeCount={120} style={{ zIndex: 10000 }} />
       <AppBar
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "#0C0C0C",
-          borderBottom: "1px solid #353740",
+          backgroundColor: "#F5F5F5",
+          // borderBottom: "1px solid #353740",
         }}
       >
         <Toolbar>
@@ -172,23 +185,6 @@ export function Layout() {
                   <Avatar alt={user?.username} src={user?.avatar_url} />
                 </IconButton>
               </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem sx={{ color: "red" }} onClick={handleLogout}>
-                  Выйти
-                </MenuItem>
-              </Menu>
             </>
           )}
         </Toolbar>
@@ -202,12 +198,13 @@ export function Layout() {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            backgroundColor: "#0C0C0C",
+            backgroundColor: "#F5F5F5",
+            border: "none",
           },
         }}
       >
         <Toolbar />
-        <Divider />
+
         <List>
           {isLoggedIn && (
             <Box
@@ -293,12 +290,16 @@ export function Layout() {
           flexGrow: 1,
           p: 3,
           width: "100%",
-          maxHeight: "100vh",
-          backgroundColor: "#202123",
+          mr: "15px",
+          ml: "5px",
+          minHeight: "90vh",
+          backgroundColor: "#FFFFFF",
           padding: "40px",
+          marginTop: "60px",
+          borderRadius: "20px",
         }}
       >
-        <Toolbar />
+        {/* <Toolbar /> */}
         <Routes>
           {/* Ваши маршруты */}
           <Route
@@ -411,10 +412,12 @@ export function Layout() {
 function App() {
   return (
     <AuthProvider>
+      
       <OrganizationProvider>
-          <Router>
-            <Layout />
-          </Router>
+        <Router>
+          <Layout />
+          
+        </Router>
       </OrganizationProvider>
     </AuthProvider>
   );

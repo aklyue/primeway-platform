@@ -123,10 +123,10 @@ function TPaymentWidget(props) {
       onSubmit={handleStartPayment}
       className="payform-tbank"
     >
-      <input type="hidden" name="terminalkey" value="1734697526905DEMO" />
+      <input type="hidden" name="terminalkey" value={process.env.REACT_APP_TINKOFF_TERMINAL_KEY} />
       <input type="hidden" name="frame" value="false" />
       <input type="hidden" name="language" value="ru" />
-      <input type="hidden" name="amount" value={parseFloat(addFunds) * 100} />
+      <input type="hidden" name="amount" value={parseFloat(addFunds)} />
       <input type="hidden" name="description" value="Пополнение кошелька" />
       <input type="hidden" name="order" value={orderId} />
       {user?.email && <input type="hidden" name="email" value={user.email} />}

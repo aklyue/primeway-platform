@@ -13,6 +13,7 @@ const YandexAuth = () => {
       navigate('/running-jobs');
     } else {
       if (isInitialized.current) {
+        
         return;
       }
 

@@ -43,6 +43,7 @@ const OrganizationSwitcher = () => {
           border: "1px solid #353740",
           borderRadius: "10px",
           ml: "2px",
+          mr:'4px'
         }}
       >
         <Button

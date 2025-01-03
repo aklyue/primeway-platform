@@ -11,7 +11,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
       BackdropProps={{
-        style: { backgroundColor: "#202123" },
+        style: { backgroundColor: "#FFFFFF" },
       }}
     >
       <Box
@@ -24,7 +24,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
           color: "#fff",
           outline: "none",
           borderRadius: "10px",
-          backgroundColor: "#202123",
+          backgroundColor: "#FFFFFF",
           p: 4,
         }}
       >
@@ -32,7 +32,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
           id="modal-title"
           variant="h5"
           component="h2"
-          sx={{ textAlign: "center", color: "white" }}
+          sx={{ textAlign: "center" }}
         >
           Подтвердите, что вы не робот
         </Typography>

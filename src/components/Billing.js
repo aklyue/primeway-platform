@@ -1,5 +1,19 @@
+// Billing.js
+
 import React, { useState, useContext, useEffect } from "react";
-import { Box, Typography, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress, // Добавлено для индикаторов загрузки
+} from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -22,27 +36,46 @@ function Billing() {
   const { currentOrganization, isCurrentOrgOwner } = useContext(OrganizationContext);
 
   // Wallet/balance
-  const [walletBalance, setWalletBalance] = useState(1000);
+  const [walletBalance, setWalletBalance] = useState(null); // Изначально баланс неизвестен
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [errorBalance, setErrorBalance] = useState(null);
+
   const [currentMonth] = useState("Сентябрь");
-  
+
   // **New state for transactions history**
   const [transactions, setTransactions] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [errorTransactions, setErrorTransactions] = useState(null);
 
-  // Fetch transaction history when currentOrganization changes
+  // Fetch wallet balance and transaction history when currentOrganization changes
   useEffect(() => {
     if (currentOrganization && isCurrentOrgOwner()) {
+      // Загрузка баланса кошелька
+      setIsLoadingBalance(true);
+      setErrorBalance(null);
+
+      // Замените этот URL на ваш реальный эндпоинт
+      axiosInstance
+        .get(`/billing/${user.billing_account_id}/balance`)
+        .then((response) => {
+          setWalletBalance(response.data.balance);
+        })
+        .catch((error) => {
+          setErrorBalance(error?.response?.data?.detail || error.message);
+        })
+        .finally(() => {
+          setIsLoadingBalance(false);
+        });
+
+      // Загрузка истории транзакций
       setIsLoadingTransactions(true);
       setErrorTransactions(null);
-      console.log("currentOrganization", currentOrganization)
-      console.log("user", user)
 
-      // Replace this URL with your actual endpoint
+      // Замените этот URL на ваш реальный эндпоинт
       axiosInstance
         .get(`/billing/${user.billing_account_id}/transactions`)
         .then((response) => {
-          setTransactions(response.data);
+          setTransactions(response.data.transactions || []);
         })
         .catch((error) => {
           setErrorTransactions(error?.response?.data?.detail || error.message);
@@ -50,13 +83,15 @@ function Billing() {
         .finally(() => {
           setIsLoadingTransactions(false);
         });
-      }
-  }, [currentOrganization, isCurrentOrgOwner]);
+    }
+  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id]);
 
   // Handle payment result
   const handlePaymentSuccess = (paymentResult) => {
     console.log("Оплата успешна:", paymentResult);
-    // You might want to trigger a transactions refetch here or update state
+    // Вы можете обновить баланс и историю транзакций здесь
+    // Например, вызвать повторно загрузку данных
+   
   };
 
   const handlePaymentError = (error) => {
@@ -86,7 +121,7 @@ function Billing() {
     return (
       <Box sx={{ padding: "16px" }}>
         <Alert severity="info">
-          Please select an organization to view billing information.
+          Пожалуйста, выберите организацию для просмотра информации о биллинге.
         </Alert>
       </Box>
     );
@@ -95,13 +130,13 @@ function Billing() {
   // If user is not the owner
   if (!isCurrentOrgOwner()) {
     return (
-      <Box sx={{ padding: "16px" }}>
+      <Box>
         <Typography variant="h4" gutterBottom>
-          Billing and Wallet
+          Биллинг и Кошелек
         </Typography>
         <Alert severity="info" sx={{ mt: 2 }}>
-          The billing account for {currentOrganization.name} is managed by the organization owner. 
-          Please contact your organization administrator for any billing-related questions.
+          Биллинг для {currentOrganization.name} управляется владельцем организации.
+          Пожалуйста, свяжитесь с администратором организации по любым вопросам, связанным с биллингом.
         </Alert>
       </Box>
     );
@@ -109,9 +144,9 @@ function Billing() {
 
   // If user is the owner, show full billing interface
   return (
-    <Box sx={{ padding: "16px" }}>
+    <Box>
       <Typography variant="h4" gutterBottom>
-        Billing and Wallet
+        Биллинг и Кошелек
       </Typography>
 
       <Box
@@ -123,12 +158,22 @@ function Billing() {
           marginBottom: "16px",
         }}
       >
-        <Typography variant="h6">
-          Баланс кошелька:{" "}
-          <Box component="span" sx={{ color: "secondary.main" }}>
-            {walletBalance} ₽
+        {isLoadingBalance ? (
+          // Плейсхолдер загрузки баланса
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CircularProgress size={24} sx={{ mr: 2 }} />
+            <Typography variant="h6">Загрузка баланса...</Typography>
           </Box>
-        </Typography>
+        ) : errorBalance ? (
+          <Alert severity="error">{errorBalance}</Alert>
+        ) : (
+          <Typography variant="h6">
+            Баланс кошелька:{" "}
+            <Box component="span" sx={{ color: "secondary.main" }}>
+              {walletBalance} ₽
+            </Box>
+          </Typography>
+        )}
       </Box>
 
       <TPaymentWidget
@@ -142,13 +187,17 @@ function Billing() {
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>
-        {isLoadingTransactions && <Typography>Loading transactions...</Typography>}
-        {errorTransactions && (
+        {isLoadingTransactions ? (
+          // Плейсхолдер загрузки транзакций
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CircularProgress size={24} sx={{ mr: 2 }} />
+            <Typography>Загрузка транзакций...</Typography>
+          </Box>
+        ) : errorTransactions ? (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
             {errorTransactions}
           </Alert>
-        )}
-        {transactions.length > 0 && (
+        ) : transactions.length > 0 ? (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -156,7 +205,7 @@ function Billing() {
                   <TableCell>Дата</TableCell>
                   <TableCell>Тип транзакции</TableCell>
                   <TableCell>Статус / Код ошибки</TableCell>
-                  <TableCell>Количество (₽ / Credits)</TableCell>
+                  <TableCell>Количество (₽ / Кредиты)</TableCell>
                   <TableCell>Ссылка (Reference)</TableCell>
                 </TableRow>
               </TableHead>
@@ -176,6 +225,8 @@ function Billing() {
               </TableBody>
             </Table>
           </TableContainer>
+        ) : (
+          <Typography>Нет транзакций для отображения.</Typography>
         )}
       </Box>
 

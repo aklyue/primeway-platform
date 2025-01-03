@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Box,
   Typography,
@@ -9,116 +8,176 @@ import {
   ListItem,
   ListItemText,
   IconButton,
+  CircularProgress, // Добавлено для индикатора загрузки
+  Alert, // Добавлено для отображения ошибок
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useOrganization } from './OrganizationContext';
-import { AuthContext } from '../../AuthContext';  // or wherever your auth context is
+import { AuthContext } from '../../AuthContext'; // или откуда ваш AuthContext
 import {
   getOrgMembers,
   addOrgMember,
-  removeOrgMember
+  removeOrgMember,
 } from '../../api.js';
 
 const OrganizationSettings = () => {
   const { currentOrganization, isCurrentOrgOwner } = useOrganization();
   const { user } = useContext(AuthContext);
-  const [members, setMembers] = useState([]);
-  const [newMemberEmail, setNewMemberEmail] = useState('');
 
-  // Fetch members whenever currentOrganization changes
+  // Состояния для членов организации, загрузки и ошибок
+  const [members, setMembers] = useState([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [errorMembers, setErrorMembers] = useState(null);
+
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [errorAddMember, setErrorAddMember] = useState(null);
+
+  const [isRemovingMember, setIsRemovingMember] = useState(false);
+  const [errorRemoveMember, setErrorRemoveMember] = useState(null);
+
+  // Загружаем членов каждый раз при изменении currentOrganization
   useEffect(() => {
     if (currentOrganization) {
       fetchMembers();
     }
   }, [currentOrganization]);
 
-  // Call API to get members for the selected organization
+  // Функция для получения членов организации
   const fetchMembers = async () => {
+    setIsLoadingMembers(true);
+    setErrorMembers(null);
     try {
       const response = await getOrgMembers(currentOrganization.id);
-      setMembers(response.data); // Ensure your API returns a list of members
+      setMembers(response.data); // Убедитесь, что ваш API возвращает список членов
     } catch (error) {
       console.error('Error fetching members:', error);
+      setErrorMembers('Ошибка при получении членов организации');
+    } finally {
+      setIsLoadingMembers(false);
     }
   };
 
-  // Add a new member by email
+  // Добавляем нового члена по email
   const handleAddMember = async () => {
     if (!newMemberEmail.trim()) return;
     if (!isCurrentOrgOwner()) {
-      alert('Only owners can add members.');
+      alert('Только владельцы могут добавлять членов.');
       return;
     }
+    setIsAddingMember(true);
+    setErrorAddMember(null);
     try {
       await addOrgMember(currentOrganization.id, newMemberEmail.trim());
       setNewMemberEmail('');
-      fetchMembers(); // Refresh members list
+      fetchMembers(); // Обновляем список членов
     } catch (error) {
       console.error('Error adding member:', error);
+      setErrorAddMember('Ошибка при добавлении члена организации');
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
-  // Remove a member by email
+  // Удаляем члена по email
   const handleRemoveMember = async (email) => {
     if (!isCurrentOrgOwner()) {
-      alert('Only owners can remove members.');
+      alert('Только владельцы могут удалять членов.');
       return;
     }
+    setIsRemovingMember(true);
+    setErrorRemoveMember(null);
     try {
       await removeOrgMember(currentOrganization.id, email);
-      fetchMembers(); // Refresh members list
+      fetchMembers(); // Обновляем список членов
     } catch (error) {
       console.error('Error removing member:', error);
+      setErrorRemoveMember('Ошибка при удалении члена организации');
+    } finally {
+      setIsRemovingMember(false);
     }
   };
 
   if (!currentOrganization) {
-    return <Typography>No organization selected.</Typography>;
+    return (
+      <Typography>Организация не выбрана.</Typography>
+    );
   }
-  console.log("members", members)
+
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2 }}>
-        Organization Settings
+        Настройки Организации
       </Typography>
 
-      {/* Only show Add Member form if user is the org owner */}
+      {/* Показываем форму добавления члена только если пользователь является владельцем организации */}
       {isCurrentOrgOwner() && (
         <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
           <TextField
-            label="New Member Email"
+            label="Email нового участника"
             variant="outlined"
             size="small"
             value={newMemberEmail}
             onChange={(e) => setNewMemberEmail(e.target.value)}
             sx={{ mr: 2 }}
           />
-          <Button variant="contained" onClick={handleAddMember}>
-            Add Member
+          <Button
+            variant="contained"
+            onClick={handleAddMember}
+            disabled={isAddingMember}
+          >
+            {isAddingMember ? 'Добавление...' : 'Добавить участника'}
           </Button>
         </Box>
       )}
 
-      <List sx={{ maxWidth: 400 }}>
-        {members.map((member) => (
-          <ListItem key={member.id}>
-            <ListItemText primary={member.email} />
-            {/* Only show the delete icon if:
-                 1) The current user is an owner
-                 2) The member is NOT the current user
-             */}
-            {isCurrentOrgOwner() && member.user_id !== user.id && member.role !== 'owner' && (
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={() => handleRemoveMember(member.email)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            )}
-          </ListItem>
-        ))}
-      </List>
+      {/* Отображение ошибок при добавлении члена */}
+      {errorAddMember && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorAddMember}
+        </Alert>
+      )}
+
+      {/* Индикатор загрузки при получении списка членов */}
+      {isLoadingMembers ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : errorMembers ? (
+        <Alert severity="error">{errorMembers}</Alert>
+      ) : (
+        <List sx={{ maxWidth: 400 }}>
+          {members.map((member) => (
+            <ListItem key={member.id}>
+              <ListItemText primary={member.email} />
+              {/* Показываем иконку удаления только если:
+                   1) Текущий пользователь является владельцем
+                   2) Член НЕ является текущим пользователем
+                   3) Член НЕ является владельцем
+               */}
+              {isCurrentOrgOwner() &&
+                member.user_id !== user.id &&
+                member.role !== 'owner' && (
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => handleRemoveMember(member.email)}
+                    disabled={isRemovingMember}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+            </ListItem>
+          ))}
+        </List>
+      )}
+
+      {/* Отображение ошибок при удалении члена */}
+      {errorRemoveMember && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {errorRemoveMember}
+        </Alert>
+      )}
     </Box>
   );
 };

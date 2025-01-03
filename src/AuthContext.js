@@ -1,22 +1,26 @@
-// AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
-import axiosInstance from './api.js';
+import React, { createContext, useState, useEffect } from "react";
+import axiosInstance from "./api.js";
 
 export const AuthContext = createContext();
 
-// AuthProvider component to manage login state
 const AuthProvider = ({ children }) => {
+  // Состояния
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [authToken, setAuthToken] = useState(null);
+  const [openCaptchaModal, setOpenCaptchaModal] = useState(false);
+  const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
+  const [loading, setLoading] = useState(true); // Добавлено состояние загрузки
 
-  // Function to fetch user data
+  // Функция для получения данных пользователя
   const fetchUserData = async () => {
+    setLoading(true); // Начало загрузки
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       if (token) {
-        const response = await axiosInstance.get('/auth/me');
-        console.log("fetchUserData response", response)
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        const response = await axiosInstance.get("/auth/me");
+        console.log("fetchUserData response", response);
         setUser(response.data);
         setAuthToken(token);
         setIsLoggedIn(true);
@@ -26,38 +30,53 @@ const AuthProvider = ({ children }) => {
         setIsLoggedIn(false);
       }
     } catch (error) {
-      console.error('Ошибка при получении данных пользователя:', error);
+      console.error("Ошибка при получении данных пользователя:", error);
       // Если ошибка (например, токен недействителен), очищаем данные
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem("auth_token");
       setUser(null);
       setAuthToken(null);
       setIsLoggedIn(false);
+    } finally {
+      setLoading(false); // Окончание загрузки
     }
   };
 
-  // Проверяем, авторизован ли пользователь при загрузке приложения
   useEffect(() => {
     fetchUserData();
   }, []);
 
-  // Функция для входа пользователя (устанавливает токен и данные пользователя)
-const login = (token, userData) => {
-  setAuthToken(token);
-  setUser(userData);
-  setIsLoggedIn(true);
-  localStorage.setItem('auth_token', token);
-};
+  // Функции входа и выхода
+  const login = (token, userData) => {
+    setAuthToken(token);
+    setUser(userData);
+    setIsLoggedIn(true);
+    localStorage.setItem("auth_token", token);
+  };
 
-  // Функция для выхода пользователя (удаляет токен)
   const logout = () => {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem("auth_token");
     setUser(null);
     setAuthToken(null);
     setIsLoggedIn(false);
+    setOpenCaptchaModal(false);
+    setOpenRegistrationModal(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, authToken }}>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        user,
+        login,
+        logout,
+        authToken,
+        openCaptchaModal,
+        setOpenCaptchaModal,
+        openRegistrationModal,
+        setOpenRegistrationModal,
+        loading, // Передаём состояние загрузки
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

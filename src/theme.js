@@ -4,8 +4,8 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     background: {
-      default: "#202123", // Основной фоновый цвет
-      paper: "#191A1B", // #282828 #17252a #222629
+      default: "#F5F5F5", // Основной фоновый цвет
+      paper: "#FFFFFF", // #282828 #17252a #222629
     },
     primary: {
       main: "#353740", // Основной цвет
@@ -27,49 +27,49 @@ const theme = createTheme({
       fontSize: "2.5rem",
       fontWeight: 700,
       lineHeight: 1.2,
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     h2: {
       fontSize: "2rem",
       fontWeight: 700,
       lineHeight: 1.3,
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     h3: {
       fontSize: "1.75rem",
       fontWeight: 700,
       lineHeight: 1.3,
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     h4: {
       fontSize: "1.5rem",
       fontWeight: 600,
       lineHeight: 1.35,
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     h5: {
       fontSize: "1.25rem",
       fontWeight: 600,
       lineHeight: 1.4,
-      color: "#d1e8e2",
+      color: "#202123",
     },
     h6: {
       fontSize: "1rem",
       fontWeight: 600,
       lineHeight: 1.5,
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     body1: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     body2: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
-      color: "#d1e8e2;",
+      color: "#202123",
     },
     button: {
       textTransform: "none",
@@ -85,19 +85,20 @@ const theme = createTheme({
         root: {
           borderRadius: "15px",
           "&:hover": {
-            backgroundColor: "#282828",
+            backgroundColor: "#ECECF1",
           },
           // Стили для активного (выбранного) состояния
           "&.Mui-selected": {
-            backgroundColor: "#282828",
+            backgroundColor: "#ECECF1",
             // Сохранение цвета при наведении на выбранный элемент
             "&:hover": {
-              backgroundColor: "#6E6E80",
+              backgroundColor: "#e6e6eb",
             },
           },
         },
       },
     },
+    
     MuiAppBar: {
       styleOverrides: {
         root: {
@@ -120,16 +121,17 @@ const theme = createTheme({
         },
         containedPrimary: {
           backgroundColor: "#353740", // Основной цвет для заполненных кнопок
-          color: "#FFFFFF", // Цвет текста на кнопках
+          color: "#202123", // Цвет текста на кнопках
           "&:hover": {
             backgroundColor: "#2E3239", // Более тёмный оттенок при наведении
           },
         },
         outlined: {
-          color: '#d1e8e2',
-          borderColor: '#6E6E80',
+          color: '#202123',
+          borderColor: '#ececf1',
+          backgroundColor:'#ececf1',
           '&:hover': {
-            borderColor: '#FFFFFF',
+            borderColor: '#6E6E80',
           },
         },
         textPrimary: {
@@ -156,7 +158,7 @@ const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: "#DEF2F1",
+          color: "#202123",
           fontFamily: "Söhне, Arial, sans-serif",
         },
       },

@@ -309,7 +309,7 @@ function RunningJobs() {
             sx={{
               maxHeight: "300px",
               overflowY: "auto",
-              background: "background.default",
+              backgroundColor: "background.default",
               padding: "16px",
               marginTop: "16px",
               borderRadius: "4px",

@@ -1,49 +1,64 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, TextField, Alert } from '@mui/material';
+import React, { useState, useContext } from "react";
+import { Box, Typography, Button, TextField, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../AuthContext";
+
 
 function Settings() {
   // Mock user data
   const [userData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: "John Doe",
+    email: "john.doe@example.com",
   });
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handlePasswordChange = () => {
     // Reset messages
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     // Validate password match
     if (newPassword !== confirmPassword) {
-      setErrorMessage('New password and confirmation password do not match.');
+      setErrorMessage("New password and confirmation password do not match.");
       return;
     }
 
     // Mock API call to change password
-    console.log('Password change request:', { currentPassword, newPassword });
+    console.log("Password change request:", { currentPassword, newPassword });
 
     // Mock success message
-    setSuccessMessage('Password successfully changed.');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    setSuccessMessage("Password successfully changed.");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    localStorage.removeItem("lastCaptchaTime");
+
+
   };
 
   return (
-    <Box sx={{ padding: '16px' }}>
+    <Box >
       <Typography variant="h4" gutterBottom>
         Settings
       </Typography>
 
       {/* Display User Information */}
-      <Box sx={{ marginBottom: '16px' }}>
-        <Typography variant="h6" gutterBottom>Profile Information</Typography>
+      <Box sx={{ marginBottom: "16px" }}>
+        <Typography variant="h6" gutterBottom>
+          Profile Information
+        </Typography>
         <TextField
           fullWidth
           label="Name"
@@ -51,7 +66,7 @@ function Settings() {
           InputProps={{
             readOnly: true,
           }}
-          sx={{ marginBottom: '16px' }}
+          sx={{ marginBottom: "16px" }}
         />
         <TextField
           fullWidth
@@ -60,7 +75,7 @@ function Settings() {
           InputProps={{
             readOnly: true,
           }}
-          sx={{ marginBottom: '16px' }}
+          sx={{ marginBottom: "16px" }}
         />
       </Box>
 
@@ -73,7 +88,7 @@ function Settings() {
           label="Current Password"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
-          sx={{ marginBottom: '16px' }}
+          sx={{ marginBottom: "16px" }}
         />
         <TextField
           fullWidth
@@ -81,7 +96,7 @@ function Settings() {
           label="New Password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          sx={{ marginBottom: '16px' }}
+          sx={{ marginBottom: "16px" }}
         />
         <TextField
           fullWidth
@@ -89,28 +104,32 @@ function Settings() {
           label="Confirm New Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          sx={{ marginBottom: '16px' }}
+          sx={{ marginBottom: "16px" }}
         />
 
         {/* Error and Success Messages */}
         {errorMessage && (
-          <Alert severity="error" sx={{ marginBottom: '16px' }}>
+          <Alert severity="error" sx={{ marginBottom: "16px" }}>
             {errorMessage}
           </Alert>
         )}
         {successMessage && (
-          <Alert severity="success" sx={{ marginBottom: '16px' }}>
+          <Alert severity="success" sx={{ marginBottom: "16px" }}>
             {successMessage}
           </Alert>
         )}
-
+        <Box sx={{display:'flex', justifyContent:'space-between'}}>
         <Button
-          variant="outlined"
+          variant="contained"
           color="secondary"
           onClick={handlePasswordChange}
         >
           Update Password
         </Button>
+        <Button variant="outlined" onClick={handleLogout} sx={{ color: "red" }}>
+          Выйти из аккаунта
+        </Button>
+        </Box>
       </Box>
     </Box>
   );

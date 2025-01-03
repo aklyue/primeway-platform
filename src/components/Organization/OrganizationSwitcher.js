@@ -1,5 +1,4 @@
-// OrganizationSwitcher.js
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { OrganizationContext } from "./OrganizationContext";
 import {
   Menu,
@@ -17,16 +16,10 @@ const OrganizationSwitcher = () => {
   const {
     organizations,
     currentOrganization,
-    setCurrentOrganization,
-    fetchOrganizations,
+    switchOrganization
   } = useContext(OrganizationContext);
 
   const [anchorEl, setAnchorEl] = useState(null);
-
-  useEffect(() => {
-    fetchOrganizations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -37,7 +30,7 @@ const OrganizationSwitcher = () => {
   };
 
   const handleOrganizationSelect = (org) => {
-    setCurrentOrganization(org);
+    switchOrganization(org.id);
     handleMenuClose();
   };
 
@@ -60,20 +53,18 @@ const OrganizationSwitcher = () => {
             justifyContent: "flex-start",
             alignItems: "center",
             textTransform: "none",
-            padding: "8px", // Добавим отступы для лучшего внешнего вида
+            padding: "8px",
           }}
         >
-          {/* Иконка перед текстом */}
-          <BusinessIcon sx={{ mr: 1, fontSize: "20px", }} />
+          <BusinessIcon sx={{ mr: 1, fontSize: "20px" }} />
 
-          {/* Контейнер с вертикальным расположением текста */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
               textAlign: "left",
-              flexGrow: 1, // Чтобы занять все доступное пространство
+              flexGrow: 1,
             }}
           >
             <Typography
@@ -97,7 +88,6 @@ const OrganizationSwitcher = () => {
             </Typography>
           </Box>
 
-          {/* Иконка в конце кнопки */}
           <ArrowDropDownIcon sx={{ ml: "auto", color: '#353740' }} />
         </Button>
       </Box>

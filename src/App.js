@@ -39,6 +39,7 @@ import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
+import OrganizationSettings from "./components/Organization/OrganizationSettings";
 
 const drawerWidth = 240;
 
@@ -218,7 +219,6 @@ export function Layout() {
               }}
             >
               <OrganizationSwitcher />
-              <CreateOrganization sx={{ marginLeft: 1 }} />
             </Box>
           )}
           {/* Список элементов меню */}
@@ -272,6 +272,16 @@ export function Layout() {
               selected={location.pathname === "/settings"}
             >
               <ListItemText primary="Settings" />
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/organization-settings"
+              selected={location.pathname === "/organization-settings"}
+            >
+              <ListItemText primary="Organization Settings" />
             </ListItemButton>
           </ListItem>
         </List>
@@ -340,6 +350,14 @@ export function Layout() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/organization-settings"
+            element={
+              <ProtectedRoute>
+                <OrganizationSettings />
+              </ProtectedRoute>
+            }
+          />
           {/* <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} /> */}
           <Route path="/auth/callback" element={<AuthCallback />} />
@@ -392,13 +410,13 @@ export function Layout() {
 
 function App() {
   return (
-    <OrganizationProvider>
-      <AuthProvider>
-        <Router>
-          <Layout />
-        </Router>
-      </AuthProvider>
-    </OrganizationProvider>
+    <AuthProvider>
+      <OrganizationProvider>
+          <Router>
+            <Layout />
+          </Router>
+      </OrganizationProvider>
+    </AuthProvider>
   );
 }
 

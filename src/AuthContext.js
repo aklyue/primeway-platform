@@ -1,6 +1,6 @@
 // AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
-import api from './api.js'; // Ваш настроенный экземпляр axios
+import axiosInstance from './api.js';
 
 export const AuthContext = createContext();
 
@@ -15,7 +15,7 @@ const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (token) {
-        const response = await api.get('/auth/me');
+        const response = await axiosInstance.get('/auth/me');
         console.log("fetchUserData response", response)
         setUser(response.data);
         setAuthToken(token);

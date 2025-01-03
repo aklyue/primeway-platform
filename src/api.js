@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'https://api.primeway.io', 
+const axiosInstance = axios.create({
+  baseURL: 'https://api.primeway.io',
 });
-
 // Interceptor to inject the token for every request
-api.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -18,4 +17,9 @@ api.interceptors.request.use(
   }
 );
 
-export default api;
+
+export const getOrgMembers = (orgId) => axiosInstance.get(`/organizations/${orgId}/members`);
+export const addOrgMember = (orgId, email) => axiosInstance.post(`/organizations/${orgId}/members`, { email });
+export const removeOrgMember = (orgId, email) => axiosInstance.delete(`/organizations/${orgId}/members`, { data: { email } });
+
+export default axiosInstance;

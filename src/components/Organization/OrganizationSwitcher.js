@@ -1,7 +1,6 @@
 import React, { useContext, useState } from "react";
 import { OrganizationContext } from "./OrganizationContext";
 import {
-  Menu,
   MenuItem,
   Button,
   Typography,
@@ -9,15 +8,13 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import Popover from "@mui/material/Popover";
 import BusinessIcon from "@mui/icons-material/Business";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 
 const OrganizationSwitcher = () => {
-  const {
-    organizations,
-    currentOrganization,
-    switchOrganization
-  } = useContext(OrganizationContext);
+  const { organizations, currentOrganization, switchOrganization } =
+    useContext(OrganizationContext);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -38,14 +35,13 @@ const OrganizationSwitcher = () => {
     <>
       <Box
         sx={{
-          textAlign: "left",
           width: "100%",
-          border: "1px solid #353740",
-          borderRadius: "10px",
-          ml: "2px",
-          mr:'4px'
+          display: "flex",
         }}
       >
+        <Typography sx={{ ml: "8px", mr: "8px", fontSize: "17px" }}>
+          /
+        </Typography>
         <Button
           color="inherit"
           onClick={handleMenuOpen}
@@ -54,11 +50,9 @@ const OrganizationSwitcher = () => {
             justifyContent: "flex-start",
             alignItems: "center",
             textTransform: "none",
-            padding: "8px",
+            padding: "0",
           }}
         >
-          <BusinessIcon sx={{ mr: 1, fontSize: "20px" }} />
-
           <Box
             sx={{
               display: "flex",
@@ -69,46 +63,65 @@ const OrganizationSwitcher = () => {
             }}
           >
             <Typography
-              variant="caption"
-              component="div"
-              sx={{ lineHeight: 1.2, fontSize: "10px" }}
-            >
-              Organization
-            </Typography>
-
-            <Typography
               variant="body2"
               sx={{
-                lineHeight: 1.2,
                 whiteSpace: "normal",
               }}
             >
-              {currentOrganization
-                ? currentOrganization.name
-                : "Select Organization"}
+              {currentOrganization ? currentOrganization.name : "Organization"}
             </Typography>
           </Box>
-
-          <ArrowDropDownIcon sx={{ ml: "auto", color: '#353740' }} />
+          <UnfoldMoreIcon sx={{ ml: "auto", color: "#353740", height: "15px" }} />
         </Button>
       </Box>
-      <Menu
+
+      {/* Используем Popover вместо Menu */}
+      <Popover
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
       >
-        {organizations.map((org) => (
-          <MenuItem
-            key={org.id}
-            onClick={() => handleOrganizationSelect(org)}
-          >
-            <ListItemIcon>
-              <BusinessIcon fontSize="small" sx={{color:'text.primary'}} />
-            </ListItemIcon>
-            <ListItemText>{org.name}</ListItemText>
-          </MenuItem>
-        ))}
-      </Menu>
+        {/* Контейнер с flex для расположения списка и подсказки */}
+        <Box
+          sx={{
+            display: "flex",
+            padding: 2,
+            maxWidth: 600, // Ограничиваем максимальную ширину
+          }}
+        >
+          {/* Список организаций */}
+          <Box sx={{ minWidth: 200,  borderRight: '1px solid rgba(0,0,0,0.2)' }}>
+            {organizations.length > 0 ? (
+              organizations.map((org) => (
+                <MenuItem key={org.id} onClick={() => handleOrganizationSelect(org)}>
+                  <ListItemText>{org.name}</ListItemText>
+                </MenuItem>
+              ))
+            ) : (
+              <Typography variant="body2" sx={{ padding: 1 }}>
+                У вас пока нет других организаций.
+              </Typography>
+            )}
+          </Box>
+
+          {/* Подсказка */}
+          <Box sx={{ marginLeft: 2, maxWidth: 300, opacity:'0.8' }}>
+            <Typography variant="body2" color="text.secondary">
+              При регистрации создается ваша организация, где вы работаете. Вы
+              можете приглашать других пользователей в настройках организации.
+              Когда вас пригласят в другие организации, они появятся здесь.
+            </Typography>
+          </Box>
+        </Box>
+      </Popover>
     </>
   );
 };

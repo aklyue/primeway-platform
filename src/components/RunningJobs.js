@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  IconButton,
   Box,
-  CardActions,
+  Typography,
+  IconButton,
   Modal,
   CircularProgress,
   Dialog,
@@ -15,10 +11,24 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LogsIcon from "@mui/icons-material/Description";
+import StopIcon from "@mui/icons-material/Stop";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { OrganizationContext } from "./Organization/OrganizationContext";
 
 function RunningJobs() {
@@ -28,18 +38,21 @@ function RunningJobs() {
   const [openModal, setOpenModal] = useState(false);
   const [currentJobId, setCurrentJobId] = useState(null);
   const [currentJobLogs, setCurrentJobLogs] = useState("");
-  const [logStream, setLogStream] = useState(null); // For managing SSE stream
-  const [isCopied, setIsCopied] = useState(false); // To manage copy state
+  const [logStream, setLogStream] = useState(null);
+  const [isCopied, setIsCopied] = useState(false);
 
-  const [openDialog, setOpenDialog] = useState(false); // State to control dialog visibility
-  const [jobToTerminate, setJobToTerminate] = useState(null); // State to track job to terminate
+  const [openDialog, setOpenDialog] = useState(false);
+  const [jobToTerminate, setJobToTerminate] = useState(null);
 
   const { currentOrganization } = useContext(OrganizationContext);
 
-  const token = "visionx-nlOm2e3vwv_rjakw286mzg"; // Replace this with how you store your token
+  const token = "visionx-nlOm2e3vwv_rjakw286mzg";
 
-  // Переменная для переключения между бэкендом и моковыми данными
-  const useMockData = true; // Установите в false, чтобы использовать реальные данные с бэкенда
+  const useMockData = true;
+
+  // Состояния для меню действий
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuJobId, setMenuJobId] = useState(null);
 
   useEffect(() => {
     fetchJobs();
@@ -50,7 +63,6 @@ function RunningJobs() {
     setLoading(true);
 
     if (useMockData) {
-      // Используем моковые данные
       fetchMockRunningJobs()
         .then((data) => {
           setRunningJobs(data);
@@ -62,15 +74,14 @@ function RunningJobs() {
           setLoading(false);
         });
     } else {
-      // Запрашиваем данные с бэкенда
       axios
         .get("http://localhost:8888/api/jobs?status=running", {
           headers: {
-            Authorization: `Bearer ${token}`, // Add the Bearer token to the request
+            Authorization: `Bearer ${token}`,
           },
         })
         .then((response) => {
-          setRunningJobs(response.data); // Set the data to the state
+          setRunningJobs(response.data);
           setLoading(false);
         })
         .catch((error) => {
@@ -95,7 +106,6 @@ function RunningJobs() {
     handleCloseDialog();
 
     if (useMockData) {
-      // Эмулируем удаление задачи из моковых данных
       terminateMockJob(jobId)
         .then(() => {
           setRunningJobs((prevJobs) =>
@@ -107,11 +117,10 @@ function RunningJobs() {
           setError("Error terminating mock job");
         });
     } else {
-      // Отправляем реальный запрос к бэкенду
       axios
         .delete(`http://localhost:8888/api/terminate-job/${jobId}`, {
           headers: {
-            Authorization: `Bearer ${token}`, // Add the Bearer token to the request
+            Authorization: `Bearer ${token}`,
           },
         })
         .then(() => {
@@ -129,11 +138,10 @@ function RunningJobs() {
   const handleOpenModal = (jobId) => {
     setOpenModal(true);
     setCurrentJobId(jobId);
-    setCurrentJobLogs(""); // Reset logs
-    setIsCopied(false); // Reset copy state
+    setCurrentJobLogs("");
+    setIsCopied(false);
 
     if (useMockData) {
-      // Используем моковые логи
       fetchMockJobLogs(jobId)
         .then((logs) => {
           setCurrentJobLogs(logs);
@@ -143,7 +151,6 @@ function RunningJobs() {
           setCurrentJobLogs("Error fetching logs");
         });
     } else {
-      // Start the SSE connection for real-time logs
       const eventSource = new EventSource(
         `http://localhost:8888/api/resume-logs/${jobId}`
       );
@@ -151,7 +158,7 @@ function RunningJobs() {
 
       eventSource.onmessage = (event) => {
         console.log("event", event);
-        setCurrentJobLogs((prevLogs) => prevLogs + "\n" + event.data); // Append new logs
+        setCurrentJobLogs((prevLogs) => prevLogs + "\n" + event.data);
       };
 
       eventSource.onerror = () => {
@@ -164,7 +171,7 @@ function RunningJobs() {
   const handleCloseModal = () => {
     setOpenModal(false);
     if (logStream) {
-      logStream.close(); // Close the SSE connection when modal is closed
+      logStream.close();
       setLogStream(null);
     }
     setCurrentJobId(null);
@@ -172,7 +179,25 @@ function RunningJobs() {
 
   const handleCopyLogs = () => {
     navigator.clipboard.writeText(currentJobLogs);
-    setIsCopied(true); // Mark logs as copied
+    setIsCopied(true);
+  };
+
+  // Функции для управления меню действий
+  const handleMenuClick = (event, jobId) => {
+    setAnchorEl(event.currentTarget);
+    setMenuJobId(jobId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuJobId(null);
+  };
+
+  const handleCopyJobId = (jobId) => {
+    navigator.clipboard.writeText(jobId);
+    handleMenuClose();
+    setIsCopied(true);
+    // Здесь вы можете добавить уведомление о том, что jobId скопирован
   };
 
   if (loading) {
@@ -208,93 +233,134 @@ function RunningJobs() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Running Jobs
+        Выполняемые задачи
       </Typography>
       {currentOrganization && (
         <Typography variant="h5" gutterBottom>
-          Running Jobs for <Box component="span" sx={{color:'secondary.main'}}>{currentOrganization.name}</Box>
+          Выполняемые задачи для{" "}
+          <Box component="span" sx={{ color: "secondary.main" }}>
+            {currentOrganization.name}
+          </Box>
         </Typography>
       )}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column", // Set to column layout for cards
-          gap: 2, // Space between cards
-        }}
-      >
-        {runningJobs.map((job) => (
-          <Card
-            key={job.job_id}
-            sx={{ width: "100%", boxShadow: 4, borderRadius: 2 }}
+
+      {/* Таблица с данными */}
+      <TableContainer component={Paper}>
+        <Table aria-label="running jobs table">
+          <TableHead sx={{ "& .MuiTableCell-root": { color: "black" } }}>
+            <TableRow>
+              <TableCell>Имя</TableCell>
+              <TableCell>Дата создания</TableCell>
+              <TableCell>Тип GPU</TableCell>
+              <TableCell>Количество GPU</TableCell>
+              <TableCell>Количество CPU</TableCell>
+              <TableCell>Память (GB)</TableCell>
+              <TableCell>Объем диска (GB)</TableCell>
+              <TableCell>Стоимость за час (₽)</TableCell>
+              <TableCell>Действия</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody
+            sx={{
+              "& .MuiTableCell-root": { color: "#6e6e80", textAlign: "center" },
+            }}
           >
-            {/* Each card takes full width */}
-            <CardContent>
-              <Typography variant="h6" component="div">
-              <Box component="span" sx={{color:'secondary.main'}}>{job.job_id}</Box>
-              </Typography>
+            {runningJobs.map((job) => (
+              <TableRow key={job.job_id}>
+                <TableCell component="th" scope="row">
+                  <Box component="span" sx={{ color: "secondary.main" }}>
+                    {job.name || job.job_id}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  {new Date(job.createdAt).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Box component="span" sx={{ color: "secondary.main" }}>
+                    {job.gpu_type}
+                  </Box>
+                </TableCell>
+                <TableCell>{job.gpu_count}</TableCell>
+                <TableCell>{job.cpu_count}</TableCell>
+                <TableCell>{job.memory}</TableCell>
+                <TableCell>{job.disk_space}</TableCell>
+                <TableCell>{job.pricePerHour}</TableCell>
+                <TableCell>
+                  <IconButton
+                    onClick={(event) => handleMenuClick(event, job.job_id)}
+                    aria-controls={
+                      menuJobId === job.job_id ? "action-menu" : undefined
+                    }
+                    aria-haspopup="true"
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  {/* Меню действий */}
+                  <Menu
+                    id="action-menu"
+                    anchorEl={anchorEl}
+                    open={menuJobId === job.job_id}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        handleOpenModal(job.job_id);
+                      }}
+                    >
+                      <ListItemIcon>
+                        <LogsIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Просмотр логов</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleCopyJobId(job.job_id);
+                      }}
+                    >
+                      <ListItemIcon>
+                        <ContentCopyIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Скопировать</ListItemText>
+                    </MenuItem>
+                    <MenuItem>
+                      <ListItemIcon>
+                        <StopIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Остановить</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        handleOpenDialog(job.job_id);
+                      }}
+                    >
+                      <ListItemIcon>
+                        <DeleteIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primaryTypographyProps={{ sx: { color: "red" } }}
+                      >
+                        Удалить
+                      </ListItemText>
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  mt: 2,
-                }}
-              >
-                {/* Column 1 */}
-                <Box sx={{ flex: "1" }}>
-                  <Typography color="textSecondary">
-                    Created at: {new Date(job.createdAt).toLocaleString()}
-                  </Typography>
-                  <Typography>GPU Type: <Box component="span" sx={{color:'secondary.main'}}>{job.gpu_type}</Box></Typography>
-                </Box>
-
-                {/* Column 2 */}
-                <Box sx={{ flex: "1" }}>
-                  <Typography>GPU Count: {job.gpu_count}</Typography>
-                  <Typography>CPU Count: {job.cpu_count}</Typography>
-                </Box>
-
-                {/* Column 3 */}
-                <Box sx={{ flex: "1" }}>
-                  <Typography>Memory: {job.memory} GB</Typography>
-                  <Typography>Disk Space: {job.disk_space} GB</Typography>
-                </Box>
-
-                {/* Column 4 */}
-                <Box sx={{ flex: "1" }}>
-                  <Typography>Price per hour: ${job.pricePerHour}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-
-            <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={() => handleOpenModal(job.job_id)}
-                startIcon={<LogsIcon />}
-              >
-                View Logs
-              </Button>
-              <IconButton
-                color="secondary"
-                onClick={() => handleOpenDialog(job.job_id)}
-                aria-label="terminate"
-                sx={{
-                  "&:hover": {
-                    background: "rgba(0,0,0,0.1)",
-                  },
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </CardActions>
-          </Card>
-        ))}
-      </Box>
-
-      {/* Modal for logs */}
+      {/* Модальное окно для логов */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -303,7 +369,7 @@ function RunningJobs() {
       >
         <Box sx={modalStyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Job Logs for {currentJobId}
+            Логи задания {currentJobId}
           </Typography>
           <Box
             sx={{
@@ -316,10 +382,10 @@ function RunningJobs() {
               whiteSpace: "pre-wrap",
             }}
           >
-            {currentJobLogs || "No logs available yet."}
+            {currentJobLogs || "Логи пока недоступны."}
           </Box>
 
-          {/* Copy button and message */}
+          {/* Кнопка копирования логов и закрытия модалки */}
           <Box
             sx={{
               display: "flex",
@@ -345,44 +411,42 @@ function RunningJobs() {
                   : {}
               }
             >
-              {isCopied ? "Copied" : "Copy Logs"}
+              {isCopied ? "Скопировано" : "Скопировать логи"}
             </Button>
             <Button
               onClick={handleCloseModal}
               variant="contained"
               color="secondary"
             >
-              Close
+              Закрыть
             </Button>
           </Box>
         </Box>
       </Modal>
 
-      {/* Confirmation Dialog */}
+      {/* Диалог подтверждения завершения задачи */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Confirm Termination"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">Подтверждение</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to terminate this job?
+            Вы уверены, что хотите завершить эту задачу?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
-            Cancel
+            Отмена
           </Button>
           <Button
             onClick={() => terminateJob(jobToTerminate)}
             color="secondary"
             autoFocus
           >
-            Terminate
+            Завершить
           </Button>
         </DialogActions>
       </Dialog>
@@ -390,7 +454,7 @@ function RunningJobs() {
   );
 }
 
-// Modal styles
+// Стили для модального окна
 const modalStyle = {
   position: "absolute",
   top: "50%",
@@ -405,15 +469,15 @@ const modalStyle = {
 
 export default RunningJobs;
 
-// Моковая функция для получения списка запущенных задач
+// Моковые функции
+
 function fetchMockRunningJobs() {
   return new Promise((resolve, reject) => {
-    // Эмулируем задержку запроса
     setTimeout(() => {
-      // Моковые данные запущенных задач
       const mockData = [
         {
           job_id: "job-1",
+          name: "job-1",
           createdAt: "2023-08-05T10:00:00Z",
           gpu_type: "NVIDIA Tesla V100",
           gpu_count: 2,
@@ -424,6 +488,7 @@ function fetchMockRunningJobs() {
         },
         {
           job_id: "job-2",
+          name: "job-2",
           createdAt: "2023-08-06T09:15:00Z",
           gpu_type: "NVIDIA Tesla P100",
           gpu_count: 1,
@@ -432,49 +497,40 @@ function fetchMockRunningJobs() {
           disk_space: 250,
           pricePerHour: 3.5,
         },
-        // Добавьте больше тестовых данных при необходимости
       ];
-      // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
-      const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
+      const shouldFail = false;
       if (shouldFail) {
         reject(new Error("Failed to fetch mock running jobs"));
       } else {
         resolve(mockData);
       }
-    }, 1000); // Задержка в 1 секунду
+    }, 1000);
   });
 }
 
-// Моковая функция для завершения задачи
 function terminateMockJob(jobId) {
   return new Promise((resolve, reject) => {
-    // Эмулируем задержку запроса
     setTimeout(() => {
-      // Эмулируем успешное завершение задачи
-      const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
+      const shouldFail = false;
       if (shouldFail) {
         reject(new Error("Failed to terminate mock job"));
       } else {
         resolve();
       }
-    }, 500); // Задержка в 0.5 секунды
+    }, 500);
   });
 }
 
-// Моковая функция для получения логов задачи
 function fetchMockJobLogs(jobId) {
   return new Promise((resolve, reject) => {
-    // Эмулируем задержку запроса
     setTimeout(() => {
-      // Моковые логи задачи
-      const mockLogs = `Logs for ${jobId}:\n\n[INFO] Job started...\n[INFO] Processing data...\n[INFO] Job is running...`;
-      // Возвращаем данные с вероятностью ошибки для тестирования обработки ошибок
-      const shouldFail = false; // Установите в true, чтобы эмулировать ошибку
+      const mockLogs = `Логи для ${jobId}:\n\n[INFO] Задача запущена...\n[INFO] Обработка данных...\n[INFO] Задача выполняется...`;
+      const shouldFail = false;
       if (shouldFail) {
         reject(new Error("Failed to fetch mock job logs"));
       } else {
         resolve(mockLogs);
       }
-    }, 500); // Задержка в 0.5 секунды
+    }, 500);
   });
 }

@@ -37,6 +37,7 @@ import { OrganizationProvider } from "./components/Organization/OrganizationCont
 import AuthCallback from "./components/AuthCallback";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
 import Snowfall from "react-snowfall";
+import snowflakeSvg from "./assets/snowflake.svg";
 
 const drawerWidth = 240;
 
@@ -65,6 +66,9 @@ export function Layout() {
   } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const snowflakeImage = new Image();
+  snowflakeImage.src = snowflakeSvg;
 
   useEffect(() => {
     if (!loading) {
@@ -140,7 +144,6 @@ export function Layout() {
   };
 
   return (
-    
     <Box
       sx={{
         display: "flex",
@@ -150,7 +153,13 @@ export function Layout() {
       }}
     >
       <CssBaseline />
-      <Snowfall color="#d1d1dc" snowflakeCount={120} style={{ zIndex: 10000 }} />
+      <Snowfall
+        color="#d1d1dc"
+        images={[snowflakeImage]}
+        radius={[10, 12]}
+        snowflakeCount={30}
+        style={{ zIndex: 10000, opacity: "0.6" }}
+      />
       <AppBar
         position="fixed"
         sx={{
@@ -167,23 +176,57 @@ export function Layout() {
             to="/"
             sx={{
               textDecoration: "none",
-
-              transition: "transform 0.2s",
-              "&:hover": {
-                transform: "translateY(-2px)",
-              },
             }}
           >
-            Platform
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              PrimeWay
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <OrganizationSwitcher />
+              </Box>
+            </Box>
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
 
           {isLoggedIn && (
             <>
               <Tooltip title={user?.username || "Пользователь"}>
-                <IconButton onClick={handleAvatarClick} color="inherit">
-                  <Avatar alt={user?.username} src={user?.avatar_url} />
-                </IconButton>
+                <Box
+                  sx={{
+                    background:
+                      "linear-gradient(to right top, blue, skyblue, orange)", // Градиентный фон
+                    borderRadius: "51%", // Круглая форма
+                    padding: "2.4px", // Отступ для градиента
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      backgroundColor: "#FFFFFF", // Белый фон для внутреннего слоя
+                      borderRadius: "50%", // Круглая форма
+                      padding: "2.6px", // Отступ для белой окантовки
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Avatar
+                      alt={user?.username}
+                      src={user?.avatar_url}
+                      sx={{
+                        width: 40, // Размер аватарки
+                        height: 40, // Размер аватарки
+                      }}
+                    />
+                  </Box>
+                </Box>
               </Tooltip>
             </>
           )}
@@ -206,7 +249,7 @@ export function Layout() {
         <Toolbar />
 
         <List>
-          {isLoggedIn && (
+          {/* {isLoggedIn && (
             <Box
               sx={{
                 display: "flex",
@@ -217,7 +260,7 @@ export function Layout() {
             >
               <OrganizationSwitcher />
             </Box>
-          )}
+          )} */}
           {/* Список элементов меню */}
           <ListItem disablePadding>
             <ListItemButton
@@ -412,11 +455,9 @@ export function Layout() {
 function App() {
   return (
     <AuthProvider>
-      
       <OrganizationProvider>
         <Router>
           <Layout />
-          
         </Router>
       </OrganizationProvider>
     </AuthProvider>

@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useRef, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
+import { CircularProgress } from '@mui/material';
 
 const YandexAuth = () => {
   const navigate = useNavigate();
   const { login, authToken } = useContext(AuthContext);
   const isInitialized = useRef(false);
+  const [loadingButton, setLoadingButton] = useState(true);
 
   useEffect(() => {
     if (authToken) {
@@ -13,9 +15,10 @@ const YandexAuth = () => {
       navigate('/running-jobs');
     } else {
       if (isInitialized.current) {
-        
+        // Если уже инициализировано, ничего не делаем
         return;
       }
+      isInitialized.current = true;
 
       const container = document.getElementById('yandex-auth-container');
       if (!container) {
@@ -32,7 +35,7 @@ const YandexAuth = () => {
           }
           const script = document.createElement('script');
           script.src =
-            'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-latest.js';
+            'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
           script.async = true;
           script.onload = () => {
             resolve();
@@ -51,8 +54,7 @@ const YandexAuth = () => {
             return;
           }
 
-          isInitialized.current = true;
-
+          // Инициализируем YaAuthSuggest и скрываем индикатор загрузки после инициализации
           window.YaAuthSuggest.init(
             {
               client_id: '2bd62af38e644a86968d1b791431d881',
@@ -70,7 +72,13 @@ const YandexAuth = () => {
               buttonIcon: 'yaEng',
             }
           )
-            .then(({ handler }) => handler())
+            .then(({ handler }) => {
+              // Кнопка готова, скрываем индикатор загрузки
+              setLoadingButton(false);
+
+              // Вызываем handler
+              return handler();
+            })
             .then((data) => {
               console.log('Auth data:', data);
               if (data.access_token) {
@@ -108,17 +116,39 @@ const YandexAuth = () => {
           console.error('Не удалось загрузить скрипт YaAuthSuggest:', error);
         });
     }
-  }, [authToken, login, navigate]);
+  }, [authToken]);
 
   return (
     <div
-      id="yandex-auth-container"
       style={{
+        position: 'relative',
         margin: '20px',
         minWidth: '430px',
         minHeight: '36px',
       }}
-    />
+    >
+      {/* Контейнер для кнопки YaAuthSuggest */}
+      <div id="yandex-auth-container" style={{ width: '100%' }} />
+
+      {/* Индикатор загрузки поверх контейнера */}
+      {loadingButton && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
+    </div>
   );
 };
 

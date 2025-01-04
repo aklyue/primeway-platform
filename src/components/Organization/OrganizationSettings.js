@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
@@ -10,15 +10,11 @@ import {
   IconButton,
   CircularProgress, // Добавлено для индикатора загрузки
   Alert, // Добавлено для отображения ошибок
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useOrganization } from './OrganizationContext';
-import { AuthContext } from '../../AuthContext'; // или откуда ваш AuthContext
-import {
-  getOrgMembers,
-  addOrgMember,
-  removeOrgMember,
-} from '../../api.js';
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useOrganization } from "./OrganizationContext";
+import { AuthContext } from "../../AuthContext"; // или откуда ваш AuthContext
+import { getOrgMembers, addOrgMember, removeOrgMember } from "../../api.js";
 
 const OrganizationSettings = () => {
   const { currentOrganization, isCurrentOrgOwner } = useOrganization();
@@ -29,7 +25,7 @@ const OrganizationSettings = () => {
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [errorMembers, setErrorMembers] = useState(null);
 
-  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState("");
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [errorAddMember, setErrorAddMember] = useState(null);
 
@@ -51,8 +47,8 @@ const OrganizationSettings = () => {
       const response = await getOrgMembers(currentOrganization.id);
       setMembers(response.data); // Убедитесь, что ваш API возвращает список членов
     } catch (error) {
-      console.error('Error fetching members:', error);
-      setErrorMembers('Ошибка при получении членов организации');
+      console.error("Error fetching members:", error);
+      setErrorMembers("Ошибка при получении членов организации");
     } finally {
       setIsLoadingMembers(false);
     }
@@ -62,18 +58,18 @@ const OrganizationSettings = () => {
   const handleAddMember = async () => {
     if (!newMemberEmail.trim()) return;
     if (!isCurrentOrgOwner()) {
-      alert('Только владельцы могут добавлять членов.');
+      alert("Только владельцы могут добавлять членов.");
       return;
     }
     setIsAddingMember(true);
     setErrorAddMember(null);
     try {
       await addOrgMember(currentOrganization.id, newMemberEmail.trim());
-      setNewMemberEmail('');
+      setNewMemberEmail("");
       fetchMembers(); // Обновляем список членов
     } catch (error) {
-      console.error('Error adding member:', error);
-      setErrorAddMember('Ошибка при добавлении члена организации');
+      console.error("Error adding member:", error);
+      setErrorAddMember("Ошибка при добавлении члена организации");
     } finally {
       setIsAddingMember(false);
     }
@@ -82,7 +78,7 @@ const OrganizationSettings = () => {
   // Удаляем члена по email
   const handleRemoveMember = async (email) => {
     if (!isCurrentOrgOwner()) {
-      alert('Только владельцы могут удалять членов.');
+      alert("Только владельцы могут удалять членов.");
       return;
     }
     setIsRemovingMember(true);
@@ -91,17 +87,15 @@ const OrganizationSettings = () => {
       await removeOrgMember(currentOrganization.id, email);
       fetchMembers(); // Обновляем список членов
     } catch (error) {
-      console.error('Error removing member:', error);
-      setErrorRemoveMember('Ошибка при удалении члена организации');
+      console.error("Error removing member:", error);
+      setErrorRemoveMember("Ошибка при удалении члена организации");
     } finally {
       setIsRemovingMember(false);
     }
   };
 
   if (!currentOrganization) {
-    return (
-      <Typography>Организация не выбрана.</Typography>
-    );
+    return <Typography>Организация не выбрана.</Typography>;
   }
 
   return (
@@ -112,7 +106,7 @@ const OrganizationSettings = () => {
 
       {/* Показываем форму добавления члена только если пользователь является владельцем организации */}
       {isCurrentOrgOwner() && (
-        <Box sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+        <Box sx={{ display: "flex", mb: 2, alignItems: "center" }}>
           <TextField
             label="Email нового участника"
             variant="outlined"
@@ -123,10 +117,11 @@ const OrganizationSettings = () => {
           />
           <Button
             variant="contained"
+            color="secondary"
             onClick={handleAddMember}
             disabled={isAddingMember}
           >
-            {isAddingMember ? 'Добавление...' : 'Добавить участника'}
+            {isAddingMember ? "Добавление..." : "Добавить участника"}
           </Button>
         </Box>
       )}
@@ -140,7 +135,7 @@ const OrganizationSettings = () => {
 
       {/* Индикатор загрузки при получении списка членов */}
       {isLoadingMembers ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <CircularProgress />
         </Box>
       ) : errorMembers ? (
@@ -157,7 +152,7 @@ const OrganizationSettings = () => {
                */}
               {isCurrentOrgOwner() &&
                 member.user_id !== user.id &&
-                member.role !== 'owner' && (
+                member.role !== "owner" && (
                   <IconButton
                     edge="end"
                     aria-label="delete"

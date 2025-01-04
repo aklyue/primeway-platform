@@ -51,17 +51,17 @@ function Settings() {
   return (
     <Box >
       <Typography variant="h4" gutterBottom>
-        Settings
+        Настройки
       </Typography>
 
       {/* Display User Information */}
       <Box sx={{ marginBottom: "16px" }}>
         <Typography variant="h6" gutterBottom>
-          Profile Information
+        Информация о профиле
         </Typography>
         <TextField
           fullWidth
-          label="Name"
+          label="Имя"
           value={userData.name}
           InputProps={{
             readOnly: true,
@@ -81,11 +81,11 @@ function Settings() {
 
       {/* Password Change Section */}
       <Box>
-        <Typography variant="h6">Change Password</Typography>
+        <Typography variant="h6" gutterBottom>Смена пароля</Typography>
         <TextField
           fullWidth
           type="password"
-          label="Current Password"
+          label="Текущий пароль"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           sx={{ marginBottom: "16px" }}
@@ -93,7 +93,7 @@ function Settings() {
         <TextField
           fullWidth
           type="password"
-          label="New Password"
+          label="Новый пароль"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           sx={{ marginBottom: "16px" }}
@@ -101,7 +101,7 @@ function Settings() {
         <TextField
           fullWidth
           type="password"
-          label="Confirm New Password"
+          label="Подтвердите пароль"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           sx={{ marginBottom: "16px" }}
@@ -124,7 +124,7 @@ function Settings() {
           color="secondary"
           onClick={handlePasswordChange}
         >
-          Update Password
+          Изменить пароль
         </Button>
         <Button variant="outlined" onClick={handleLogout} sx={{ color: "red" }}>
           Выйти из аккаунта

@@ -37,7 +37,7 @@ const AuthProvider = ({ children }) => {
       setAuthToken(null);
       setIsLoggedIn(false);
     } finally {
-      setLoading(false); // Окончание загрузки
+      setLoading(false); 
     }
   };
 
@@ -52,6 +52,7 @@ const AuthProvider = ({ children }) => {
     setIsLoggedIn(true);
     localStorage.setItem("auth_token", token);
   };
+  
 
   const logout = () => {
     localStorage.removeItem("auth_token");

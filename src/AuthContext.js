@@ -37,7 +37,7 @@ const AuthProvider = ({ children }) => {
       setAuthToken(null);
       setIsLoggedIn(false);
     } finally {
-      setLoading(false); // Окончание загрузки
+      setLoading(false); 
     }
   };
 

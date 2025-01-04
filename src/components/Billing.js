@@ -29,11 +29,19 @@ import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
 import axiosInstance from "../api";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function Billing() {
   const { user } = useContext(AuthContext);
-  const { currentOrganization, isCurrentOrgOwner } = useContext(OrganizationContext);
+  const { currentOrganization, isCurrentOrgOwner } =
+    useContext(OrganizationContext);
 
   // Wallet/balance
   const [walletBalance, setWalletBalance] = useState(null); // Изначально баланс неизвестен
@@ -91,7 +99,6 @@ function Billing() {
     console.log("Оплата успешна:", paymentResult);
     // Вы можете обновить баланс и историю транзакций здесь
     // Например, вызвать повторно загрузку данных
-   
   };
 
   const handlePaymentError = (error) => {
@@ -135,8 +142,9 @@ function Billing() {
           Биллинг и Кошелек
         </Typography>
         <Alert severity="info" sx={{ mt: 2 }}>
-          Биллинг для {currentOrganization.name} управляется владельцем организации.
-          Пожалуйста, свяжитесь с администратором организации по любым вопросам, связанным с биллингом.
+          Биллинг для {currentOrganization.name} управляется владельцем
+          организации. Пожалуйста, свяжитесь с администратором организации по
+          любым вопросам, связанным с биллингом.
         </Alert>
       </Box>
     );
@@ -174,14 +182,13 @@ function Billing() {
             </Box>
           </Typography>
         )}
+
+        <TPaymentWidget
+          user={user}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+        />
       </Box>
-
-      <TPaymentWidget
-        user={user}
-        onSuccess={handlePaymentSuccess}
-        onError={handlePaymentError}
-      />
-
       {/* Transaction history section */}
       <Box sx={{ marginTop: "36px" }}>
         <Typography variant="h6" gutterBottom>
@@ -212,7 +219,9 @@ function Billing() {
               <TableBody>
                 {transactions.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell>{new Date(tx.created_at).toLocaleString()}</TableCell>
+                    <TableCell>
+                      {new Date(tx.created_at).toLocaleString()}
+                    </TableCell>
                     <TableCell>{tx.transaction_type || tx.status}</TableCell>
                     <TableCell>
                       {tx.status}
@@ -231,7 +240,9 @@ function Billing() {
       </Box>
 
       {/* Chart of spending data */}
-      <Box sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}>
+      <Box
+        sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}
+      >
         <Box sx={{ width: "600px" }}>
           <Typography variant="h6" gutterBottom>
             Расходы за {currentMonth}

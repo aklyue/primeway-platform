@@ -233,14 +233,14 @@ function ApiKeys() {
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems:'center',
+                  gap: "15px",
+                  alignItems: "flex-end",
                   marginTop: "16px",
                 }}
               >
                 <Button
-                  variant="outlined"
-                  color="primary"
+                  variant="contained"
+                  color="secondary"
                   startIcon={<ContentCopyIcon />}
                   onClick={handleCopy}
                   sx={{ marginTop: "8px" }}
@@ -250,8 +250,8 @@ function ApiKeys() {
 
                 <Button
                   onClick={handleClose}
-                  variant="contained"
-                  color="secondary"
+                  variant="outlined"
+                  color="primary"
                 >
                   Закрыть
                 </Button>
@@ -327,7 +327,7 @@ function ApiKeys() {
         ) : (
           <TableContainer component={Paper}>
             <Table aria-label="api keys table">
-              <TableHead sx={{ "& .MuiTableCell-root": { color: "black" } }}>
+              <TableHead sx={{ "& .MuiTableCell-root": { color: "black" ,textAlign:'center' } }}>
                 <TableRow>
                   <TableCell>Имя</TableCell>
                   <TableCell>Токен</TableCell>
@@ -344,7 +344,7 @@ function ApiKeys() {
                 }}
               >
                 {apiKeys.map((key) => (
-                  <TableRow key={key.id}>
+                  <TableRow key={key.id} >
                     <TableCell>{key.name || "Безымянный ключ"}</TableCell>
                     <TableCell>
                       <Typography
@@ -394,7 +394,7 @@ function ApiKeys() {
                           <ListItemIcon>
                             <DeleteIcon fontSize="small" />
                           </ListItemIcon>
-                          <ListItemText>Удалить</ListItemText>
+                          <ListItemText primaryTypographyProps={{ sx: { color: "red" } }}>Удалить</ListItemText>
                         </MenuItem>
                       </Menu>
                     </TableCell>

@@ -207,7 +207,7 @@ function RunningJobs() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
+          height: "90vh",
         }}
       >
         <CircularProgress />
@@ -238,7 +238,7 @@ function RunningJobs() {
       
 
       {/* Таблица с данными */}
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
         <Table aria-label="running jobs table">
           <TableHead sx={{ "& .MuiTableCell-root": { color: "black" } }}>
             <TableRow>
@@ -490,6 +490,7 @@ function fetchMockRunningJobs() {
           disk_space: 250,
           pricePerHour: 3.5,
         },
+        
       ];
       const shouldFail = false;
       if (shouldFail) {

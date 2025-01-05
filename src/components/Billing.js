@@ -190,7 +190,7 @@ function Billing() {
         />
       </Box>
       {/* Transaction history section */}
-      <Box sx={{ marginTop: "36px" }}>
+      <Box sx={{ marginTop: "30px" }}>
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>

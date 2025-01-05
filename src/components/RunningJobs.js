@@ -235,14 +235,7 @@ function RunningJobs() {
       <Typography variant="h4" gutterBottom>
         Выполняемые задачи
       </Typography>
-      {currentOrganization && (
-        <Typography variant="h5" gutterBottom>
-          Выполняемые задачи для{" "}
-          <Box component="span" sx={{ color: "secondary.main" }}>
-            {currentOrganization.name}
-          </Box>
-        </Typography>
-      )}
+      
 
       {/* Таблица с данными */}
       <TableContainer component={Paper}>
@@ -368,9 +361,9 @@ function RunningJobs() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={modalStyle}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          {/* <Typography id="modal-modal-title" variant="h6" component="h2">
             Логи задания {currentJobId}
-          </Typography>
+          </Typography> */}
           <Box
             sx={{
               maxHeight: "300px",

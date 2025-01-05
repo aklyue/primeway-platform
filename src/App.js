@@ -5,7 +5,7 @@ import {
   Link,
   useLocation,
   useNavigate,
-  BrowserRouter as Router, // Добавлено здесь
+  BrowserRouter as Router,
 } from "react-router-dom";
 import {
   Drawer,
@@ -13,7 +13,6 @@ import {
   ListItem,
   ListItemText,
   Toolbar,
-  IconButton,
   Avatar,
   CssBaseline,
   AppBar,
@@ -22,6 +21,8 @@ import {
   Modal,
   Tooltip,
   ListItemButton,
+  ButtonBase,
+  CircularProgress,
 } from "@mui/material";
 import RunningJobs from "./components/RunningJobs";
 import CompletedJobs from "./components/CompletedJobs";
@@ -62,19 +63,13 @@ export function Layout() {
     setOpenCaptchaModal,
     openRegistrationModal,
     setOpenRegistrationModal,
-    loading, // Получаем состояние загрузки
+    loading,
   } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
 
   const snowflakeImage = new Image();
   snowflakeImage.src = snowflakeSvg;
-
-  useEffect(() => {
-    if (!loading) {
-      setOpenRegistrationModal(!isLoggedIn);
-    }
-  }, [isLoggedIn]);
 
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
@@ -85,46 +80,31 @@ export function Layout() {
       !lastCaptchaTime ||
       currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes
     ) {
-      setOpenCaptchaModal(true);
       return true; // Капча требуется
     } else {
-      setOpenCaptchaModal(false);
       return false; // Капча не требуется
     }
   };
 
-  // Проверяем капчу и обновляем состояния при изменении маршрута или авторизации
   useEffect(() => {
-    const captchaRequired = checkCaptcha();
+    if (!loading) {
+      const captchaRequired = checkCaptcha();
 
-    if (!isLoggedIn) {
-      if (!captchaRequired) {
-        // Если капча не требуется (уже пройдена недавно), открываем модальное окно регистрации
-        setOpenRegistrationModal(true);
+      setOpenCaptchaModal(captchaRequired);
+
+      if (!isLoggedIn) {
+        if (!captchaRequired) {
+          // Если капча не требуется, открываем модальное окно регистрации
+          setOpenRegistrationModal(true);
+        } else {
+          // Если капча требуется, закрываем модальное окно регистрации
+          setOpenRegistrationModal(false);
+        }
       } else {
-        // Если капча требуется, закрываем модальное окно регистрации до прохождения капчи
         setOpenRegistrationModal(false);
       }
-    } else {
-      setOpenRegistrationModal(false);
     }
-  }, [isLoggedIn, location]);
-  if (loading) {
-    // Отображаем плейсхолдер или спиннер
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          width: "100%",
-          height: "100vh",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6">Загрузка...</Typography>
-      </Box>
-    );
-  }
+  }, [isLoggedIn, loading, location]);
 
   const handleAvatarClick = () => {
     navigate("/billing");
@@ -142,6 +122,28 @@ export function Layout() {
       setOpenRegistrationModal(true);
     }
   };
+
+  if (loading) {
+    // Отображаем плейсхолдер или спиннер на всю страницу
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          width: "100vw",
+          height: "100vh",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "#F5F5F5",
+          zIndex: 9999,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -165,7 +167,6 @@ export function Layout() {
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backgroundColor: "#F5F5F5",
-          // borderBottom: "1px solid #353740",
         }}
       >
         <Toolbar>
@@ -196,37 +197,39 @@ export function Layout() {
           {isLoggedIn && (
             <>
               <Tooltip title={user?.username || "Пользователь"}>
-                <Box
-                  sx={{
-                    background:
-                      "linear-gradient(to right top, blue, skyblue, orange)", // Градиентный фон
-                    borderRadius: "51%", // Круглая форма
-                    padding: "2.4px", // Отступ для градиента
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <ButtonBase onClick={handleAvatarClick}>
                   <Box
                     sx={{
-                      backgroundColor: "#FFFFFF", // Белый фон для внутреннего слоя
-                      borderRadius: "50%", // Круглая форма
-                      padding: "2.6px", // Отступ для белой окантовки
+                      background:
+                        "linear-gradient(to right top, blue, skyblue, orange)",
+                      borderRadius: "51%",
+                      padding: "2.4px",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Avatar
-                      alt={user?.username}
-                      src={user?.avatar_url}
+                    <Box
                       sx={{
-                        width: 40, // Размер аватарки
-                        height: 40, // Размер аватарки
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "50%",
+                        padding: "2.6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
-                    />
+                    >
+                      <Avatar
+                        alt={user?.username}
+                        src={user?.avatar_url}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                        }}
+                      />
+                    </Box>
                   </Box>
-                </Box>
+                </ButtonBase>
               </Tooltip>
             </>
           )}
@@ -249,18 +252,6 @@ export function Layout() {
         <Toolbar />
 
         <List>
-          {/* {isLoggedIn && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                mb: 2,
-                justifyContent: "space-between",
-              }}
-            >
-              <OrganizationSwitcher />
-            </Box>
-          )} */}
           {/* Список элементов меню */}
           <ListItem disablePadding>
             <ListItemButton
@@ -342,7 +333,6 @@ export function Layout() {
           borderRadius: "20px",
         }}
       >
-        {/* <Toolbar /> */}
         <Routes>
           {/* Ваши маршруты */}
           <Route
@@ -353,7 +343,6 @@ export function Layout() {
               </ProtectedRoute>
             }
           />
-          {/* ... другие маршруты */}
           <Route
             path="/running-jobs"
             element={
@@ -402,51 +391,53 @@ export function Layout() {
               </ProtectedRoute>
             }
           />
-          {/* <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} /> */}
           <Route path="/auth/callback" element={<AuthCallback />} />
         </Routes>
 
         {/* Модальное окно регистрации для незарегистрированных пользователей */}
-        <Modal
-          open={openRegistrationModal}
-          onClose={() => {}}
-          BackdropProps={{
-            style: { backgroundColor: "rgba(0, 0, 0, 0.8)" },
-          }}
-          aria-labelledby="modal-title"
-          aria-describedby="modal-description"
-        >
-          <Box sx={modalStyle}>
-            <Typography
-              gutterBottom
-              id="modal-title"
-              variant="h5"
-              component="h2"
-              sx={{ textAlign: "center" }}
-            >
-              Добро пожаловать
-            </Typography>
+        {!loading && (
+          <Modal
+            open={openRegistrationModal}
+            onClose={() => {}}
+            BackdropProps={{
+              style: { backgroundColor: "rgba(0, 0, 0, 0.8)" },
+            }}
+            aria-labelledby="modal-title"
+            aria-describedby="modal-description"
+          >
+            <Box sx={modalStyle}>
+              <Typography
+                gutterBottom
+                id="modal-title"
+                variant="h5"
+                component="h2"
+                sx={{ textAlign: "center" }}
+              >
+                Добро пожаловать
+              </Typography>
 
-            <Box
-              sx={{
-                mt: 3,
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 2,
-              }}
-            >
-              <YandexAuth />
+              <Box
+                sx={{
+                  mt: 3,
+                  display: "flex",
+                  justifyContent: "center",
+                  zIndex: 2,
+                }}
+              >
+                <YandexAuth />
+              </Box>
             </Box>
-          </Box>
-        </Modal>
+          </Modal>
+        )}
 
         {/* Модальное окно капчи */}
-        <SubscriptionToCaptcha
-          open={openCaptchaModal}
-          onSuccess={handleCaptchaSuccess}
-          onClose={() => setOpenCaptchaModal(false)}
-        />
+        {!loading && (
+          <SubscriptionToCaptcha
+            open={openCaptchaModal}
+            onSuccess={handleCaptchaSuccess}
+            onClose={() => setOpenCaptchaModal(false)}
+          />
+        )}
       </Box>
     </Box>
   );

@@ -10,6 +10,7 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
       disableEscapeKeyDown
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
+      // sx={{zIndex:'99999'}}
       BackdropProps={{
         style: { backgroundColor: "#FFFFFF" },
       }}

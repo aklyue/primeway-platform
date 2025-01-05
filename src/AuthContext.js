@@ -18,7 +18,9 @@ const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem("auth_token");
       if (token) {
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${token}`;
         const response = await axiosInstance.get("/auth/me");
         console.log("fetchUserData response", response);
         setUser(response.data);
@@ -37,7 +39,9 @@ const AuthProvider = ({ children }) => {
       setAuthToken(null);
       setIsLoggedIn(false);
     } finally {
-      setLoading(false); 
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     }
   };
 
@@ -52,7 +56,6 @@ const AuthProvider = ({ children }) => {
     setIsLoggedIn(true);
     localStorage.setItem("auth_token", token);
   };
-  
 
   const logout = () => {
     localStorage.removeItem("auth_token");

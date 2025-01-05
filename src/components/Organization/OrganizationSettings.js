@@ -46,6 +46,7 @@ const OrganizationSettings = () => {
     try {
       const response = await getOrgMembers(currentOrganization.id);
       setMembers(response.data); // Убедитесь, что ваш API возвращает список членов
+      
     } catch (error) {
       console.error("Error fetching members:", error);
       setErrorMembers("Ошибка при получении членов организации");
@@ -143,7 +144,7 @@ const OrganizationSettings = () => {
       ) : (
         <List sx={{ maxWidth: 400 }}>
           {members.map((member) => (
-            <ListItem key={member.id}>
+            <ListItem key={member.user_id}>
               <ListItemText primary={member.email} />
               {/* Показываем иконку удаления только если:
                    1) Текущий пользователь является владельцем

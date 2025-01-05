@@ -154,7 +154,7 @@ function CompletedJobs() {
   if (loading) {
     return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '90vh' }}
       >
         <CircularProgress />
       </Box>
@@ -178,7 +178,7 @@ function CompletedJobs() {
       </Typography>
 
       {/* Таблица с данными */}
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
         <Table aria-label="completed jobs table">
           <TableHead sx={{ '& .MuiTableCell-root': { color: 'black' } }}>
             <TableRow>

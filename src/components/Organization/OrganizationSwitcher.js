@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { OrganizationContext } from "./OrganizationContext";
 import {
   MenuItem,
@@ -68,10 +68,16 @@ const OrganizationSwitcher = () => {
                 whiteSpace: "normal",
               }}
             >
-              {currentOrganization ? currentOrganization.name : "Organization"}
+              <Box component="span" sx={{ color: "secondary.main" }}>
+                {currentOrganization
+                  ? currentOrganization.name
+                  : "Organization"}
+              </Box>
             </Typography>
           </Box>
-          <UnfoldMoreIcon sx={{ ml: "auto", color: "#353740", height: "15px" }} />
+          <UnfoldMoreIcon
+            sx={{ ml: "auto", color: "#353740", height: "15px" }}
+          />
         </Button>
       </Box>
 
@@ -81,12 +87,12 @@ const OrganizationSwitcher = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
+          vertical: "bottom",
+          horizontal: "left",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: "top",
+          horizontal: "left",
         }}
       >
         {/* Контейнер с flex для расположения списка и подсказки */}
@@ -98,10 +104,13 @@ const OrganizationSwitcher = () => {
           }}
         >
           {/* Список организаций */}
-          <Box sx={{ minWidth: 200,  borderRight: '1px solid rgba(0,0,0,0.2)' }}>
+          <Box sx={{ minWidth: 200, borderRight: "1px solid rgba(0,0,0,0.2)" }}>
             {organizations.length > 0 ? (
               organizations.map((org) => (
-                <MenuItem key={org.id} onClick={() => handleOrganizationSelect(org)}>
+                <MenuItem
+                  key={org.id}
+                  onClick={() => handleOrganizationSelect(org)}
+                >
                   <ListItemText>{org.name}</ListItemText>
                 </MenuItem>
               ))
@@ -113,7 +122,7 @@ const OrganizationSwitcher = () => {
           </Box>
 
           {/* Подсказка */}
-          <Box sx={{ marginLeft: 2, maxWidth: 300, opacity:'0.8' }}>
+          <Box sx={{ marginLeft: 2, maxWidth: 300, opacity: "0.8" }}>
             <Typography variant="body2" color="text.secondary">
               При регистрации создается ваша организация, где вы работаете. Вы
               можете приглашать других пользователей в настройках организации.

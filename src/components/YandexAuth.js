@@ -129,6 +129,8 @@ const YandexAuth = () => {
         margin: '20px',
         minWidth: '430px',
         minHeight: '36px',
+        borderRadius:'20px',
+        border:'1px solid black'
       }}
     >
       {/* Контейнер для кнопки YaAuthSuggest */}

@@ -39,6 +39,7 @@ import AuthCallback from "./components/AuthCallback";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
+import Tasks from "./components/Tasks";
 
 const drawerWidth = 240;
 
@@ -48,10 +49,9 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 600,
-  bgcolor: "#e3e3e3",
-  border: "2px solid #000",
-  boxShadow: 24,
-  borderRadius: "10px",
+  bgcolor: "#FFFFFF",
+  outline: "none",
+  borderRadius: "15px",
   p: 4,
 };
 
@@ -150,7 +150,7 @@ export function Layout() {
       sx={{
         display: "flex",
         width: "100%",
-        height: "100%",
+        height: "100vh",
         backgroundColor: "#F5F5F5",
       }}
     >
@@ -279,10 +279,20 @@ export function Layout() {
           <ListItem disablePadding>
             <ListItemButton
               component={Link}
+              to="/tasks"
+              selected={location.pathname === "/tasks"}
+            >
+              <ListItemText primary="Задачи" />
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
               to="/billing"
               selected={location.pathname === "/billing"}
             >
-              <ListItemText primary="Billing" />
+              <ListItemText primary="Платежи" />
             </ListItemButton>
           </ListItem>
 
@@ -292,7 +302,7 @@ export function Layout() {
               to="/api-keys"
               selected={location.pathname === "/api-keys"}
             >
-              <ListItemText primary="API Keys" />
+              <ListItemText primary="API Ключи" />
             </ListItemButton>
           </ListItem>
 
@@ -302,7 +312,7 @@ export function Layout() {
               to="/settings"
               selected={location.pathname === "/settings"}
             >
-              <ListItemText primary="Settings" />
+              <ListItemText primary="Настройки" />
             </ListItemButton>
           </ListItem>
 
@@ -312,7 +322,7 @@ export function Layout() {
               to="/organization-settings"
               selected={location.pathname === "/organization-settings"}
             >
-              <ListItemText primary="Organization Settings" />
+              <ListItemText primary="Настройки организации" />
             </ListItemButton>
           </ListItem>
         </List>
@@ -331,6 +341,8 @@ export function Layout() {
           padding: "40px",
           marginTop: "60px",
           borderRadius: "20px",
+          height: "calc(100vh - 64px)", 
+          overflowY: "auto",
         }}
       >
         <Routes>
@@ -356,6 +368,14 @@ export function Layout() {
             element={
               <ProtectedRoute>
                 <CompletedJobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
               </ProtectedRoute>
             }
           />
@@ -400,7 +420,7 @@ export function Layout() {
             open={openRegistrationModal}
             onClose={() => {}}
             BackdropProps={{
-              style: { backgroundColor: "rgba(0, 0, 0, 0.8)" },
+              style: { backgroundColor: "#FFFFFF" },
             }}
             aria-labelledby="modal-title"
             aria-describedby="modal-description"

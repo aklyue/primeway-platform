@@ -5,11 +5,15 @@ import { CircularProgress } from '@mui/material';
 
 const YandexAuth = () => {
   const navigate = useNavigate();
-  const { login, authToken } = useContext(AuthContext);
+  const { login, authToken, loading } = useContext(AuthContext);
   const isInitialized = useRef(false);
   const [loadingButton, setLoadingButton] = useState(true);
 
   useEffect(() => {
+    if (loading) {
+      // Если продолжается загрузка, не инициализируем ничего
+      return;
+    }
     if (authToken) {
       // Если пользователь уже авторизован, перенаправляем его
       navigate('/running-jobs');

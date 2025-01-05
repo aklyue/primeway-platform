@@ -285,9 +285,9 @@ function CompletedJobs() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={modalStyle}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          {/* <Typography id="modal-modal-title" variant="h6" component="h2">
             Логи задания {currentJobId}
-          </Typography>
+          </Typography> */}
           {logsLoading ? (
             <CircularProgress />
           ) : (

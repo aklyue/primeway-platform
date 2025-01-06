@@ -1,5 +1,3 @@
-// Billing.js
-
 import React, { useState, useContext, useEffect } from "react";
 import {
   Box,
@@ -28,6 +26,8 @@ import TPaymentWidget from "./TPaymentWidget";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
 import axiosInstance from "../api";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 ChartJS.register(
   CategoryScale,
@@ -54,6 +54,8 @@ function Billing() {
   const [transactions, setTransactions] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [errorTransactions, setErrorTransactions] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Fetch wallet balance and transaction history when currentOrganization changes
   useEffect(() => {
@@ -163,7 +165,7 @@ function Billing() {
           flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "16px",
+          marginBottom: "10px",
         }}
       >
         {isLoadingBalance ? (
@@ -237,31 +239,31 @@ function Billing() {
         ) : (
           <Typography>Нет транзакций для отображения.</Typography>
         )}
-      </Box>
 
-      {/* Chart of spending data */}
-      <Box
-        sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}
-      >
-        <Box sx={{ width: "600px" }}>
-          <Typography variant="h6" gutterBottom>
-            Расходы за {currentMonth}
-          </Typography>
-          <Bar
-            data={spendingData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "top",
+        {/* Chart of spending data */}
+        <Box
+          sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}
+        >
+          <Box sx={{ width: isMobile ? "375px" : "625px" }}>
+            <Typography variant="h6" gutterBottom>
+              Расходы за {currentMonth}
+            </Typography>
+            <Bar
+              data={spendingData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  title: {
+                    display: true,
+                    text: `Статистика расходов за ${currentMonth}`,
+                  },
                 },
-                title: {
-                  display: true,
-                  text: `Статистика расходов за ${currentMonth}`,
-                },
-              },
-            }}
-          />
+              }}
+            />
+          </Box>
         </Box>
       </Box>
     </Box>

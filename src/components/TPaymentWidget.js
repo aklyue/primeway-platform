@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField } from "@mui/material";
 
+
 function TPaymentWidget(props) {
   const { user, token, onSuccess, onError } = props;
   const [addFunds, setAddFunds] = useState(""); // Сумма пополнения
   const [orderId, setOrderId] = useState(""); // ID платежа
   const [loading, setLoading] = useState(false); // Индикатор загрузки
   const formRef = useRef(null);
+
+
 
   useEffect(() => {
     // Загрузка скрипта платежного виджета
@@ -29,32 +32,35 @@ function TPaymentWidget(props) {
   const createPaymentOnBackend = async (amount) => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.primeway.io/tbank/inner/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Если требуется авторизация, раскомментируйте следующую строку
-          // 'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          billing_account_id: user?.billing_account_id || '',
-          user_id: user?.id || '',
-          credits: amount,
-        }),
-      });
-      console.log('User в TPaymentWidget:', user);
-      console.log('billing_account_id:', user?.billing_account_id);
+      const response = await fetch(
+        "https://api.primeway.io/tbank/inner/create-payment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Если требуется авторизация, раскомментируйте следующую строку
+            // 'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            billing_account_id: user?.billing_account_id || "",
+            user_id: user?.id || "",
+            credits: amount,
+          }),
+        }
+      );
+      console.log("User в TPaymentWidget:", user);
+      console.log("billing_account_id:", user?.billing_account_id);
       const result = await response.json();
 
       if (response.ok && result?.orderId) {
         setOrderId(result.orderId);
         return result.orderId;
       } else {
-        throw new Error(result.message || 'Ошибка при создании оплаты.');
+        throw new Error(result.message || "Ошибка при создании оплаты.");
       }
     } catch (error) {
-      console.error('Ошибка создания оплаты:', error);
-      alert('Ошибка при создании оплаты: ' + error.message);
+      console.error("Ошибка создания оплаты:", error);
+      alert("Ошибка при создании оплаты: " + error.message);
       return null;
     } finally {
       setLoading(false);
@@ -72,19 +78,20 @@ function TPaymentWidget(props) {
 
     // Создание оплаты на бэкенде
     const createdOrderId = await createPaymentOnBackend(amount);
-    console.log("createdOrderId", createdOrderId)
+    console.log("createdOrderId", createdOrderId);
 
     if (createdOrderId) {
       // Обновляем значение orderId в форме
       if (formRef.current) {
-        const orderIdInput = formRef.current.querySelector('input[name="order"]');
-        console.log("orderIdInput", orderIdInput)
+        const orderIdInput = formRef.current.querySelector(
+          'input[name="order"]'
+        );
+        console.log("orderIdInput", orderIdInput);
         if (orderIdInput) {
           orderIdInput.value = createdOrderId;
         }
       }
 
-      
       // Запускаем платеж через Tinkoff Pay
       if (window.pay && formRef.current) {
         try {
@@ -93,7 +100,7 @@ function TPaymentWidget(props) {
               if (paymentResult.Success) {
                 // Платеж успешен
                 if (onSuccess) {
-                  console.log("paymentResult", paymentResult)
+                  console.log("paymentResult", paymentResult);
                   onSuccess(paymentResult);
                 }
               } else {
@@ -116,14 +123,14 @@ function TPaymentWidget(props) {
     }
   };
 
-  console.log("orderId", orderId)
+
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleStartPayment}
-      className="payform-tbank"
-    >
-      <input type="hidden" name="terminalkey" value={process.env.REACT_APP_TINKOFF_TERMINAL_KEY} />
+    <form ref={formRef} onSubmit={handleStartPayment} className="payform-tbank">
+      <input
+        type="hidden"
+        name="terminalkey"
+        value={process.env.REACT_APP_TINKOFF_TERMINAL_KEY}
+      />
       <input type="hidden" name="frame" value="false" />
       <input type="hidden" name="language" value="ru" />
       <input type="hidden" name="amount" value={parseFloat(addFunds)} />
@@ -136,7 +143,7 @@ function TPaymentWidget(props) {
         sx={{
           display: "flex",
           alignItems: "flex-start",
-          gap: "16px",
+          gap: "15px",
           marginTop: "16px",
         }}
       >
@@ -150,24 +157,25 @@ function TPaymentWidget(props) {
         />
         <button
           style={{
-            height: '50px',
+            height: "48px",
             backgroundColor: "#FFDD2D", //#fab619
             color: "#333",
-            fontSize: '15px',
+            fontSize: "15px",
             padding: "6px 12px",
             borderRadius: "10px",
             border: "none",
             cursor: "pointer",
-            display:'flex',
-            justifyContent:'center',
-            alignItems:'center',
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            whiteSpace: "nowrap",
           }}
           type="submit"
           className="payform-tbank-btn"
           disabled={loading}
         >
           {loading ? "Создание оплаты..." : "Оплатить c "}
-          <img width={80} height={40} src="./tbank.svg" alt="Tbank" />
+          <img width={75} height={40} src="./tbank.svg" alt="Tbank" />
         </button>
       </Box>
     </form>

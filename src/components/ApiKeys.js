@@ -325,7 +325,7 @@ function ApiKeys() {
         ) : apiKeys.length === 0 ? (
           <Typography>Еще не создано ни одного API ключа</Typography>
         ) : (
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
             <Table aria-label="api keys table">
               <TableHead sx={{ "& .MuiTableCell-root": { color: "black" ,textAlign:'center' } }}>
                 <TableRow>

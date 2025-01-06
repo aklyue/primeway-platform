@@ -2,21 +2,27 @@ import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
   TableContainer,
+  Table,
   TableHead,
   TableRow,
-  Paper,
-  CircularProgress,
+  TableCell,
+  TableBody,
   IconButton,
   Tooltip,
+  Button,
 } from "@mui/material";
 import { ContentCopy as ContentCopyIcon } from "@mui/icons-material";
 import axiosInstance from "../api";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 function Tasks() {
   const { authToken } = useContext(AuthContext);
@@ -24,16 +30,17 @@ function Tasks() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [filter, setFilter] = useState('all'); // Состояние для фильтра
+  const [filter, setFilter] = useState("all"); // Состояние для фильтра
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     if (currentOrganization && authToken) {
       setLoading(true);
 
       const endpoint =
-        filter === 'running'
-          ? `/jobs/${currentOrganization.id}/running` // Обновленный ендпоинт
+        filter === "running"
+          ? `/jobs/${currentOrganization.id}/running`
           : `/jobs/${currentOrganization.id}`;
 
       axiosInstance
@@ -112,28 +119,34 @@ function Tasks() {
   if (!jobs || jobs.length === 0) {
     return (
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" gutterBottom>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ fontSize: { xs: "1.2rem", sm: "1.6rem" } }}
+          >
             Задачи
           </Typography>
-          <Box
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Button
+            variant="outlined"
             sx={{
-              ml: 2,
-              padding: '6px 12px',
-              border: '1px solid',
-              borderColor: filter === 'running' ? 'green' : 'grey.400',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              backgroundColor: filter === 'running' ? 'green' : 'transparent',
-              color: filter === 'running' ? 'white' : 'inherit',
-              '&:hover': {
-                borderColor: 'green',
+              mt: 1,
+              borderColor: filter === "running" ? "green" : "grey.400",
+              color: filter === "running" ? "green" : "inherit",
+              backgroundColor:
+                filter === "running" ? "rgba(0, 128, 0, 0.1)" : "transparent",
+              textTransform: "none",
+              borderRadius: "20px",
+              "&:hover": {
+                borderColor: "green",
               },
             }}
-            onClick={() => setFilter(filter === 'running' ? 'all' : 'running')}
+            onClick={() => setFilter(filter === "running" ? "all" : "running")}
           >
             Running
-          </Box>
+          </Button>
         </Box>
         <Typography sx={{ textAlign: "center", fontSize: "18px", mt: "40px" }}>
           Задачи не найдены.
@@ -142,237 +155,212 @@ function Tasks() {
     );
   }
 
+  // Step 1: Define possible columns
+  const possibleColumns = [
+    { field: "job_id", headerName: "Job ID" },
+    { field: "job_name", headerName: "Job Name" },
+    { field: "job_type", headerName: "Job Type" },
+    { field: "created_at", headerName: "Created At" },
+    { field: "status", headerName: "Status" },
+    { field: "start_time", headerName: "Start Time" },
+    { field: "build_status", headerName: "Build Status" },
+    { field: "last_execution_status", headerName: "Last Execution Status" },
+    {
+      field: "last_execution_start_time",
+      headerName: "Last Execution Start Time",
+    },
+    { field: "last_execution_end_time", headerName: "Last Execution End Time" },
+    { field: "gpu_type", headerName: "GPU Type" },
+    // Add other columns as needed
+  ];
+
+  // Step 2: Determine which columns have data
+  const displayColumns = possibleColumns.filter((column) =>
+    jobs.some(
+      (job) =>
+        job[column.field] !== undefined &&
+        job[column.field] !== null &&
+        job[column.field] !== ""
+    )
+  );
+
+  const renderCellContent = (job, field) => {
+    const value = job[field];
+    switch (field) {
+      case "job_id":
+        const jobId = value || job.id || "N/A";
+        const fullJobId = value || job.id || "";
+        return (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            {formatJobId(jobId)}
+            {fullJobId && (
+              <Tooltip title="Скопировать Job ID">
+                <IconButton
+                  size="small"
+                  onClick={() => handleCopy(fullJobId)}
+                  sx={{ ml: 1 }}
+                >
+                  <ContentCopyIcon fontSize="10px" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        );
+      case "created_at":
+      case "start_time":
+      case "last_execution_start_time":
+      case "last_execution_end_time":
+        return value ? new Date(value).toLocaleString() : "N/A";
+      case "status":
+      case "build_status":
+      case "last_execution_status":
+        return value || "N/A";
+      case "job_type":
+        return (
+          <Typography
+            sx={{
+              padding: isMobile ? "0px 5px" : "3px 7px",
+              borderRadius: "5px",
+              backgroundColor: "#ff77004d",
+              color:
+                value === "deploy"
+                  ? "blue"
+                  : value === "run"
+                  ? "green"
+                  : "inherit",
+            }}
+          >
+            {value || "N/A"}
+          </Typography>
+        );
+      case "gpu_type":
+        return value
+          ? typeof value === "string"
+            ? value
+            : value.type
+            ? value.type
+            : "N/A"
+          : "N/A";
+      default:
+        return value || "N/A";
+    }
+  };
+
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4" gutterBottom>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ fontSize: { xs: "1.2rem", sm: "1.6rem" } }}
+        >
           Задачи
         </Typography>
-        <Box
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Button
+          variant="outlined"
           sx={{
-            ml: 2,
-            padding: '6px 12px',
-            border: '1px solid',
-            borderColor: filter === 'running' ? 'green' : 'grey.400',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            backgroundColor: filter === 'running' ? 'green' : 'transparent',
-            color: filter === 'running' ? 'white' : 'inherit',
-            '&:hover': {
-              borderColor: 'green',
+            mt: 1,
+            borderColor: filter === "running" ? "green" : "grey.400",
+            color: filter === "running" ? "green" : "inherit",
+            backgroundColor:
+              filter === "running" ? "rgba(0, 128, 0, 0.1)" : "transparent",
+            textTransform: "none",
+            borderRadius: "20px",
+            "&:hover": {
+              borderColor: "green",
             },
           }}
-          onClick={() => setFilter(filter === 'running' ? 'all' : 'running')}
+          onClick={() => setFilter(filter === "running" ? "all" : "running")}
         >
           Running
-        </Box>
+        </Button>
       </Box>
+      {isMobile ? (
+        // Mobile view (List)
+        <List>
+          {jobs.map((job) => {
+            const jobId = job.job_id || job.id || "N/A";
+            const fullJobId = job.job_id || job.id || "";
 
-      <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
-        <Table>
-          {filter === 'running' ? (
-            <>
-              {/* Таблица для "running" задач */}
-              <TableHead
+            return (
+              <Paper
+                key={jobId}
                 sx={{
-                  "& .MuiTableCell-root": {
-                    color: "black",
-                    textAlign: "center",
-                  },
+                  mb: 2,
+                  p: 2,
+                  boxShadow: "none",
+                  borderBottom: "1px solid rgba(0,0,0,0.2)",
                 }}
+                elevation={1}
               >
-                <TableRow>
-                  <TableCell>Job ID</TableCell>
-                  <TableCell>Job Name</TableCell>
-                  <TableCell>Job Type</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Start Time</TableCell>
-                  <TableCell>GPU Type</TableCell>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Typography variant="h6">{job.job_name || "N/A"}</Typography>
+                </Box>
+                {/* Dynamically render available fields */}
+                {displayColumns.map((column) => (
+                  <Typography
+                    key={column.field}
+                    variant="body2"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <strong>{column.headerName}:</strong>{" "}
+                    {renderCellContent(job, column.field)}
+                  </Typography>
+                ))}
+              </Paper>
+            );
+          })}
+        </List>
+      ) : (
+        // Desktop and tablet view (Table)
+        <TableContainer
+          component={Paper}
+          sx={{ boxShadow: "none", overflowX: "auto", boxShadow: "none" }}
+        >
+          <Table>
+            <TableHead
+              sx={{
+                width: "100%",
+                height: "80px",
+                "& .MuiTableCell-root": {
+                  color: "black",
+                  textAlign: "center",
+                },
+              }}
+            >
+              <TableRow>
+                {displayColumns.map((column) => (
+                  <TableCell key={column.field}>{column.headerName}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody
+              sx={{
+                "& .MuiTableCell-root": {
+                  color: "#6e6e80",
+                  textAlign: "center",
+                },
+              }}
+            >
+              {jobs.map((job) => (
+                <TableRow key={job.job_id || job.id || Math.random()}>
+                  {displayColumns.map((column) => (
+                    <TableCell key={column.field}>
+                      {renderCellContent(job, column.field)}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              </TableHead>
-              <TableBody
-                sx={{
-                  "& .MuiTableCell-root": {
-                    color: "#6e6e80",
-                    textAlign: "center",
-                  },
-                }}
-              >
-                {jobs.map((job) => {
-                  const jobId = job.job_id || job.id || "N/A";
-                  const fullJobId = job.job_id || job.id || "";
-
-                  return (
-                    <TableRow key={jobId}>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" justifyContent="center">
-                          {formatJobId(jobId)}
-                          {fullJobId && (
-                            <Tooltip title="Скопировать Job ID">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleCopy(fullJobId)}
-                                sx={{ ml: 1 }}
-                              >
-                                <ContentCopyIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.job_name === "string" ? job.job_name : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.job_type === "string" ? job.job_type : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.created_at
-                          ? new Date(job.created_at).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.status === "string" ? job.status : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.start_time
-                          ? new Date(job.start_time).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.gpu_type
-                          ? typeof job.gpu_type === "string"
-                            ? job.gpu_type
-                            : job.gpu_type.type
-                            ? job.gpu_type.type
-                            : "N/A"
-                          : "N/A"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </>
-          ) : (
-            <>
-              {/* Таблица для всех задач */}
-              <TableHead
-                sx={{
-                  "& .MuiTableCell-root": {
-                    color: "black",
-                    textAlign: "center",
-                  },
-                }}
-              >
-                <TableRow>
-                  <TableCell>Job ID</TableCell>
-                  <TableCell>Job Name</TableCell>
-                  <TableCell>Job Type</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell>Build Status</TableCell>
-                  <TableCell>Last Execution Status</TableCell>
-                  <TableCell>Last Execution Start Time</TableCell>
-                  <TableCell>Last Execution End Time</TableCell>
-                  <TableCell>GPU Type</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody
-                sx={{
-                  "& .MuiTableCell-root": {
-                    color: "#6e6e80",
-                    textAlign: "center",
-                  },
-                }}
-              >
-                {jobs.map((job) => {
-                  const jobId = job.job_id || job.id || "N/A";
-                  const fullJobId = job.job_id || job.id || "";
-
-                  return (
-                    <TableRow key={jobId}>
-                      <TableCell sx={{ whiteSpace: "nowrap" }}>
-                        <Box display="flex" alignItems="center">
-                          {formatJobId(jobId)}
-                          {fullJobId && (
-                            <Tooltip title="Скопировать Job ID">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleCopy(fullJobId)}
-                                sx={{ ml: 1 }}
-                              >
-                                <ContentCopyIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.job_name === "string"
-                          ? job.job_name
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          sx={{
-                            padding: "3px 7px",
-                            borderRadius: "5px",
-                            backgroundColor: "#ff77004d",
-                            color:
-                              job.job_type === "deploy"
-                                ? "blue"
-                                : job.job_type === "run"
-                                ? "green"
-                                : "inherit",
-                          }}
-                        >
-                          {typeof job.job_type === "string"
-                            ? job.job_type
-                            : "N/A"}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {job.created_at
-                          ? new Date(job.created_at).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.build_status === "string"
-                          ? job.build_status
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {typeof job.last_execution_status === "string"
-                          ? job.last_execution_status
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.last_execution_start_time
-                          ? new Date(job.last_execution_start_time).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.last_execution_end_time
-                          ? new Date(job.last_execution_end_time).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {job.gpu_type
-                          ? typeof job.gpu_type === "string"
-                            ? job.gpu_type
-                            : job.gpu_type.type
-                            ? job.gpu_type.type
-                            : "N/A"
-                          : "N/A"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </>
-          )}
-        </Table>
-      </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 }

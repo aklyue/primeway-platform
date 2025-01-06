@@ -2,12 +2,18 @@ import React, { useEffect, useRef, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import { CircularProgress } from '@mui/material';
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const YandexAuth = () => {
   const navigate = useNavigate();
   const { login, authToken, loading } = useContext(AuthContext);
   const isInitialized = useRef(false);
   const [loadingButton, setLoadingButton] = useState(true);
+
+  
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     if (loading) {
@@ -127,7 +133,7 @@ const YandexAuth = () => {
       style={{
         position: 'relative',
         margin: '20px',
-        minWidth: '430px',
+        minWidth: isMobile ? '280px' : '430px',
         minHeight: '36px',
         borderRadius:'20px',
         border:'1px solid black'

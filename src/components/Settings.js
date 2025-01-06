@@ -3,9 +3,8 @@ import { Box, Typography, Button, TextField, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../AuthContext";
 
-
 function Settings() {
-  // Mock user data
+  const { user } = useContext(AuthContext);
   const [userData] = useState({
     name: "John Doe",
     email: "john.doe@example.com",
@@ -44,12 +43,10 @@ function Settings() {
     logout();
     navigate("/");
     localStorage.removeItem("lastCaptchaTime");
-
-
   };
 
   return (
-    <Box >
+    <Box>
       <Typography variant="h4" gutterBottom>
         Настройки
       </Typography>
@@ -57,12 +54,12 @@ function Settings() {
       {/* Display User Information */}
       <Box sx={{ marginBottom: "16px" }}>
         <Typography variant="h6" gutterBottom>
-        Информация о профиле
+          Информация о профиле
         </Typography>
         <TextField
           fullWidth
           label="Имя"
-          value={userData.name}
+          value={user.name || "Пусто"}
           InputProps={{
             readOnly: true,
           }}
@@ -71,7 +68,7 @@ function Settings() {
         <TextField
           fullWidth
           label="Email"
-          value={userData.email}
+          value={user.email || "Пусто"}
           InputProps={{
             readOnly: true,
           }}
@@ -79,9 +76,10 @@ function Settings() {
         />
       </Box>
 
-      {/* Password Change Section */}
-      <Box>
-        <Typography variant="h6" gutterBottom>Смена пароля</Typography>
+      {/* <Box>
+        <Typography variant="h6" gutterBottom>
+          Смена пароля
+        </Typography>
         <TextField
           fullWidth
           type="password"
@@ -106,8 +104,6 @@ function Settings() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           sx={{ marginBottom: "16px" }}
         />
-
-        {/* Error and Success Messages */}
         {errorMessage && (
           <Alert severity="error" sx={{ marginBottom: "16px" }}>
             {errorMessage}
@@ -118,19 +114,20 @@ function Settings() {
             {successMessage}
           </Alert>
         )}
-        <Box sx={{display:'flex', justifyContent:'space-between'}}>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handlePasswordChange}
-        >
-          Изменить пароль
-        </Button>
-        <Button variant="outlined" onClick={handleLogout} sx={{ color: "red" }}>
-          Выйти из аккаунта
-        </Button>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handlePasswordChange}
+          >
+            Изменить пароль
+          </Button>
+          
         </Box>
-      </Box>
+      </Box> */}
+      <Button variant="outlined" onClick={handleLogout} sx={{ color: "red" }}>
+        Выйти из аккаунта
+      </Button>
     </Box>
   );
 }

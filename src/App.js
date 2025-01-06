@@ -23,7 +23,9 @@ import {
   ListItemButton,
   ButtonBase,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import RunningJobs from "./components/RunningJobs";
 import CompletedJobs from "./components/CompletedJobs";
 import Billing from "./components/Billing";
@@ -40,6 +42,8 @@ import OrganizationSettings from "./components/Organization/OrganizationSettings
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
 import Tasks from "./components/Tasks";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const drawerWidth = 240;
 
@@ -49,6 +53,7 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 600,
+  maxWidth: "90%",
   bgcolor: "#FFFFFF",
   outline: "none",
   borderRadius: "15px",
@@ -67,6 +72,10 @@ export function Layout() {
   } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Проверяем, является ли устройство мобильным
+
+  const [mobileOpen, setMobileOpen] = useState(false); // Состояние для управления Drawer на мобильных устройствах
 
   const snowflakeImage = new Image();
   snowflakeImage.src = snowflakeSvg;
@@ -123,6 +132,87 @@ export function Layout() {
     }
   };
 
+  // Определяем, должен ли отображаться основной контент
+  const shouldRenderContent =
+    !openCaptchaModal && !openRegistrationModal && isLoggedIn;
+
+  // Блокируем скроллинг при открытых модальных окнах
+  useEffect(() => {
+    if (openCaptchaModal || openRegistrationModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [openCaptchaModal, openRegistrationModal]);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  // Содержимое Drawer
+  const drawer = (
+    <div>
+      <Toolbar />
+      <List>
+        {/* Список элементов меню */}
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/tasks"
+            selected={location.pathname === "/tasks"}
+            onClick={isMobile ? handleDrawerToggle : undefined}
+          >
+            <ListItemText primary="Задачи" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/billing"
+            selected={location.pathname === "/billing"}
+            onClick={isMobile ? handleDrawerToggle : undefined}
+          >
+            <ListItemText primary="Платежи" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/api-keys"
+            selected={location.pathname === "/api-keys"}
+            onClick={isMobile ? handleDrawerToggle : undefined}
+          >
+            <ListItemText primary="API Ключи" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/settings"
+            selected={location.pathname === "/settings"}
+            onClick={isMobile ? handleDrawerToggle : undefined}
+          >
+            <ListItemText primary="Настройки" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/organization-settings"
+            selected={location.pathname === "/organization-settings"}
+            onClick={isMobile ? handleDrawerToggle : undefined}
+          >
+            <ListItemText primary="Настройки организации" />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </div>
+  );
+
   if (loading) {
     // Отображаем плейсхолдер или спиннер на всю страницу
     return (
@@ -162,259 +252,220 @@ export function Layout() {
         snowflakeCount={30}
         style={{ zIndex: 10000, opacity: "0.6" }}
       />
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "#F5F5F5",
-        }}
-      >
-        <Toolbar>
-          <Typography
-            variant="h5"
-            noWrap
-            component={Link}
-            to="/"
+
+      {/* Отображаем AppBar и Drawer только если контент должен быть видим */}
+      {shouldRenderContent && (
+        <>
+          <AppBar
+            position="fixed"
             sx={{
-              textDecoration: "none",
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "#F5F5F5",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              PrimeWay
+            <Toolbar>
+              {isMobile && (
+                <IconButton
+                  color="#202123"
+                  aria-label="open drawer"
+                  edge="start"
+                  onClick={handleDrawerToggle}
+                  sx={{ mr: "4px", padding: "6px" }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+
               <Box
+                sx={{ display: "flex", alignItems: "center", color: "#202123" }}
+              >
+                <Typography
+                  variant="h5"
+                  noWrap
+                  component={Link}
+                  to="/"
+                  sx={{
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  PrimeWay
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <OrganizationSwitcher />
+                </Box>
+              </Box>
+
+              <Box sx={{ flexGrow: 1 }} />
+
+              {isLoggedIn && (
+                <>
+                  <Tooltip title={user?.username || "Пользователь"}>
+                    <ButtonBase onClick={handleAvatarClick}>
+                      <Box
+                        sx={{
+                          background:
+                            "linear-gradient(to right top, blue, skyblue, orange)",
+                          borderRadius: "51%",
+                          padding: "2.4px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            backgroundColor: "#FFFFFF",
+                            borderRadius: "50%",
+                            padding: "2.6px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Avatar
+                            alt={user?.username}
+                            src={user?.avatar_url}
+                            sx={{
+                              width: isMobile ? 32 : 40,
+                              height: isMobile ? 32 : 40,
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </ButtonBase>
+                  </Tooltip>
+                </>
+              )}
+            </Toolbar>
+          </AppBar>
+
+          {/* Условно рендерим Drawer */}
+          <Box
+            component="nav"
+            sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+          >
+            {/* Мобильный Drawer */}
+            {isMobile && (
+              <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                  keepMounted: true, // Better open performance on mobile.
+                }}
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  "& .MuiDrawer-paper": {
+                    width: drawerWidth,
+                    backgroundColor: "#F5F5F5",
+                  },
                 }}
               >
-                <OrganizationSwitcher />
-              </Box>
-            </Box>
-          </Typography>
-          <Box sx={{ flexGrow: 1 }} />
+                {drawer}
+              </Drawer>
+            )}
+            {/* Десктопный Drawer */}
+            {!isMobile && (
+              <Drawer
+                variant="permanent"
+                sx={{
+                  width: drawerWidth,
+                  flexShrink: 0,
+                  "& .MuiDrawer-paper": {
+                    width: drawerWidth,
+                    boxSizing: "border-box",
+                    backgroundColor: "#F5F5F5",
+                    border: "none",
+                  },
+                }}
+                open
+              >
+                {drawer}
+              </Drawer>
+            )}
+          </Box>
+        </>
+      )}
 
-          {isLoggedIn && (
-            <>
-              <Tooltip title={user?.username || "Пользователь"}>
-                <ButtonBase onClick={handleAvatarClick}>
-                  <Box
-                    sx={{
-                      background:
-                        "linear-gradient(to right top, blue, skyblue, orange)",
-                      borderRadius: "51%",
-                      padding: "2.4px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        backgroundColor: "#FFFFFF",
-                        borderRadius: "50%",
-                        padding: "2.6px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Avatar
-                        alt={user?.username}
-                        src={user?.avatar_url}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </ButtonBase>
-              </Tooltip>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            backgroundColor: "#F5F5F5",
-            border: "none",
-          },
-        }}
-      >
-        <Toolbar />
-
-        <List>
-          {/* Список элементов меню */}
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/running-jobs"
-              selected={
-                location.pathname === "/running-jobs" ||
-                location.pathname === "/"
-              }
-            >
-              <ListItemText primary="Running Jobs" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/completed-jobs"
-              selected={location.pathname === "/completed-jobs"}
-            >
-              <ListItemText primary="Completed Jobs" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/tasks"
-              selected={location.pathname === "/tasks"}
-            >
-              <ListItemText primary="Задачи" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/billing"
-              selected={location.pathname === "/billing"}
-            >
-              <ListItemText primary="Платежи" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/api-keys"
-              selected={location.pathname === "/api-keys"}
-            >
-              <ListItemText primary="API Ключи" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/settings"
-              selected={location.pathname === "/settings"}
-            >
-              <ListItemText primary="Настройки" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/organization-settings"
-              selected={location.pathname === "/organization-settings"}
-            >
-              <ListItemText primary="Настройки организации" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer>
-
+      {/* Основной контент */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: "100%",
-          mr: "15px",
-          ml: "5px",
+          mr: { xs: 0, sm: "15px" },
+          ml: { xs: 0, sm: "5px" },
           minHeight: "90vh",
           backgroundColor: "#FFFFFF",
-          padding: "40px",
-          marginTop: "60px",
-          borderRadius: "20px",
-          height: "calc(100vh - 64px)", 
+          padding: { xs: "25px", sm: "35px" },
+          marginTop: { xs: "56px", sm: "64px" },
+          borderRadius: { xs: "0px", sm: "20px" },
+          height: "calc(100vh - 64px)",
           overflowY: "auto",
         }}
       >
-        <Routes>
-          {/* Ваши маршруты */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <RunningJobs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/running-jobs"
-            element={
-              <ProtectedRoute>
-                <RunningJobs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/completed-jobs"
-            element={
-              <ProtectedRoute>
-                <CompletedJobs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <Tasks />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/billing"
-            element={
-              <ProtectedRoute>
-                <Billing />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/api-keys"
-            element={
-              <ProtectedRoute>
-                <ApiKeys />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/organization-settings"
-            element={
-              <ProtectedRoute>
-                <OrganizationSettings />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Routes>
+        {shouldRenderContent ? (
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Tasks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute>
+                  <Tasks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/api-keys"
+              element={
+                <ProtectedRoute>
+                  <ApiKeys />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organization-settings"
+              element={
+                <ProtectedRoute>
+                  <OrganizationSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Routes>
+        ) : null}
 
-        {/* Модальное окно регистрации для незарегистрированных пользователей */}
+        {/* Модальные окна */}
         {!loading && (
           <Modal
             open={openRegistrationModal}
@@ -450,7 +501,6 @@ export function Layout() {
           </Modal>
         )}
 
-        {/* Модальное окно капчи */}
         {!loading && (
           <SubscriptionToCaptcha
             open={openCaptchaModal}

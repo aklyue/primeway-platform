@@ -1,26 +1,26 @@
 // theme.js
-import { createTheme } from "@mui/material/styles";
+import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 
-const theme = createTheme({
+let theme = createTheme({
   palette: {
     background: {
-      default: "#F5F5F5", // Основной фоновый цвет
-      paper: "#FFFFFF", // #282828 #17252a #222629
+      default: "#F5F5F5",
+      paper: "#FFFFFF",
     },
     primary: {
-      main: "#353740", // Основной цвет
+      main: "#353740",
     },
     secondary: {
-      main: "#5282ff", // Третий цвет, добавленный в палитру
+      main: "#5282ff",
     },
     text: {
-      primary: "#9AA0A6", // Белый текст на тёмном фоне
+      primary: "#202123",
       secondary: "#6E6E80",
     },
   },
   typography: {
-    fontFamily: "Söhne, Arial, sans-serif", // Используем шрифт Söhne
-    fontSize: 14, // Базовый размер шрифта
+    fontFamily: "Söhne, Arial, sans-serif",
+    fontSize: 14,
     lineHeight: "20px",
     fontWeight: 400,
     h1: {
@@ -28,48 +28,72 @@ const theme = createTheme({
       fontWeight: 700,
       lineHeight: 1.2,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "1.9rem",
+      },
     },
     h2: {
       fontSize: "2rem",
       fontWeight: 700,
       lineHeight: 1.3,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "1.6rem",
+      },
     },
     h3: {
       fontSize: "1.75rem",
       fontWeight: 700,
       lineHeight: 1.3,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "1.3rem",
+      },
     },
     h4: {
       fontSize: "1.5rem",
       fontWeight: 600,
       lineHeight: 1.35,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "1.2rem",
+      },
     },
     h5: {
       fontSize: "1.25rem",
       fontWeight: 600,
       lineHeight: 1.4,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "1rem",
+      },
     },
     h6: {
       fontSize: "1rem",
       fontWeight: 600,
       lineHeight: 1.5,
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "0.8rem",
+      },
     },
     body1: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "12px",
+      },
     },
     body2: {
       fontSize: "14px",
       fontWeight: 400,
       lineHeight: "20px",
       color: "#202123",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "12px",
+      },
     },
     button: {
       textTransform: "none",
@@ -77,6 +101,9 @@ const theme = createTheme({
       fontWeight: 600,
       lineHeight: "20px",
       fontFamily: "Söhne, Arial, sans-serif",
+      [createTheme().breakpoints.down('sm')]: {
+        fontSize: "12px",
+      },
     },
   },
   components: {
@@ -87,10 +114,8 @@ const theme = createTheme({
           "&:hover": {
             backgroundColor: "#ECECF1",
           },
-          // Стили для активного (выбранного) состояния
           "&.Mui-selected": {
             backgroundColor: "#ECECF1",
-            // Сохранение цвета при наведении на выбранный элемент
             "&:hover": {
               backgroundColor: "#e6e6eb",
             },
@@ -98,12 +123,11 @@ const theme = createTheme({
         },
       },
     },
-    
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: "#000000", // Цвет шапки (чёрный)
-          color: "#d1e8e2", // Цвет текста в шапке (белый для контраста)
+          backgroundColor: "#000000",
+          color: "#d1e8e2",
           boxShadow: "none",
         },
       },
@@ -117,21 +141,24 @@ const theme = createTheme({
           fontSize: "14px",
           lineHeight: "20px",
           padding: "6px 16px",
-          fontFamily: "Söhne, Arial, sans-serif",
+          fontFamily: "Söhне, Arial, sans-serif",
+          [createTheme().breakpoints.down('sm')]: {
+            fontSize: "12px",
+          },
         },
         containedPrimary: {
-          backgroundColor: "#353740", // Основной цвет для заполненных кнопок
-          color: "#202123", // Цвет текста на кнопках
+          backgroundColor: "#353740",
+          color: "#202123",
           "&:hover": {
-            backgroundColor: "#2E3239", // Более тёмный оттенок при наведении
+            backgroundColor: "#2E3239",
           },
         },
         outlined: {
-          color: '#202123',
-          borderColor: '#ececf1',
-          backgroundColor:'#ececf1',
-          '&:hover': {
-            borderColor: '#6E6E80',
+          color: "#202123",
+          borderColor: "#ececf1",
+          backgroundColor: "#ececf1",
+          "&:hover": {
+            borderColor: "#6E6E80",
           },
         },
         textPrimary: {
@@ -165,5 +192,7 @@ const theme = createTheme({
     },
   },
 });
+
+theme = responsiveFontSizes(theme);
 
 export default theme;

@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
           "Authorization"
         ] = `Bearer ${token}`;
         const response = await axiosInstance.get("/auth/me");
-        console.log("fetchUserData response", response);
+        // console.log("fetchUserData response", response);
         setUser(response.data);
         setAuthToken(token);
         setIsLoggedIn(true);

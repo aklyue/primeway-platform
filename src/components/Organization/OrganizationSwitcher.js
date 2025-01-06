@@ -39,7 +39,7 @@ const OrganizationSwitcher = () => {
           display: "flex",
         }}
       >
-        <Typography sx={{ ml: "8px", mr: "8px", fontSize: "17px" }}>
+        <Typography sx={{ ml: "8px", mr: "8px", fontSize: "17px", fontWeight:600 }}>
           /
         </Typography>
         <Button
@@ -68,7 +68,7 @@ const OrganizationSwitcher = () => {
                 whiteSpace: "normal",
               }}
             >
-              <Box component="span" sx={{ color: "secondary.main" }}>
+              <Box component="span" sx={{ color: "secondary.main", whiteSpace: "nowrap", }}>
                 {currentOrganization
                   ? currentOrganization.name
                   : "Organization"}
@@ -76,7 +76,7 @@ const OrganizationSwitcher = () => {
             </Typography>
           </Box>
           <UnfoldMoreIcon
-            sx={{ ml: "auto", color: "#353740", height: "15px" }}
+            sx={{ color: "#353740", height: "13px", fontSize:'1rem' }}
           />
         </Button>
       </Box>
@@ -104,7 +104,7 @@ const OrganizationSwitcher = () => {
           }}
         >
           {/* Список организаций */}
-          <Box sx={{ minWidth: 200, borderRight: "1px solid rgba(0,0,0,0.2)" }}>
+          <Box sx={{ minWidth: 170, borderRight: "1px solid rgba(0,0,0,0.2)" }}>
             {organizations.length > 0 ? (
               organizations.map((org) => (
                 <MenuItem

@@ -121,6 +121,7 @@ const OrganizationSettings = () => {
             color="secondary"
             onClick={handleAddMember}
             disabled={isAddingMember}
+            sx={{maxHeight:'40px'}}
           >
             {isAddingMember ? "Добавление..." : "Добавить участника"}
           </Button>

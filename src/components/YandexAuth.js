@@ -22,7 +22,7 @@ const YandexAuth = () => {
     }
     if (authToken) {
       // Если пользователь уже авторизован, перенаправляем его
-      navigate('/running-jobs');
+      navigate('/');
     } else {
       if (isInitialized.current) {
         // Если уже инициализировано, ничего не делаем

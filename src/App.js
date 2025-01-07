@@ -1,3 +1,4 @@
+// src/Layout.js
 import React, { useContext, useState, useEffect } from "react";
 import {
   Routes,
@@ -6,6 +7,7 @@ import {
   useLocation,
   useNavigate,
   BrowserRouter as Router,
+  Navigate,
 } from "react-router-dom";
 import {
   Drawer,
@@ -24,41 +26,28 @@ import {
   ButtonBase,
   CircularProgress,
   IconButton,
+  Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import RunningJobs from "./components/RunningJobs";
-import CompletedJobs from "./components/CompletedJobs";
-import Billing from "./components/Billing";
-import ApiKeys from "./components/ApiKeys";
-import Settings from "./components/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./AuthContext";
-import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
-import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
-import YandexAuth from "./components/YandexAuth";
 import { OrganizationProvider } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
-import OrganizationSettings from "./components/Organization/OrganizationSettings";
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
 import Tasks from "./components/Tasks";
+import Billing from "./components/Billing";
+import ApiKeys from "./components/ApiKeys";
+import Settings from "./components/Settings";
+import OrganizationSettings from "./components/Organization/OrganizationSettings";
+import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
+import YandexAuth from "./components/YandexAuth";
+import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher"; // ВАЖНО: Возвращаем импорт OrganizationSwitcher
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Docs from "./components/Docs"; // Компонент для документации
 
 const drawerWidth = 240;
-
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 600,
-  maxWidth: "90%",
-  bgcolor: "#FFFFFF",
-  outline: "none",
-  borderRadius: "15px",
-  p: 4,
-};
 
 export function Layout() {
   const {
@@ -73,9 +62,9 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Проверяем, является ли устройство мобильным
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [mobileOpen, setMobileOpen] = useState(false); // Состояние для управления Drawer на мобильных устройствах
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const snowflakeImage = new Image();
   snowflakeImage.src = snowflakeSvg;
@@ -83,15 +72,15 @@ export function Layout() {
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
     const currentTime = Date.now();
-    const thirtyMinutes = 30 * 60 * 1000; // 30 минут в миллисекундах
+    const thirtyMinutes = 30 * 60 * 1000;
 
     if (
       !lastCaptchaTime ||
       currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes
     ) {
-      return true; // Капча требуется
+      return true;
     } else {
-      return false; // Капча не требуется
+      return false;
     }
   };
 
@@ -103,10 +92,8 @@ export function Layout() {
 
       if (!isLoggedIn) {
         if (!captchaRequired) {
-          // Если капча не требуется, открываем модальное окно регистрации
           setOpenRegistrationModal(true);
         } else {
-          // Если капча требуется, закрываем модальное окно регистрации
           setOpenRegistrationModal(false);
         }
       } else {
@@ -122,12 +109,10 @@ export function Layout() {
   // Обработчик успешного прохождения капчи
   const handleCaptchaSuccess = () => {
     setOpenCaptchaModal(false);
-    // Сохраняем текущее время прохождения капчи
     const currentTime = Date.now();
     localStorage.setItem("lastCaptchaTime", currentTime.toString());
 
     if (!isLoggedIn) {
-      // Если пользователь не авторизован, после капчи открываем модальное окно регистрации
       setOpenRegistrationModal(true);
     }
   };
@@ -149,66 +134,137 @@ export function Layout() {
     setMobileOpen(!mobileOpen);
   };
 
+  const isDocsPage = location.pathname.startsWith("/docs");
+
   // Содержимое Drawer
   const drawer = (
     <div>
       <Toolbar />
       <List>
-        {/* Список элементов меню */}
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/tasks"
-            selected={location.pathname === "/tasks"}
-            onClick={isMobile ? handleDrawerToggle : undefined}
-          >
-            <ListItemText primary="Задачи" />
-          </ListItemButton>
-        </ListItem>
+        {!isDocsPage ? (
+          <>
+            {/* Список элементов меню для дашборда */}
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/tasks"
+                selected={location.pathname === "/tasks"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Задачи" />
+              </ListItemButton>
+            </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/billing"
-            selected={location.pathname === "/billing"}
-            onClick={isMobile ? handleDrawerToggle : undefined}
-          >
-            <ListItemText primary="Платежи" />
-          </ListItemButton>
-        </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/billing"
+                selected={location.pathname === "/billing"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Платежи" />
+              </ListItemButton>
+            </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/api-keys"
-            selected={location.pathname === "/api-keys"}
-            onClick={isMobile ? handleDrawerToggle : undefined}
-          >
-            <ListItemText primary="API Ключи" />
-          </ListItemButton>
-        </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/api-keys"
+                selected={location.pathname === "/api-keys"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="API Ключи" />
+              </ListItemButton>
+            </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/settings"
-            selected={location.pathname === "/settings"}
-            onClick={isMobile ? handleDrawerToggle : undefined}
-          >
-            <ListItemText primary="Настройки" />
-          </ListItemButton>
-        </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/settings"
+                selected={location.pathname === "/settings"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Настройки" />
+              </ListItemButton>
+            </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/organization-settings"
-            selected={location.pathname === "/organization-settings"}
-            onClick={isMobile ? handleDrawerToggle : undefined}
-          >
-            <ListItemText primary="Настройки организации" />
-          </ListItemButton>
-        </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/organization-settings"
+                selected={location.pathname === "/organization-settings"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Настройки организации" />
+              </ListItemButton>
+            </ListItem>
+          </>
+        ) : (
+          <>
+            {/* Список элементов меню для документации */}
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/welcome"
+                selected={location.pathname === "/docs/welcome"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Welcome" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/quickstart"
+                selected={location.pathname === "/docs/quickstart"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Quickstart" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/jobs"
+                selected={location.pathname === "/docs/jobs"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Jobs" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/configuration"
+                selected={location.pathname === "/docs/configuration"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Configuration" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/pipelines"
+                selected={location.pathname === "/docs/pipelines"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Pipelines" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs/cli"
+                selected={location.pathname === "/docs/cli"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
+                <ListItemText primary="Cli" />
+              </ListItemButton>
+            </ListItem>
+            {/* Добавьте дополнительные разделы документации по необходимости */}
+          </>
+        )}
       </List>
     </div>
   );
@@ -252,8 +308,6 @@ export function Layout() {
         snowflakeCount={30}
         style={{ zIndex: 10000, opacity: "0.6" }}
       />
-
-      {/* Отображаем AppBar и Drawer только если контент должен быть видим */}
       {shouldRenderContent && (
         <>
           <AppBar
@@ -302,10 +356,44 @@ export function Layout() {
                 </Box>
               </Box>
 
+              {/* Растягивающий элемент */}
               <Box sx={{ flexGrow: 1 }} />
+
+              {/* Кнопки переключения между дашбордом и документацией */}
+              <Box
+                sx={{ display: "flex", alignItems: "center", marginRight: 2 }}
+              >
+                <Button
+                  component={Link}
+                  to="/tasks"
+                  color="inherit"
+                  sx={{
+                    textTransform: "none",
+                    color: location.pathname.startsWith("/tasks")
+                      ? "primary.main"
+                      : "inherit",
+                  }}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  component={Link}
+                  to="/docs"
+                  color="inherit"
+                  sx={{
+                    textTransform: "none",
+                    color: location.pathname.startsWith("/docs")
+                      ? "primary.main"
+                      : "inherit",
+                  }}
+                >
+                  Docs
+                </Button>
+              </Box>
 
               {isLoggedIn && (
                 <>
+
                   <Tooltip title={user?.username || "Пользователь"}>
                     <ButtonBase onClick={handleAvatarClick}>
                       <Box
@@ -346,8 +434,7 @@ export function Layout() {
             </Toolbar>
           </AppBar>
 
-          {/* Условно рендерим Drawer */}
-
+          {/* Drawer */}
           <Box
             component="nav"
             sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -399,7 +486,6 @@ export function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
           width: "100%",
           mr: { xs: 0, sm: "15px" },
           ml: { xs: 0, sm: "5px" },
@@ -412,57 +498,68 @@ export function Layout() {
           overflowY: "auto",
         }}
       >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Tasks />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tasks"
-              element={
-                <ProtectedRoute>
-                  <Tasks />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/billing"
-              element={
-                <ProtectedRoute>
-                  <Billing />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/api-keys"
-              element={
-                <ProtectedRoute>
-                  <ApiKeys />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/organization-settings"
-              element={
-                <ProtectedRoute>
-                  <OrganizationSettings />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-          </Routes>
+        <Routes>
+          <Route path="/" element={<Navigate to="/tasks" replace />} />
+
+          {/* Маршруты дашборда */}
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/billing"
+            element={
+              <ProtectedRoute>
+                <Billing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/api-keys"
+            element={
+              <ProtectedRoute>
+                <ApiKeys />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organization-settings"
+            element={
+              <ProtectedRoute>
+                <OrganizationSettings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Маршруты документации */}
+          <Route
+            path="/docs"
+            element={<Navigate to="/docs/welcome" replace />}
+          />
+          <Route
+            path="/docs/:docName"
+            element={
+              <ProtectedRoute>
+                <Docs />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Маршрут для обработки колбэка аутентификации */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
+        </Routes>
 
         {/* Модальные окна */}
         {!loading && (
@@ -475,7 +572,20 @@ export function Layout() {
             aria-labelledby="modal-title"
             aria-describedby="modal-description"
           >
-            <Box sx={modalStyle}>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 600,
+                maxWidth: "90%",
+                bgcolor: "#FFFFFF",
+                outline: "none",
+                borderRadius: "15px",
+                p: 4,
+              }}
+            >
               <Typography
                 gutterBottom
                 id="modal-title"

@@ -1,0 +1,6 @@
+[submodule "docs"]
+	path = docs
+	url = https://gitlab.com/primeway/documentation.git
+[submodule "documentation"]
+	path = documentation
+	url = https://gitlab.com/primeway/documentation.git

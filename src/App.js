@@ -134,7 +134,7 @@ export function Layout() {
 
   // Определяем, должен ли отображаться основной контент
   const shouldRenderContent =
-    !openCaptchaModal && !openRegistrationModal && isLoggedIn;
+    openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
 
   // Блокируем скроллинг при открытых модальных окнах
   useEffect(() => {
@@ -347,6 +347,7 @@ export function Layout() {
           </AppBar>
 
           {/* Условно рендерим Drawer */}
+
           <Box
             component="nav"
             sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -411,7 +412,6 @@ export function Layout() {
           overflowY: "auto",
         }}
       >
-        {shouldRenderContent ? (
           <Routes>
             <Route
               path="/"
@@ -463,7 +463,6 @@ export function Layout() {
             />
             <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
-        ) : null}
 
         {/* Модальные окна */}
         {!loading && (

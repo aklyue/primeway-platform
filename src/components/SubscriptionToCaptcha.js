@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { SmartCaptcha } from "@yandex/smart-captcha";
-import { Modal, Box, Typography } from "@mui/material";
+import { Modal, Box, Typography, CircularProgress } from "@mui/material";
 
 export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
+  const [captchaLoaded, setCaptchaLoaded] = useState(false);
+
   return (
     <Modal
       open={open}
@@ -10,7 +12,6 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
       disableEscapeKeyDown
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
-      // sx={{zIndex:'99999'}}
       BackdropProps={{
         style: { backgroundColor: "#FFFFFF" },
       }}
@@ -42,11 +43,24 @@ export const SubscriptionToCaptcha = ({ onSuccess, open }) => {
             mt: 3,
             display: "flex",
             justifyContent: "center",
+            position: "relative",
           }}
         >
+          {!captchaLoaded && (
+            <CircularProgress
+              sx={{
+                position: "absolute",
+                top: "30%",
+                left: "46%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          )}
           <SmartCaptcha
             sitekey="ysc1_gqgKVnVKv2a4UJDjpKdVoIEJ7A13CfJRYEJsBwma03ab7254"
             onSuccess={onSuccess}
+            onLoad={() => setCaptchaLoaded(true)}
+            style={!captchaLoaded ? { visibility: "hidden" } : {}}
           />
         </Box>
       </Box>

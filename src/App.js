@@ -42,10 +42,13 @@ import Settings from "./components/Settings";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
 import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
-import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher"; // ВАЖНО: Возвращаем импорт OrganizationSwitcher
+import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Docs from "./components/Docs"; // Компонент для документации
+
+// Импортируем компоненты из framer-motion
+import { AnimatePresence, motion } from "framer-motion";
 
 const drawerWidth = 240;
 
@@ -135,6 +138,9 @@ export function Layout() {
   };
 
   const isDocsPage = location.pathname.startsWith("/docs");
+
+  // Создаем ключ для анимации переходов
+  const groupKey = isDocsPage ? "docs" : "dashboard";
 
   // Содержимое Drawer
   const drawer = (
@@ -297,7 +303,7 @@ export function Layout() {
         display: "flex",
         width: "100%",
         height: "100vh",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: shouldRenderContent ? "#F5F5F5" : "#FFFFFF",
       }}
     >
       <CssBaseline />
@@ -317,7 +323,7 @@ export function Layout() {
               backgroundColor: "#F5F5F5",
             }}
           >
-            <Toolbar>
+            <Toolbar style={{ paddingLeft: "16px" }}>
               {isMobile && (
                 <IconButton
                   color="#202123"
@@ -369,9 +375,9 @@ export function Layout() {
                   color="inherit"
                   sx={{
                     textTransform: "none",
-                    color: location.pathname.startsWith("/tasks")
+                    color: !location.pathname.startsWith("/docs")
                       ? "primary.main"
-                      : "inherit",
+                      : "#acacbe",
                   }}
                 >
                   Dashboard
@@ -384,7 +390,7 @@ export function Layout() {
                     textTransform: "none",
                     color: location.pathname.startsWith("/docs")
                       ? "primary.main"
-                      : "inherit",
+                      : "#acacbe",
                   }}
                 >
                   Docs
@@ -393,7 +399,6 @@ export function Layout() {
 
               {isLoggedIn && (
                 <>
-
                   <Tooltip title={user?.username || "Пользователь"}>
                     <ButtonBase onClick={handleAvatarClick}>
                       <Box
@@ -434,190 +439,217 @@ export function Layout() {
             </Toolbar>
           </AppBar>
 
-          {/* Drawer */}
-          <Box
-            component="nav"
-            sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-          >
-            {/* Мобильный Drawer */}
-            {isMobile && (
-              <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{
-                  keepMounted: true, // Better open performance on mobile.
-                }}
-                sx={{
-                  "& .MuiDrawer-paper": {
-                    width: drawerWidth,
-                    backgroundColor: "#F5F5F5",
-                  },
-                }}
+          {/* Drawer с отдельной анимацией */}
+          <AnimatePresence mode="wait">
+            {shouldRenderContent && (
+              <motion.div
+                key={"drawer-" + groupKey}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                style={{ display: "flex" }}
               >
-                {drawer}
-              </Drawer>
+                <Box
+                  component="nav"
+                  sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+                >
+                  {/* Мобильный Drawer */}
+                  {isMobile && (
+                    <Drawer
+                      variant="temporary"
+                      open={mobileOpen}
+                      onClose={handleDrawerToggle}
+                      ModalProps={{
+                        keepMounted: true, // Better open performance on mobile.
+                      }}
+                      sx={{
+                        "& .MuiDrawer-paper": {
+                          width: drawerWidth,
+                          backgroundColor: "#F5F5F5",
+                        },
+                      }}
+                    >
+                      {drawer}
+                    </Drawer>
+                  )}
+                  {/* Десктопный Drawer */}
+                  {!isMobile && (
+                    <Drawer
+                      variant="permanent"
+                      sx={{
+                        width: drawerWidth,
+                        flexShrink: 0,
+                        "& .MuiDrawer-paper": {
+                          width: drawerWidth,
+                          boxSizing: "border-box",
+                          backgroundColor: "#F5F5F5",
+                          border: "none",
+                        },
+                      }}
+                      open
+                    >
+                      {drawer}
+                    </Drawer>
+                  )}
+                </Box>
+              </motion.div>
             )}
-            {/* Десктопный Drawer */}
-            {!isMobile && (
-              <Drawer
-                variant="permanent"
-                sx={{
-                  width: drawerWidth,
-                  flexShrink: 0,
-                  "& .MuiDrawer-paper": {
-                    width: drawerWidth,
-                    boxSizing: "border-box",
-                    backgroundColor: "#F5F5F5",
-                    border: "none",
-                  },
-                }}
-                open
-              >
-                {drawer}
-              </Drawer>
-            )}
-          </Box>
+          </AnimatePresence>
         </>
       )}
 
-      {/* Основной контент */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          width: "100%",
-          mr: { xs: 0, sm: "15px" },
-          ml: { xs: 0, sm: "5px" },
-          minHeight: "90vh",
-          backgroundColor: "#FFFFFF",
-          padding: { xs: "25px", sm: "35px" },
-          marginTop: { xs: "56px", sm: "64px" },
-          borderRadius: { xs: "0px", sm: "20px" },
-          height: "calc(100vh - 64px)",
-          overflowY: "auto",
-        }}
-      >
-        <Routes>
-          <Route path="/" element={<Navigate to="/tasks" replace />} />
-
-          {/* Маршруты дашборда */}
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <Tasks />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/billing"
-            element={
-              <ProtectedRoute>
-                <Billing />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/api-keys"
-            element={
-              <ProtectedRoute>
-                <ApiKeys />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/organization-settings"
-            element={
-              <ProtectedRoute>
-                <OrganizationSettings />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Маршруты документации */}
-          <Route
-            path="/docs"
-            element={<Navigate to="/docs/welcome" replace />}
-          />
-          <Route
-            path="/docs/:docName"
-            element={
-              <ProtectedRoute>
-                <Docs />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Маршрут для обработки колбэка аутентификации */}
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Routes>
-
-        {/* Модальные окна */}
-        {!loading && (
-          <Modal
-            open={openRegistrationModal}
-            onClose={() => {}}
-            BackdropProps={{
-              style: { backgroundColor: "#FFFFFF" },
+      {/* Основной контент с отдельной анимацией */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={"main-" + groupKey}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            width: "100%",
+            display: shouldRenderContent ? "block" : "none",
+          }}
+        >
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              width: "100%",
+              mr: { xs: 0, sm: "15px" },
+              ml: { xs: 0, sm: "5px" },
+              minHeight: "90vh",
+              backgroundColor: "#FFFFFF",
+              padding: { xs: "25px", sm: "35px" },
+              marginTop: { xs: "56px", sm: "64px" },
+              borderRadius: { xs: "0px", sm: "20px" },
+              height: "calc(100vh - 64px)",
+              overflowY: "auto",
             }}
-            aria-labelledby="modal-title"
-            aria-describedby="modal-description"
           >
+            <Routes location={location}>
+              <Route path="/" element={<Navigate to="/tasks" replace />} />
+
+              {/* Маршруты дашборда */}
+              <Route
+                path="/tasks"
+                element={
+                  <ProtectedRoute>
+                    <Tasks />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/billing"
+                element={
+                  <ProtectedRoute>
+                    <Billing />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/api-keys"
+                element={
+                  <ProtectedRoute>
+                    <ApiKeys />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organization-settings"
+                element={
+                  <ProtectedRoute>
+                    <OrganizationSettings />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Маршруты документации */}
+              <Route
+                path="/docs"
+                element={<Navigate to="/docs/welcome" replace />}
+              />
+              <Route
+                path="/docs/:docName"
+                element={
+                  <ProtectedRoute>
+                    <Docs />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Маршрут для обработки колбэка аутентификации */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+            </Routes>
+
+            {/* Модальные окна */}
+          </Box>
+        </motion.div>
+      </AnimatePresence>
+      {!loading && (
+        <Modal
+          open={openRegistrationModal}
+          onClose={() => {}}
+          BackdropProps={{
+            style: { backgroundColor: "#FFFFFF" },
+          }}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 600,
+              maxWidth: "90%",
+              bgcolor: "#FFFFFF",
+              outline: "none",
+              borderRadius: "15px",
+              p: 4,
+            }}
+          >
+            <Typography
+              gutterBottom
+              id="modal-title"
+              variant="h5"
+              component="h2"
+              sx={{ textAlign: "center" }}
+            >
+              Добро пожаловать
+            </Typography>
+
             <Box
               sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 600,
-                maxWidth: "90%",
-                bgcolor: "#FFFFFF",
-                outline: "none",
-                borderRadius: "15px",
-                p: 4,
+                mt: 3,
+                display: "flex",
+                justifyContent: "center",
+                zIndex: 2,
               }}
             >
-              <Typography
-                gutterBottom
-                id="modal-title"
-                variant="h5"
-                component="h2"
-                sx={{ textAlign: "center" }}
-              >
-                Добро пожаловать
-              </Typography>
-
-              <Box
-                sx={{
-                  mt: 3,
-                  display: "flex",
-                  justifyContent: "center",
-                  zIndex: 2,
-                }}
-              >
-                <YandexAuth />
-              </Box>
+              <YandexAuth />
             </Box>
-          </Modal>
-        )}
+          </Box>
+        </Modal>
+      )}
 
-        {!loading && (
-          <SubscriptionToCaptcha
-            open={openCaptchaModal}
-            onSuccess={handleCaptchaSuccess}
-            onClose={() => setOpenCaptchaModal(false)}
-          />
-        )}
-      </Box>
+      {!loading && (
+        <SubscriptionToCaptcha
+          open={openCaptchaModal}
+          onSuccess={handleCaptchaSuccess}
+          onClose={() => setOpenCaptchaModal(false)}
+        />
+      )}
     </Box>
   );
 }

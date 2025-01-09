@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField } from "@mui/material";
-
+import { useNavigate } from "react-router-dom";
 
 function TPaymentWidget(props) {
   const { user, token, onSuccess, onError } = props;
@@ -8,8 +8,7 @@ function TPaymentWidget(props) {
   const [orderId, setOrderId] = useState(""); // ID платежа
   const [loading, setLoading] = useState(false); // Индикатор загрузки
   const formRef = useRef(null);
-
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Загрузка скрипта платежного виджета
@@ -103,11 +102,13 @@ function TPaymentWidget(props) {
                   console.log("paymentResult", paymentResult);
                   onSuccess(paymentResult);
                 }
+                navigate("/billing");
               } else {
                 // Платеж неуспешен
                 if (onError) {
                   onError(paymentResult);
                 }
+                navigate("/billing");
               }
             },
           });
@@ -123,7 +124,6 @@ function TPaymentWidget(props) {
     }
   };
 
-
   return (
     <form ref={formRef} onSubmit={handleStartPayment} className="payform-tbank">
       <input
@@ -135,7 +135,17 @@ function TPaymentWidget(props) {
       <input type="hidden" name="language" value="ru" />
       <input type="hidden" name="amount" value={parseFloat(addFunds)} />
       <input type="hidden" name="description" value="Пополнение кошелька" />
-      <input type="hidden" name="order" value={orderId} />
+      <input type="hidden" name="OrderId" value={orderId} />
+      <input
+        type="hidden"
+        name="SuccessURL"
+        value="https://platform.primeway.io/billing"
+      />
+      <input
+        type="hidden"
+        name="FailURL"
+        value="https://platform.primeway.io/billing"
+      />
       {user?.email && <input type="hidden" name="email" value={user.email} />}
       {user?.phone && <input type="hidden" name="phone" value={user.phone} />}
 
@@ -174,7 +184,7 @@ function TPaymentWidget(props) {
           className="payform-tbank-btn"
           disabled={loading}
         >
-          {loading ? "Создание оплаты..." : "Оплатить c "}
+          Оплатить c
           <img width={75} height={40} src="./tbank.svg" alt="Tbank" />
         </button>
       </Box>

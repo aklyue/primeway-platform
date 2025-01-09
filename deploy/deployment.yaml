@@ -19,3 +19,9 @@ spec:
           image: cr.yandex/crpa3u3frrtfcv7iqaan/prime-platform-image:20241221-140958
           ports:
             - containerPort: 80
+          env:
+            - name: REACT_APP_TINKOFF_TERMINAL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: primeway-front-secrets
+                  key: REACT_APP_TINKOFF_TERMINAL_KEY

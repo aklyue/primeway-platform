@@ -20,11 +20,11 @@ function Settings() {
       </Typography>
 
       {/* Информация о профиле */}
-      <Box sx={{ marginBottom: "32px" }}>
+      <Box sx={{ marginBottom: "32px", marginTop:'16px' }}>
         <Typography variant="h6" gutterBottom>
           Информация о профиле
         </Typography>
-        <Divider sx={{ marginBottom: "16px" }} />
+        <Divider sx={{ marginBottom: "16px",  }} />
 
         {/* Аватар пользователя */}
         <Box

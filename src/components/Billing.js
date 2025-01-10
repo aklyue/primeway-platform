@@ -10,7 +10,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress, // Добавлено для индикаторов загрузки
+  CircularProgress,
 } from "@mui/material";
 import { Bar } from "react-chartjs-2";
 import {
@@ -43,28 +43,30 @@ function Billing() {
   const { currentOrganization, isCurrentOrgOwner } =
     useContext(OrganizationContext);
 
-  // Wallet/balance
-  const [walletBalance, setWalletBalance] = useState(null); // Изначально баланс неизвестен
+  // Состояния для баланса кошелька
+  const [walletBalance, setWalletBalance] = useState(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [errorBalance, setErrorBalance] = useState(null);
 
-  const [currentMonth] = useState("Сентябрь");
-
-  // **New state for transactions history**
+  // Состояния для истории транзакций
   const [transactions, setTransactions] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [errorTransactions, setErrorTransactions] = useState(null);
+
+  const [currentMonth] = useState("Сентябрь");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Fetch wallet balance and transaction history when currentOrganization changes
+  // Объединенное состояние загрузки
+  const isLoading = isLoadingBalance || isLoadingTransactions;
+
+  // Загрузка баланса и транзакций при изменении текущей организации
   useEffect(() => {
     if (currentOrganization && isCurrentOrgOwner()) {
       // Загрузка баланса кошелька
       setIsLoadingBalance(true);
       setErrorBalance(null);
 
-      // Замените этот URL на ваш реальный эндпоинт
       axiosInstance
         .get(`/billing/${user.billing_account_id}/balance`)
         .then((response) => {
@@ -81,7 +83,6 @@ function Billing() {
       setIsLoadingTransactions(true);
       setErrorTransactions(null);
 
-      // Замените этот URL на ваш реальный эндпоинт
       axiosInstance
         .get(`/billing/${user.billing_account_id}/transactions`)
         .then((response) => {
@@ -96,11 +97,10 @@ function Billing() {
     }
   }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id]);
 
-  // Handle payment result
+  // Обработка успешной оплаты
   const handlePaymentSuccess = (paymentResult) => {
     console.log("Оплата успешна:", paymentResult);
-    // Вы можете обновить баланс и историю транзакций здесь
-    // Например, вызвать повторно загрузку данных
+    // Здесь вы можете обновить баланс и историю транзакций
   };
 
   const handlePaymentError = (error) => {
@@ -108,7 +108,7 @@ function Billing() {
     alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
   };
 
-  // Chart data for spending
+  // Данные для графика расходов
   const spendingData = {
     labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()),
     datasets: [
@@ -125,7 +125,7 @@ function Billing() {
     ],
   };
 
-  // If no organization is selected
+  // Если нет выбранной организации
   if (!currentOrganization) {
     return (
       <Box sx={{ padding: "16px" }}>
@@ -136,7 +136,7 @@ function Billing() {
     );
   }
 
-  // If user is not the owner
+  // Если пользователь не является владельцем организации
   if (!isCurrentOrgOwner()) {
     return (
       <Box>
@@ -152,7 +152,24 @@ function Billing() {
     );
   }
 
-  // If user is the owner, show full billing interface
+  // Если данные загружаются, отображаем плейсхолдер загрузки на всю страницу
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          height: "calc(100vh - 64px)", // Вычитаем высоту AppBar, если нужно
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Основной контент после загрузки данных
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -168,13 +185,7 @@ function Billing() {
           marginBottom: "10px",
         }}
       >
-        {isLoadingBalance ? (
-          // Плейсхолдер загрузки баланса
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <CircularProgress size={24} sx={{ mr: 2 }} />
-            <Typography variant="h6">Загрузка баланса...</Typography>
-          </Box>
-        ) : errorBalance ? (
+        {errorBalance ? (
           <Alert severity="error">{errorBalance}</Alert>
         ) : (
           <Typography variant="h6">
@@ -191,80 +202,89 @@ function Billing() {
           onError={handlePaymentError}
         />
       </Box>
-      {/* Transaction history section */}
-      <Box sx={{ marginTop: "30px" }}>
+
+      {/* Секция истории транзакций */}
+      <Box sx={{ marginTop: "40px" }}>
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>
-        {isLoadingTransactions ? (
-          // Плейсхолдер загрузки транзакций
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <CircularProgress size={24} sx={{ mr: 2 }} />
-            <Typography>Загрузка транзакций...</Typography>
-          </Box>
-        ) : errorTransactions ? (
+        {errorTransactions ? (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
             {errorTransactions}
           </Alert>
-        ) : transactions.length > 0 ? (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Дата</TableCell>
-                  <TableCell>Тип транзакции</TableCell>
-                  <TableCell>Статус / Код ошибки</TableCell>
-                  <TableCell>Количество (₽ / Кредиты)</TableCell>
-                  <TableCell>Ссылка (Reference)</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions.map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell>
-                      {new Date(tx.created_at).toLocaleString()}
-                    </TableCell>
-                    <TableCell>{tx.transaction_type || tx.status}</TableCell>
-                    <TableCell>
-                      {tx.status}
-                      {tx.error_code && ` / ${tx.error_code}`}
-                    </TableCell>
-                    <TableCell>{tx.credits}</TableCell>
-                    <TableCell>{tx.reference_id}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         ) : (
-          <Typography>Нет транзакций для отображения.</Typography>
-        )}
-
-        {/* Chart of spending data */}
-        <Box
-          sx={{ display: "flex", justifyContent: "center", marginTop: "36px" }}
-        >
-          <Box sx={{ width: isMobile ? "375px" : "625px" }}>
-            <Typography variant="h6" gutterBottom>
-              Расходы за {currentMonth}
-            </Typography>
-            <Bar
-              data={spendingData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: "top",
-                  },
-                  title: {
-                    display: true,
-                    text: `Статистика расходов за ${currentMonth}`,
-                  },
-                },
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginTop: "20px",
+            }}
+          >
+            {/* Левая сторона: График расходов */}
+            <Box
+              sx={{
+                flex: 1,
+                marginRight: isMobile ? 0 : "20px",
+                marginBottom: isMobile ? "20px" : 0,
               }}
-            />
+            >
+              <Typography variant="h6" gutterBottom>
+                Расходы за {currentMonth}
+              </Typography>
+              <Bar
+                data={spendingData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: "top",
+                    },
+                    title: {
+                      display: true,
+                      text: `Статистика расходов за ${currentMonth}`,
+                    },
+                  },
+                }}
+              />
+            </Box>
+
+            {/* Правая сторона: Таблица транзакций */}
+            <Box sx={{ flex: 1, overflowY:'auto' }}>
+              {transactions.length > 0 ? (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Дата</TableCell>
+                        <TableCell>Тип транзакции</TableCell>
+                        <TableCell>Количество (₽)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {transactions.map((tx) => (
+                        <TableRow key={tx.id}>
+                          <TableCell>
+                            {new Date(tx.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            {tx.transaction_type || tx.status}
+                          </TableCell>
+                          <TableCell>
+                            {tx.amount || tx.credits}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography>Нет транзакций для отображения.</Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
+        )}
       </Box>
     </Box>
   );

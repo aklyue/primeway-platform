@@ -78,7 +78,8 @@ const AuthProvider = ({ children }) => {
         setOpenCaptchaModal,
         openRegistrationModal,
         setOpenRegistrationModal,
-        loading, // Передаём состояние загрузки
+        loading,
+        setLoading // Передаём состояние загрузки
       }}
     >
       {children}

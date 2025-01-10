@@ -321,13 +321,11 @@ function Tasks() {
         // Desktop and tablet view (Table)
         <TableContainer
           component={Paper}
-          sx={{ boxShadow: "none", overflowX: "auto", boxShadow: "none" }}
+          sx={{ boxShadow: "none", overflowX: "auto" }}
         >
           <Table>
             <TableHead
               sx={{
-                width: "100%",
-                height: "80px",
                 "& .MuiTableCell-root": {
                   color: "black",
                   textAlign: "center",

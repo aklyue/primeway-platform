@@ -76,7 +76,7 @@ const YandexAuth = () => {
               view: 'button',
               parentId: 'yandex-auth-container',
               buttonView: 'main',
-              buttonTheme: 'dark',
+              buttonTheme: 'light',
               buttonSize: 'm',
               buttonBorderRadius: '20',
               buttonIcon: 'yaEng',
@@ -105,7 +105,7 @@ const YandexAuth = () => {
                     const token = userData.jwt_token;
                     const user = userData.user;
                     login(token, user);
-                    navigate('/running-jobs');
+                    navigate('/tasks');
                   })
                   .catch((error) => {
                     console.error('Ошибка получения данных пользователя:', error);
@@ -136,7 +136,7 @@ const YandexAuth = () => {
         minWidth: isMobile ? '280px' : '430px',
         minHeight: '36px',
         borderRadius:'20px',
-        border:'1px solid black'
+       
       }}
     >
       {/* Контейнер для кнопки YaAuthSuggest */}

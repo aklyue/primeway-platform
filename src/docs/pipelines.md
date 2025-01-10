@@ -1,8 +1,3 @@
----
-id: pipelines
-title: Pipelines
-sidebar_position: 5
----
 
 # Pipelines
 ## Introduction to Pipelines

@@ -27,6 +27,7 @@ import {
   CircularProgress,
   IconButton,
   Button,
+  ListItemIcon,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -46,6 +47,12 @@ import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Docs from "./components/Docs"; // Компонент для документации
+import HomeIcon from "@mui/icons-material/Home";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
+import WorkIcon from "@mui/icons-material/Work";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import CodeIcon from "@mui/icons-material/Code";
 
 // Импортируем компоненты из framer-motion
 import { AnimatePresence, motion } from "framer-motion";
@@ -215,6 +222,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/welcome"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <HomeIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Welcome" />
               </ListItemButton>
             </ListItem>
@@ -225,6 +235,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/quickstart"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <FlashOnIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Quickstart" />
               </ListItemButton>
             </ListItem>
@@ -235,6 +248,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/jobs"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <WorkIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Jobs" />
               </ListItemButton>
             </ListItem>
@@ -245,6 +261,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/configuration"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <SettingsIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Configuration" />
               </ListItemButton>
             </ListItem>
@@ -255,6 +274,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/pipelines"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <LinearScaleIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Pipelines" />
               </ListItemButton>
             </ListItem>
@@ -265,6 +287,9 @@ export function Layout() {
                 selected={location.pathname === "/docs/cli"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
+                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
+                  <CodeIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText primary="Cli" />
               </ListItemButton>
             </ListItem>
@@ -526,6 +551,7 @@ export function Layout() {
               borderRadius: { xs: "0px", sm: "20px" },
               height: "calc(100vh - 64px)",
               overflowY: "auto",
+              overflowX: "none",
             }}
           >
             <Routes location={location}>

@@ -1,4 +1,3 @@
-// ApiKeys.jsx
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
@@ -168,6 +167,26 @@ function ApiKeys() {
     handleMenuClose();
   };
 
+  // Объединённое состояние загрузки
+  const isLoading = loading;
+
+  // Если данные загружаются, отображаем плейсхолдер загрузки на всю страницу
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          height: "calc(100vh - 64px)", // Вы можете скорректировать высоту в зависимости от вашего Layout
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -320,14 +339,16 @@ function ApiKeys() {
         <Typography variant="h6" gutterBottom>
           Ваши API ключи
         </Typography>
-        {loading ? (
-          <CircularProgress />
-        ) : apiKeys.length === 0 ? (
+        {apiKeys.length === 0 ? (
           <Typography>Еще не создано ни одного API ключа</Typography>
         ) : (
           <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
             <Table aria-label="api keys table">
-              <TableHead sx={{ "& .MuiTableCell-root": { color: "black" ,textAlign:'center' } }}>
+              <TableHead
+                sx={{
+                  "& .MuiTableCell-root": { color: "black", textAlign: "center" },
+                }}
+              >
                 <TableRow>
                   <TableCell>Имя</TableCell>
                   <TableCell>Токен</TableCell>
@@ -344,7 +365,7 @@ function ApiKeys() {
                 }}
               >
                 {apiKeys.map((key) => (
-                  <TableRow key={key.id} >
+                  <TableRow key={key.id}>
                     <TableCell>{key.name || "Безымянный ключ"}</TableCell>
                     <TableCell>
                       <Typography
@@ -394,7 +415,11 @@ function ApiKeys() {
                           <ListItemIcon>
                             <DeleteIcon fontSize="small" />
                           </ListItemIcon>
-                          <ListItemText primaryTypographyProps={{ sx: { color: "red" } }}>Удалить</ListItemText>
+                          <ListItemText
+                            primaryTypographyProps={{ sx: { color: "red" } }}
+                          >
+                            Удалить
+                          </ListItemText>
                         </MenuItem>
                       </Menu>
                     </TableCell>

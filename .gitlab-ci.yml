@@ -1,0 +1,73 @@
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_TLS_CERTDIR: ""
+  REGISTRY: "cr.yandex/crpa3u3frrtfcv7iqaan"  # Replace with your actual registry ID
+  BASE_NAME: "prime-platform"
+
+stages:
+  - build
+  - deploy
+
+build_and_push_job:
+  stage: build
+  image: docker:20.10
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - set -e
+    # Define variables at runtime
+    - TAG="$CI_COMMIT_SHORT_SHA"
+    - FULL_IMAGE_NAME="$REGISTRY/$BASE_NAME-image:$TAG"
+    # Install dependencies
+    - apk update && apk add --no-cache curl bash jq
+    # Install Yandex Cloud CLI
+    - curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -n
+    # Add yc to PATH
+    - export PATH="$HOME/yandex-cloud/bin:$PATH"
+    # Configure Yandex Cloud CLI with the service account key
+    - yc config set service-account-key $YC_SA_KEY_JSON_FILE
+    - yc config set cloud-id "$YC_CLOUD_ID"
+    - yc config set folder-id "$YC_FOLDER_ID"
+    # Obtain IAM token
+    - IAM_TOKEN=$(yc iam create-token)
+    # Check if IAM_TOKEN was obtained
+    - if [ -z "$IAM_TOKEN" ]; then echo "Failed to obtain IAM token"; exit 1; fi
+    # Log in to Yandex Container Registry using the IAM token
+    - echo "$IAM_TOKEN" | docker login --username iam --password-stdin cr.yandex
+    # Build the Docker image
+    - docker build -f deploy/Dockerfile -t $FULL_IMAGE_NAME .
+    # Push the image to registry
+    - docker push $FULL_IMAGE_NAME
+  only:
+    - main
+
+deploy_job:
+  stage: deploy
+  image: alpine:3.16
+  script:
+    - set -e
+    # Define variables at runtime
+    - TAG="$CI_COMMIT_SHORT_SHA"
+    - FULL_IMAGE_NAME="$REGISTRY/$BASE_NAME-image:$TAG"
+    # Install dependencies
+    - apk update && apk add --no-cache curl bash jq
+    # Install Yandex Cloud CLI
+    - curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -n
+    # Add yc to PATH
+    - export PATH="$HOME/yandex-cloud/bin:$PATH"
+    # Configure Yandex Cloud CLI with the service account key
+    - yc config set service-account-key $YC_SA_KEY_JSON_FILE
+    - yc config set cloud-id "$YC_CLOUD_ID"
+    - yc config set folder-id "$YC_FOLDER_ID"
+    # Get Kubernetes credentials
+    - yc managed-kubernetes cluster get-credentials "$YC_CLUSTER_ID" --external --force
+    # Install kubectl
+    - curl -LO "https://dl.k8s.io/release/v1.26.2/bin/linux/amd64/kubectl"
+    - chmod +x kubectl
+    - mv kubectl /usr/local/bin/
+    # Update the deployment image
+    - kubectl set image deployment/$BASE_NAME-deployment $BASE_NAME-container=$FULL_IMAGE_NAME
+  only:
+    - main

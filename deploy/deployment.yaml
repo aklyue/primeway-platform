@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: platform-deployment
+  name: prime-platform-deployment
   labels:
     app: prime-platform
 spec:

@@ -4,7 +4,7 @@
 REGISTRY="cr.yandex/crpa3u3frrtfcv7iqaan"
 IMAGE_NAME="prime-platform-image"
 DOCKERFILE_PATH="deploy/Dockerfile"
-DEPLOYMENT_NAME="platform-deployment"
+DEPLOYMENT_NAME="prime-platform-deployment"
 
 TAG=$(date +%Y%m%d-%H%M%S)
 

@@ -1,6 +1,5 @@
 // src/components/Docs.js
 import React from "react";
-import ReactMarkdown from "react-markdown";
 import { useParams, Link } from "react-router-dom";
 import { Box, Button } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -18,7 +17,7 @@ const docsStructure = [
 
 function Docs() {
   const { docName } = useParams();
-  const [content, setContent] = React.useState("");
+  const [ContentComponent, setContentComponent] = React.useState(null);
   const theme = useTheme();
 
   // Определяем индекс текущего документа
@@ -32,22 +31,23 @@ function Docs() {
 
   React.useEffect(() => {
     const name = docName || "welcome";
-    // Загрузка содержимого Markdown-файла
-    import(`../docs/${name}.md`)
-      .then((res) => {
-        fetch(res.default)
-          .then((response) => response.text())
-          .then((text) => setContent(text));
+    // Динамически импортируем компонент с содержимым документации
+    import(`../docs/${name}.js`)
+      .then((module) => {
+        setContentComponent(() => module.default);
       })
       .catch((err) => {
-        setContent("# Документ не найден");
+        // Если компонент не найден, показываем сообщение об ошибке
+        setContentComponent(() => () => <div>Документ не найден</div>);
       });
   }, [docName]);
 
   return (
     <Box
       sx={{
-        padding: '20px 120px',
+        maxWidth: '980px',
+        margin: '0 auto',
+        padding: '40px 56px',
         "& h1": {
           color: theme.palette.primary.main,
         },
@@ -61,8 +61,8 @@ function Docs() {
         },
       }}
     >
-      {/* Отображение контента документации */}
-      <ReactMarkdown>{content}</ReactMarkdown>
+      {/* Рендерим компонент с содержимым документации */}
+      {ContentComponent ? <ContentComponent /> : <div>Загрузка...</div>}
 
       {/* Кнопки навигации */}
       <Box

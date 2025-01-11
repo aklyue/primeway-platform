@@ -1,7 +1,7 @@
 variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_TLS_CERTDIR: ""
-  REGISTRY: "cr.yandex/crpa3u3frrtfcv7iqaan"  # Replace with your actual registry ID
+  REGISTRY: "cr.yandex/$YC_REGISTRY_ID"
   BASE_NAME: "prime-platform"
 
 stages:

@@ -204,7 +204,7 @@ function Billing() {
       </Box>
 
       {/* Секция истории транзакций */}
-      <Box sx={{ marginTop: "40px" }}>
+      <Box sx={{ marginTop: "40px", }}>
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>
@@ -251,9 +251,9 @@ function Billing() {
             </Box>
 
             {/* Правая сторона: Таблица транзакций */}
-            <Box sx={{ flex: 1, overflowY:'auto' }}>
+            <Box component={Paper}  sx={{ flex: 1, overflowY: "auto" }}>
               {transactions.length > 0 ? (
-                <TableContainer component={Paper}>
+                <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -271,9 +271,7 @@ function Billing() {
                           <TableCell>
                             {tx.transaction_type || tx.status}
                           </TableCell>
-                          <TableCell>
-                            {tx.amount || tx.credits}
-                          </TableCell>
+                          <TableCell>{tx.amount || tx.credits}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

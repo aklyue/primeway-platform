@@ -4,8 +4,6 @@ import {
   Typography,
   CircularProgress,
   List,
-  ListItem,
-  ListItemText,
   Paper,
   TableContainer,
   Table,
@@ -116,48 +114,14 @@ function Tasks() {
     return <Typography color="error">{error}</Typography>;
   }
 
-  if (!jobs || jobs.length === 0) {
-    return (
-      <Box>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{ fontSize: { xs: "1.2rem", sm: "1.6rem" } }}
-          >
-            Задачи
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Button
-            variant="outlined"
-            sx={{
-              mt: 1,
-              borderColor: filter === "running" ? "green" : "grey.400",
-              color: filter === "running" ? "green" : "inherit",
-              backgroundColor:
-                filter === "running" ? "rgba(0, 128, 0, 0.1)" : "transparent",
-              textTransform: "none",
-              borderRadius: "20px",
-              "&:hover": {
-                borderColor: "green",
-              },
-            }}
-            onClick={() => setFilter(filter === "running" ? "all" : "running")}
-          >
-            Running
-          </Button>
-        </Box>
-        <Typography sx={{ textAlign: "center", fontSize: "18px", mt: "40px" }}>
-          Задачи не найдены.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // Step 1: Define possible columns
-  const possibleColumns = [
+  // Фиксированные колонки
+  const fixedColumns = [
     { field: "job_id", headerName: "Job ID" },
+    { field: "gpu_type", headerName: "GPU Type" },
+  ];
+
+  // Динамические колонки
+  const dynamicColumns = [
     { field: "job_name", headerName: "Job Name" },
     { field: "job_type", headerName: "Job Type" },
     { field: "created_at", headerName: "Created At" },
@@ -169,13 +133,15 @@ function Tasks() {
       field: "last_execution_start_time",
       headerName: "Last Execution Start Time",
     },
-    { field: "last_execution_end_time", headerName: "Last Execution End Time" },
-    { field: "gpu_type", headerName: "GPU Type" },
-    // Add other columns as needed
+    {
+      field: "last_execution_end_time",
+      headerName: "Last Execution End Time",
+    },
+    // Добавьте другие колонки по необходимости
   ];
 
-  // Step 2: Determine which columns have data
-  const displayColumns = possibleColumns.filter((column) =>
+  // Определяем, какие динамические колонки имеют данные
+  const availableDynamicColumns = dynamicColumns.filter((column) =>
     jobs.some(
       (job) =>
         job[column.field] !== undefined &&
@@ -184,6 +150,12 @@ function Tasks() {
     )
   );
 
+  // Если данных нет вообще, используем все динамические колонки
+  const columnsToDisplay =
+    availableDynamicColumns.length > 0
+      ? [fixedColumns[0], ...availableDynamicColumns, fixedColumns[1]]
+      : [fixedColumns[0], ...dynamicColumns, fixedColumns[1]];
+
   const renderCellContent = (job, field) => {
     const value = job[field];
     switch (field) {
@@ -191,7 +163,12 @@ function Tasks() {
         const jobId = value || job.id || "N/A";
         const fullJobId = value || job.id || "";
         return (
-          <Box display="flex" alignItems="center" justifyContent="center">
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ width: "100%" }}
+          >
             {formatJobId(jobId)}
             {fullJobId && (
               <Tooltip title="Скопировать Job ID">
@@ -278,83 +255,178 @@ function Tasks() {
         </Button>
       </Box>
       {isMobile ? (
-        // Mobile view (List)
+        // Мобильное представление (список)
         <List>
-          {jobs.map((job) => {
-            const jobId = job.job_id || job.id || "N/A";
-            const fullJobId = job.job_id || job.id || "";
+          {jobs.length > 0 ? (
+            jobs.map((job) => {
+              const jobId = job.job_id || job.id || "N/A";
+              const fullJobId = job.job_id || job.id || "";
 
-            return (
-              <Paper
-                key={jobId}
-                sx={{
-                  mb: 2,
-                  p: 2,
-                  boxShadow: "none",
-                  borderBottom: "1px solid rgba(0,0,0,0.2)",
-                }}
-                elevation={1}
-              >
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
+              return (
+                <Paper
+                  key={jobId}
+                  sx={{
+                    mb: 2,
+                    p: 2,
+                    boxShadow: "none",
+                    borderBottom: "1px solid rgba(0,0,0,0.2)",
+                    width: "100%",
+                  }}
+                  elevation={1}
                 >
-                  <Typography variant="h6">{job.job_name || "N/A"}</Typography>
-                </Box>
-                {/* Dynamically render available fields */}
-                {displayColumns.map((column) => (
-                  <Typography
-                    key={column.field}
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center" }}
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ height: "60px" }} // Фиксированная высота заголовка
                   >
-                    <strong>{column.headerName}:</strong>{" "}
-                    {renderCellContent(job, column.field)}
-                  </Typography>
-                ))}
-              </Paper>
-            );
-          })}
+                    <Typography variant="h6">{job.job_name || "N/A"}</Typography>
+                  </Box>
+                  {/* Динамически отображаем поля */}
+                  {columnsToDisplay.map((column) => (
+                    <Typography
+                      key={column.field}
+                      variant="body2"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "40px", // Фиксированная высота строк содержимого
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: "150px", // Фиксированная ширина для заголовка поля
+                          flexShrink: 0,
+                        }}
+                      >
+                        <strong>{column.headerName}:</strong>
+                      </Box>
+                      <Box sx={{ flexGrow: 1 }}>
+                        {renderCellContent(job, column.field)}
+                      </Box>
+                    </Typography>
+                  ))}
+                </Paper>
+              );
+            })
+          ) : (
+            // Если нет задач, отображаем один элемент с N/A
+            <Paper
+              sx={{
+                mb: 2,
+                p: 2,
+                boxShadow: "none",
+                borderBottom: "1px solid rgba(0,0,0,0.2)",
+                width: "100%",
+              }}
+              elevation={1}
+            >
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ height: "60px" }}
+              >
+                <Typography variant="h6">N/A</Typography>
+              </Box>
+              {/* Отображаем N/A для всех колонок */}
+              {columnsToDisplay.map((column) => (
+                <Typography
+                  key={column.field}
+                  variant="body2"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "40px",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "150px",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <strong>{column.headerName}:</strong>
+                  </Box>
+                  <Box sx={{ flexGrow: 1 }}>N/A</Box>
+                </Typography>
+              ))}
+            </Paper>
+          )}
         </List>
       ) : (
-        // Desktop and tablet view (Table)
+        // Настольное и планшетное представление (таблица)
         <TableContainer
           component={Paper}
-          sx={{ boxShadow: "none", overflowX: "auto" }}
+          sx={{ boxShadow: "none", overflowX: "auto", width: "100%" }}
         >
           <Table>
             <TableHead
               sx={{
                 "& .MuiTableCell-root": {
+                  padding:'5px',
                   color: "black",
                   textAlign: "center",
+                  height: "50px", // Фиксированная высота заголовков
+                  width: "150px", // Фиксированная ширина столбцов
                 },
               }}
             >
               <TableRow>
-                {displayColumns.map((column) => (
-                  <TableCell key={column.field}>{column.headerName}</TableCell>
+                {columnsToDisplay.map((column) => (
+                  <TableCell
+                    key={column.field}
+                    sx={{
+                      width:
+                        column.field === "job_id" || column.field === "gpu_type"
+                          ? "100px"
+                          : "150px", // Разные ширины для фиксированных колонок
+                    }}
+                  >
+                    {column.headerName}
+                  </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody
               sx={{
                 "& .MuiTableCell-root": {
+                  padding:'5px',
                   color: "#6e6e80",
                   textAlign: "center",
+                  height: "50px", // Фиксированная высота строк содержимого
+                  width: "150px", // Фиксированная ширина столбцов
                 },
               }}
             >
-              {jobs.map((job) => (
-                <TableRow key={job.job_id || job.id || Math.random()}>
-                  {displayColumns.map((column) => (
-                    <TableCell key={column.field}>
-                      {renderCellContent(job, column.field)}
+              {jobs.length > 0 ? (
+                jobs.map((job) => (
+                  <TableRow
+                    key={job.job_id || job.id || Math.random()}
+                    sx={{ height: "50px" }} // Фиксированная высота строки
+                  >
+                    {columnsToDisplay.map((column) => (
+                      <TableCell
+                        key={column.field}
+                       
+                      >
+                        {renderCellContent(job, column.field)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                // Если нет задач, отображаем одну строку с N/A
+                <TableRow sx={{ height: "50px" }}>
+                  {columnsToDisplay.map((column) => (
+                    <TableCell
+                      key={column.field}
+                    >
+                      N/A
                     </TableCell>
                   ))}
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>

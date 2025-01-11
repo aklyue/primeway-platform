@@ -132,7 +132,7 @@ const OrganizationSettings = () => {
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2 }}>
-        Настройки Организации
+        Участники
       </Typography>
 
       {/* Сообщение об ошибке */}

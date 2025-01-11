@@ -208,7 +208,7 @@ export function Layout() {
                 selected={location.pathname === "/organization-settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Настройки организации" />
+                <ListItemText primary="Участники" />
               </ListItemButton>
             </ListItem>
           </>
@@ -525,33 +525,35 @@ export function Layout() {
       )}
 
       {/* Основной контент с отдельной анимацией */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.14 }}
-          style={{
-            width: "100%",
-            display: shouldRenderContent ? "block" : "none",
-          }}
-        >
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: "100%",
+          mr: { xs: 0, sm: "15px" },
+          ml: { xs: 0, sm: "5px" },
+          minHeight: "90vh",
+          backgroundColor: "#FFFFFF",
+          padding: { xs: "25px", sm: "35px" },
+          marginTop: { xs: "56px", sm: "64px" },
+          borderRadius: { xs: "0px", sm: "20px" },
+          height: "calc(100vh - 64px)",
+          overflowY: "auto",
+          overflowX: "none",
+          
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14 }}
+            style={{
               width: "100%",
-              mr: { xs: 0, sm: "15px" },
-              ml: { xs: 0, sm: "5px" },
-              minHeight: "90vh",
-              backgroundColor: "#FFFFFF",
-              padding: { xs: "25px", sm: "35px" },
-              marginTop: { xs: "56px", sm: "64px" },
-              borderRadius: { xs: "0px", sm: "20px" },
-              height: "calc(100vh - 64px)",
-              overflowY: "auto",
-              overflowX: "none",
+              display: shouldRenderContent ? "block" : "none",
             }}
           >
             <Routes location={location}>
@@ -617,10 +619,11 @@ export function Layout() {
               <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
 
-            {/* Модальные окна */}
-          </Box>
-        </motion.div>
-      </AnimatePresence>
+            
+          </motion.div>
+        </AnimatePresence>
+      </Box>
+
       {!loading && (
         <Modal
           open={openRegistrationModal}

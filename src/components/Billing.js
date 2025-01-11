@@ -45,12 +45,12 @@ function Billing() {
 
   // Состояния для баланса кошелька
   const [walletBalance, setWalletBalance] = useState(null);
-  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
   const [errorBalance, setErrorBalance] = useState(null);
 
   // Состояния для истории транзакций
   const [transactions, setTransactions] = useState([]);
-  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [errorTransactions, setErrorTransactions] = useState(null);
 
   const [currentMonth] = useState("Сентябрь");

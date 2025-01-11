@@ -468,11 +468,11 @@ export function Layout() {
           <AnimatePresence mode="wait">
             {shouldRenderContent && (
               <motion.div
-                key={"drawer-" + groupKey}
+                key={groupKey}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.14 }}
                 style={{ display: "flex" }}
               >
                 <Box
@@ -527,11 +527,11 @@ export function Layout() {
       {/* Основной контент с отдельной анимацией */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={"main-" + groupKey}
+          key={location.pathname}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.14 }}
           style={{
             width: "100%",
             display: shouldRenderContent ? "block" : "none",

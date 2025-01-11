@@ -66,7 +66,7 @@ function ApiKeys() {
   const [open, setOpen] = useState(false); // Состояние модального окна
   const [newApiKey, setNewApiKey] = useState(null); // Новый созданный API ключ
   const [isCopied, setIsCopied] = useState(false); // Статус копирования
-  const [loading, setLoading] = useState(false); // Состояние загрузки при получении токенов
+  const [loading, setLoading] = useState(true); // Состояние загрузки при получении токенов
   const [creating, setCreating] = useState(false); // Состояние загрузки при создании токена
   const [error, setError] = useState(null); // Состояние ошибки
   const [tokenName, setTokenName] = useState(""); // Имя для нового токена
@@ -167,11 +167,9 @@ function ApiKeys() {
     handleMenuClose();
   };
 
-  // Объединённое состояние загрузки
-  const isLoading = loading;
 
   // Если данные загружаются, отображаем плейсхолдер загрузки на всю страницу
-  if (isLoading) {
+  if (loading) {
     return (
       <Box
         sx={{

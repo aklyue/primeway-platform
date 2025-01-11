@@ -54,7 +54,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import CodeIcon from "@mui/icons-material/Code";
 
-// Импортируем компоненты из framer-motion
 import { AnimatePresence, motion } from "framer-motion";
 
 const drawerWidth = 240;

@@ -1,7 +1,6 @@
 variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_TLS_CERTDIR: ""
-  REGISTRY: "cr.yandex/$YC_REGISTRY_ID"
   BASE_NAME: "prime-platform"
 
 stages:
@@ -19,6 +18,7 @@ build_and_push_job:
     - set -e
     # Define variables at runtime
     - TAG="$CI_COMMIT_SHORT_SHA"
+    - REGISTRY="cr.yandex/$YC_REGISTRY_ID"
     - FULL_IMAGE_NAME="$REGISTRY/$BASE_NAME-image:$TAG"
     # Install dependencies
     - apk update && apk add --no-cache curl bash jq
@@ -50,6 +50,7 @@ deploy_job:
     - set -e
     # Define variables at runtime
     - TAG="$CI_COMMIT_SHORT_SHA"
+    - REGISTRY="cr.yandex/$YC_REGISTRY_ID"
     - FULL_IMAGE_NAME="$REGISTRY/$BASE_NAME-image:$TAG"
     # Install dependencies
     - apk update && apk add --no-cache curl bash jq

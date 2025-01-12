@@ -1,0 +1,51 @@
+
+code {
+  color: #1a7f64;
+}
+.nav-scrollspy {
+  list-style-type: none;
+  padding-left: 15px; 
+  border-left: 1px solid rgba(0, 0, 0, 0.2); 
+  position: relative; 
+}
+
+.nav-item {
+  position: relative; 
+  margin-bottom: 15px;
+  opacity: 0.9;
+}
+.nav-item:hover {
+  opacity: 1;
+}
+
+.nav-item a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-item.is-current  {
+  color: #5282ff;
+}
+
+.nav-item.is-current::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -17.5px; 
+  width: 15px;
+  height: 100%;
+  border-left: 3px solid #5282ff; 
+}
+
+.code-block-container {
+  position: relative;
+}
+
+.copy-button {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.code-block-container:hover .copy-button {
+  opacity: 1;
+}

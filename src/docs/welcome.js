@@ -1,4 +1,5 @@
 // src/docs/welcome.js
+import { Box } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -23,8 +24,8 @@ const Welcome = () => {
         <div style={{ width: "200px", padding: "10px" }}>
           <strong>Developer quickstart</strong>
           <p>
-            PrimeWay is designed to simplify the deployment and execution of tasks
-            and applications on the cloud.
+            PrimeWay is designed to simplify the deployment and execution of
+            tasks and applications on the cloud.
           </p>
         </div>
 
@@ -49,7 +50,7 @@ const Welcome = () => {
       </div>
 
       {/* Заголовок секции */}
-      <h2 style={{marginTop:'60px'}}>Meet the sections</h2>
+      <h2 style={{ marginTop: "60px" }}>Meet the sections</h2>
 
       {/* Блоки с описанием разделов */}
       <div
@@ -65,8 +66,8 @@ const Welcome = () => {
           to="/docs/quickstart"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               padding: "15px",
               backgroundColor: "#e9ecef",
               borderRadius: "10px",
@@ -75,15 +76,18 @@ const Welcome = () => {
               flexDirection: "column",
               height: "100%", // Заполнение всей высоты сетки
               boxSizing: "border-box",
-              
+              transition:'transform 0.16s ease-in-out',
+              "&:hover": {
+                transform:'translateY(-6px)',
+              },
             }}
           >
             <h3>Quickstart</h3>
             <p>
-              Быстрый старт с PrimeWay: узнайте, как развернуть ваше первое приложение и
-              ознакомиться с основными возможностями платформы.
+              Быстрый старт с PrimeWay: узнайте, как развернуть ваше первое
+              приложение и ознакомиться с основными возможностями платформы.
             </p>
-          </div>
+          </Box>
         </Link>
 
         {/* Блок 2: Jobs */}
@@ -91,16 +95,20 @@ const Welcome = () => {
           to="/docs/jobs"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               padding: "15px",
               backgroundColor: "#e9ecef",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
-              height: "100%",
+              height: "100%", // Заполнение всей высоты сетки
               boxSizing: "border-box",
+              transition:'transform 0.16s ease-in-out',
+              "&:hover": {
+                transform:'translateY(-6px)',
+              },
             }}
           >
             <h3>Jobs</h3>
@@ -108,7 +116,7 @@ const Welcome = () => {
               Управляйте и мониторьте задания в PrimeWay, включая планирование,
               выполнение и отслеживание логов ваших задач.
             </p>
-          </div>
+          </Box>
         </Link>
 
         {/* Блок 3: CLI */}
@@ -116,25 +124,29 @@ const Welcome = () => {
           to="/docs/cli"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               padding: "15px",
               backgroundColor: "#e9ecef",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
-              height: "100%",
+              height: "100%", // Заполнение всей высоты сетки
               boxSizing: "border-box",
+              transition:'transform 0.16s ease-in-out',
+              "&:hover": {
+                transform:'translateY(-6px)',
+              },
             }}
           >
             <h3>CLI</h3>
             <p>
-              Используйте командную строку PrimeWay для взаимодействия с платформой прямо
-              из вашего терминала, автоматизируя процессы и интегрируя их в ваш рабочий
-              процесс.
+              Используйте командную строку PrimeWay для взаимодействия с
+              платформой прямо из вашего терминала, автоматизируя процессы и
+              интегрируя их в ваш рабочий процесс.
             </p>
-          </div>
+          </Box>
         </Link>
       </div>
     </div>

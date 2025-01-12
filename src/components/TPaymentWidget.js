@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { ReactComponent as TBankLogo } from '../assets/tbank.svg';
 
 function TPaymentWidget(props) {
   const { user, token, onSuccess, onError } = props;
@@ -83,7 +84,7 @@ function TPaymentWidget(props) {
       // Обновляем значение orderId в форме
       if (formRef.current) {
         const orderIdInput = formRef.current.querySelector(
-          'input[name="order"]'
+          'input[name="OrderId"]'
         );
         console.log("orderIdInput", orderIdInput);
         if (orderIdInput) {
@@ -185,7 +186,7 @@ function TPaymentWidget(props) {
           disabled={loading}
         >
           Оплатить c
-          <img width={75} height={40} src="./tbank.svg" alt="Tbank" />
+          <TBankLogo width={75} height={40} />
         </button>
       </Box>
     </form>

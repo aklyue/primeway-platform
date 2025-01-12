@@ -112,10 +112,10 @@ let theme = createTheme({
         root: {
           borderRadius: "15px",
           "&:hover": {
-            backgroundColor: "#ECECF1",
+            backgroundColor: "#e1e1e7",
           },
           "&.Mui-selected": {
-            backgroundColor: "#ECECF1",
+            backgroundColor: "#e1e1e7",
             "&:hover": {
               backgroundColor: "#e6e6eb",
             },

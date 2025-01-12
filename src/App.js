@@ -527,6 +527,7 @@ export function Layout() {
       {/* Основной контент с отдельной анимацией */}
 
       <Box
+      id="main-content"
         component="main"
         sx={{
           flexGrow: 1,

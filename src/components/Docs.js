@@ -6,12 +6,12 @@ import { useTheme } from "@mui/material/styles";
 
 // Структура вашей документации
 const docsStructure = [
-  { path: 'welcome', title: 'Welcome' },
-  { path: 'quickstart', title: 'Quickstart' },
-  { path: 'jobs', title: 'Jobs' },
-  { path: 'configuration', title: 'Configuration' },
-  { path: 'pipelines', title: 'Pipelines' },
-  { path: 'cli', title: 'CLI' },
+  { path: "welcome", title: "Welcome" },
+  { path: "quickstart", title: "Quickstart" },
+  { path: "jobs", title: "Jobs" },
+  { path: "configuration", title: "Configuration" },
+  { path: "pipelines", title: "Pipelines" },
+  { path: "cli", title: "CLI" },
   // Добавьте другие разделы по мере необходимости
 ];
 
@@ -45,9 +45,9 @@ function Docs() {
   return (
     <Box
       sx={{
-        maxWidth: '980px',
-        margin: '0 auto',
-        padding: '40px 56px',
+        maxWidth: "980px",
+        margin: "0 auto",
+        padding: "20px 50px",
         "& h1": {
           color: theme.palette.primary.main,
         },
@@ -71,6 +71,7 @@ function Docs() {
           justifyContent: "space-between",
           mt: 4,
           mb: 2,
+          mr: 20,
         }}
       >
         {prevDoc ? (
@@ -78,8 +79,24 @@ function Docs() {
             component={Link}
             to={`/docs/${prevDoc.path}`}
             variant="outlined"
+            sx={{
+              // Применяем стиль к стрелке при наведении на кнопку
+              "&:hover .arrow": {
+                transform: "translateX(-3px)",
+              },
+            }}
           >
-            ← {prevDoc.title}
+            <Box
+              className="arrow"
+              sx={{
+                marginRight:'5px',
+                display: "inline-block",
+                transition: "transform 0.16s ease-in-out",
+              }}
+            >
+              ←
+            </Box>{" "}
+            {prevDoc.title}
           </Button>
         ) : (
           <Box />
@@ -90,8 +107,23 @@ function Docs() {
             component={Link}
             to={`/docs/${nextDoc.path}`}
             variant="outlined"
+            sx={{
+              "&:hover .arrow": {
+                transform: "translateX(3px)",
+              },
+            }}
           >
-            {nextDoc.title} →
+            {nextDoc.title}{" "}
+            <Box
+              className="arrow"
+              sx={{
+                marginLeft: "5px",
+                display: "inline-block",
+                transition: "transform 0.16s ease-in-out",
+              }}
+            >
+              →
+            </Box>
           </Button>
         ) : (
           <Box />

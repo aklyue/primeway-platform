@@ -1,6 +1,5 @@
-
-code {
-  color: #1a7f64;
+pre {
+  padding: 0;
 }
 .nav-scrollspy {
   list-style-type: none;

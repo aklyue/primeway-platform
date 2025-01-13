@@ -3,20 +3,27 @@ import React from "react";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import "./docs.css"; // Убедитесь, что импортируете ваш CSS-файл
 
 const Pipelines = () => {
-  // Компонент для отображения блока кода с кнопкой копирования
-  const CodeBlock = ({ code }) => {
+  // Компонент для отображения блока кода с подсветкой синтаксиса и кнопкой копирования
+  const CodeBlock = ({ code, language }) => {
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
     };
 
     return (
       <div style={{ position: "relative", marginBottom: "20px" }}>
-        <pre className="code-block">
-          <code>{code}</code>
-        </pre>
+        <SyntaxHighlighter
+          language={language}
+          style={prism}
+          customStyle={{ margin: 0, padding: '8px', borderRadius: "7px" }}
+          showLineNumbers
+        >
+          {code}
+        </SyntaxHighlighter>
         <Tooltip title="Copy">
           <IconButton
             size="small"
@@ -107,30 +114,19 @@ const Pipelines = () => {
           <p><strong>Example of a Step Configuration:</strong></p>
           <CodeBlock
             code={`- id: data_extraction
-
   job_type: run
-
   docker_image: python:3.9-slim
-
   job_name: extract_data
-
   entry_script: extract.py
-
   project_dir: ./extract
-
   args: "--output primeway-artifacts/raw_data.csv"
-
   memory: 1024
-
   disk_space: 5120
-
   cpu_count: 1
-
   requirements:
-
     - requests
-
   dependencies: []`}
+            language="yaml"
           />
         </section>
 
@@ -166,30 +162,21 @@ primeway_api_token: YOUR_primeway_API_TOKEN
 steps:
 
  - id: fetch_data
-
    job_type: run
-
    # ... other job configuration ...
 
  - id: process_data
-
    job_type: run
-
    # ... other job configuration ...
-
    dependencies:
-
      - fetch_data
 
  - id: train_model
-
    job_type: run
-
    # ... other job configuration ...
-
    dependencies:
-
      - process_data`}
+            language="yaml"
           />
         </section>
 
@@ -210,28 +197,20 @@ steps:
             code={`steps:
 
  - id: step1
-
    # ...
-
    dependencies: []
 
  - id: step2
-
    # ...
-
    dependencies:
-
      - step1
 
  - id: step3
-
    # ...
-
    dependencies:
-
      - step1
-
      - step2`}
+            language="yaml"
           />
         </section>
 
@@ -264,14 +243,17 @@ steps:
           </p>
           <CodeBlock
             code={`primeway create pipeline --config pipeline_config.yaml`}
+            language="bash"
           />
           <p><strong>Response:</strong></p>
           <CodeBlock
             code={`{"pipeline_id": "3pqwojg-3qfnvnlkd-ewlknl-qfejnk"}`}
+            language="json"
           />
           <p><strong>Run the pipeline</strong></p>
           <CodeBlock
             code={`primeway run pipeline 3pqwojg-3qfnvnlkd-ewlknl-qfejnk`}
+            language="bash"
           />
           <p>
             The CLI will:
@@ -299,14 +281,11 @@ request_pipeline_input_dir: /custom-data-pipeline-train-step
 steps:
 
 - id: step1
-
    job_type: run
-
    docker_image: python:3.10-slim
-
    job_name: train
-
    inputs: [request_pipeline_input_dir]`}
+            language="yaml"
           />
         </section>
 
@@ -318,9 +297,15 @@ steps:
           </p>
           <Typography variant="h4">CLI:</Typography>
           <p><strong>List pipeline executions:</strong></p>
-          <CodeBlock code={`primeway pipeline executions --pipeline-id PIPELINE_ID`} />
+          <CodeBlock
+            code={`primeway pipeline executions --pipeline-id PIPELINE_ID`}
+            language="bash"
+          />
           <p><strong>Get execution details:</strong></p>
-          <CodeBlock code={`primeway pipeline execution-info --execution-id EXECUTION_ID`} />
+          <CodeBlock
+            code={`primeway pipeline execution-info --execution-id EXECUTION_ID`}
+            language="bash"
+          />
           <Typography variant="h4">UI:</Typography>
           <ol>
             <li>Log in to the primeway dashboard.</li>
@@ -349,108 +334,60 @@ primeway_api_token: YOUR_primeway_API_TOKEN
 steps:
 
  - id: extract_data
-
    job_type: run
-
    docker_image: python:3.9-slim
-
    job_name: extract_data_job
-
    entry_script: extract.py
-
    project_dir: ./extract
-
    args: "--output data/raw_data.json"
-
    memory: 2
-
    disk_space: 5
-
    cpu_count: 1
-
    gpu_types:
-
      - type: NVIDIA A2000
-
        count: 1
-
    requirements:
-
      - requests
-
    dependencies: []
-
    artifacts_path: "data/"
 
  - id: transform_data
-
    job_type: run
-
    docker_image: python:3.9-slim
-
    job_name: transform_data_job
-
    entry_script: transform.py
-
    project_dir: ./transform
-
    args: "--input /extract_data/raw_data.json --output primeway-artifacts/clean_data.csv"
-
    memory: 2
-
    disk_space: 10
-
    cpu_count: 2
-
    gpu_types:
-
      - type: NVIDIA A6000
-
        count: 1
-
    requirements:
-
      - pandas
-
    dependencies:
-
      - extract_data
-
    inputs:
-
      - extract_data
 
  - id: load_data
-
    job_type: run
-
    docker_image: python:3.9-slim
-
    job_name: load_data_job
-
    entry_script: load.py
-
    project_dir: ./load
-
    args: "--input /transform_data/clean_data.csv"
-
    memory: 1
-
    disk_space: 5
-
    cpu_count: 1
-
    requirements:
-
      - sqlalchemy
-
    dependencies:
-
      - transform_data
-
    inputs:
-
      - transform_data`}
+            language="yaml"
           />
 
           <Typography variant="h4">Example Machine Learning Pipeline</Typography>
@@ -471,162 +408,88 @@ primeway_api_token: YOUR_primeway_API_TOKEN
 steps:
 
  - id: data_processing
-
    job_type: run
-
    docker_image: python:3.9-slim
-
    job_name: data_processing_job
-
    entry_script: preprocess.py
-
    project_dir: ./preprocess
-
    args: "--input data/raw.csv --output artifacts/processed.csv"
-
    memory: 2
-
    disk_space: 10
-
    cpu_count: 2
-
    gpu_types:
-
      - type: NVIDIA A6000
-
        count: 1
-
    requirements:
-
      - pandas
-
      - scikit-learn
-
    dependencies: []
-
    artifacts_path: "artifacts/"
 
  - id: model_training
-
    job_type: run
-
    docker_image: pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
-
    job_name: model_training_job
-
    entry_script: train.py
-
    project_dir: ./train
-
    args: "--data data_processing/processed.csv --model models/model.pkl"
-
    memory: 4
-
    disk_space: 20
-
    cpu_count: 4
-
    gpu_types:
-
      - type: NVIDIA L40
-
        count: 1
-
    requirements:
-
      - torch
-
      - scikit-learn
-
    dependencies:
-
      - data_processing
-
    inputs:
-
      - data_processing
-
    artifacts_path: "models/"
 
  - id: model_evaluation
-
    job_type: run
-
    docker_image: python:3.9-slim
-
    job_name: model_evaluation_job
-
    entry_script: evaluate.py
-
    project_dir: ./evaluate
-
    args: "--model model_training/model.pkl --report reports/report.txt"
-
    memory: 4
-
    disk_space: 20
-
    cpu_count: 4
-
    gpu_types:
-
      - type: NVIDIA L40
-
        count: 1
-
    cpu_count: 2
-
    requirements:
-
      - scikit-learn
-
    dependencies:
-
      - model_training
-
    inputs:
-
      - model_training
-
    artifacts_path: "reports/"
 
  - id: model_deployment
-
    job_type: deploy
-
    docker_image: python:3.9-slim
-
    job_name: model_deployment_job
-
    entry_script: app.py
-
    project_dir: ./deploy
-
    command: "gunicorn app:app --bind 0.0.0.0:8080"
-
    memory: 1024
-
    disk_space: 10240
-
    cpu_count: 2
-
    requirements:
-
      - flask
-
      - gunicorn
-
    port: 8080
-
    health_endpoint: "/health"
-
    dependencies:
-
      - model_evaluation
-
    inputs:
-
      - model_training`}
+            language="yaml"
           />
         </section>
 
@@ -651,18 +514,14 @@ steps:
             code={`steps:
 
  - id: step1
-
    artifacts_path: "output/"
-
    # ...
 
  - id: step2
-
    inputs:
-
      - step1
-
    # ...`}
+            language="yaml"
           />
           <Typography variant="h4">Optimizing Resource Usage</Typography>
           <ul>
@@ -682,6 +541,7 @@ steps:
           <p><strong>Example:</strong></p>
           <CodeBlock
             code={`schedule: "0 2 * * *"  # Runs daily at 2 AM Moscow Time`}
+            language="yaml"
           />
           <p>
             <strong>Input Data:</strong> Use the <code>request_pipeline_input_dir</code> field to be able to pass input data file on pipeline run.
@@ -689,10 +549,12 @@ steps:
           <p><strong>Example:</strong></p>
           <CodeBlock
             code={`request_pipeline_input_dir: /custom-data-pipeline-train-step`}
+            language="yaml"
           />
           <p><strong>Then just add input data:</strong></p>
           <CodeBlock
-            code={`primeway run pipeline 3pqwojg-3qfnvnlkd-ewlknl-qfejnk --data-file ./loca_file.csv`}
+            code={`primeway run pipeline 3pqwojg-3qfnvnlkd-ewlknl-qfejnk --data-file ./local_file.csv`}
+            language="bash"
           />
 
           <Typography variant="h4">Parallel Execution</Typography>

@@ -163,7 +163,14 @@ export function Layout() {
                 selected={location.pathname === "/tasks"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Задачи" />
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      color: isDocsPage ? "#202123" : "white",
+                    },
+                  }}
+                  primary="Задачи"
+                />
               </ListItemButton>
             </ListItem>
 
@@ -174,7 +181,14 @@ export function Layout() {
                 selected={location.pathname === "/billing"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Платежи" />
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      color: isDocsPage ? "#202123" : "white",
+                    },
+                  }}
+                  primary="Платежи"
+                />
               </ListItemButton>
             </ListItem>
 
@@ -185,7 +199,14 @@ export function Layout() {
                 selected={location.pathname === "/api-keys"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="API Ключи" />
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      color: isDocsPage ? "#202123" : "white",
+                    },
+                  }}
+                  primary="API Ключи"
+                />
               </ListItemButton>
             </ListItem>
 
@@ -196,7 +217,14 @@ export function Layout() {
                 selected={location.pathname === "/settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Настройки" />
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      color: isDocsPage ? "#202123" : "white",
+                    },
+                  }}
+                  primary="Настройки"
+                />
               </ListItemButton>
             </ListItem>
 
@@ -207,7 +235,14 @@ export function Layout() {
                 selected={location.pathname === "/organization-settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Участники" />
+                <ListItemText
+                  primaryTypographyProps={{
+                    sx: {
+                      color: isDocsPage ? "#202123" : "white",
+                    },
+                  }}
+                  primary="Участники"
+                />
               </ListItemButton>
             </ListItem>
           </>
@@ -322,308 +357,334 @@ export function Layout() {
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        width: "100%",
-        height: "100vh",
-        backgroundColor: shouldRenderContent ? "#F5F5F5" : "#FFFFFF",
-      }}
-    >
-      <CssBaseline />
-      <Snowfall
-        color="#d1d1dc"
-        images={[snowflakeImage]}
-        radius={[10, 12]}
-        snowflakeCount={30}
-        style={{ zIndex: 10000, opacity: "0.6" }}
-      />
-      {shouldRenderContent && (
-        <>
-          <AppBar
-            position="fixed"
-            sx={{
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-              backgroundColor: "#F5F5F5",
-            }}
-          >
-            <Toolbar style={{ paddingLeft: "16px" }}>
-              {isMobile && (
-                <IconButton
-                  color="#202123"
-                  aria-label="open drawer"
-                  edge="start"
-                  onClick={handleDrawerToggle}
-                  sx={{ mr: "4px", padding: "6px" }}
-                >
-                  <MenuIcon />
-                </IconButton>
-              )}
-
-              <Box
-                sx={{ display: "flex", alignItems: "center", color: "#202123" }}
-              >
-                <Typography
-                  variant="h5"
-                  noWrap
-                  component={Link}
-                  to="/"
-                  sx={{
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  PrimeWay
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <OrganizationSwitcher />
-                </Box>
-              </Box>
-
-              {/* Растягивающий элемент */}
-              <Box sx={{ flexGrow: 1 }} />
-
-              {/* Кнопки переключения между дашбордом и документацией */}
-              <Box
-                sx={{ display: "flex", alignItems: "center", marginRight: 2 }}
-              >
-                <Button
-                  component={Link}
-                  to="/tasks"
-                  color="inherit"
-                  sx={{
-                    textTransform: "none",
-                    color: !location.pathname.startsWith("/docs")
-                      ? "primary.main"
-                      : "#acacbe",
-                  }}
-                >
-                  Dashboard
-                </Button>
-                <Button
-                  component={Link}
-                  to="/docs"
-                  color="inherit"
-                  sx={{
-                    textTransform: "none",
-                    color: location.pathname.startsWith("/docs")
-                      ? "primary.main"
-                      : "#acacbe",
-                  }}
-                >
-                  Docs
-                </Button>
-              </Box>
-
-              {isLoggedIn && (
-                <>
-                  <Tooltip title={user?.username || "Пользователь"}>
-                    <ButtonBase onClick={handleAvatarClick}>
-                      <Box
-                        sx={{
-                          background:
-                            "linear-gradient(to right top, blue, skyblue, orange)",
-                          borderRadius: "51%",
-                          padding: "2.4px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            backgroundColor: "#FFFFFF",
-                            borderRadius: "50%",
-                            padding: "2.6px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Avatar
-                            alt={user?.username}
-                            src={user?.avatar_url}
-                            sx={{
-                              width: isMobile ? 32 : 40,
-                              height: isMobile ? 32 : 40,
-                            }}
-                          />
-                        </Box>
-                      </Box>
-                    </ButtonBase>
-                  </Tooltip>
-                </>
-              )}
-            </Toolbar>
-          </AppBar>
-
-          {/* Drawer с отдельной анимацией */}
-          <AnimatePresence mode="wait">
-            {shouldRenderContent && (
-              <motion.div
-                key={groupKey}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.14 }}
-                style={{ display: "flex" }}
-              >
-                <Box
-                  component="nav"
-                  sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-                >
-                  {/* Мобильный Drawer */}
-                  {isMobile && (
-                    <Drawer
-                      variant="temporary"
-                      open={mobileOpen}
-                      onClose={handleDrawerToggle}
-                      ModalProps={{
-                        keepMounted: true, // Better open performance on mobile.
-                      }}
-                      sx={{
-                        "& .MuiDrawer-paper": {
-                          width: drawerWidth,
-                          backgroundColor: "#F5F5F5",
-                        },
-                      }}
-                    >
-                      {drawer}
-                    </Drawer>
-                  )}
-                  {/* Десктопный Drawer */}
-                  {!isMobile && (
-                    <Drawer
-                      variant="permanent"
-                      sx={{
-                        width: drawerWidth,
-                        flexShrink: 0,
-                        "& .MuiDrawer-paper": {
-                          width: drawerWidth,
-                          boxSizing: "border-box",
-                          backgroundColor: "#F5F5F5",
-                          border: "none",
-                        },
-                      }}
-                      open
-                    >
-                      {drawer}
-                    </Drawer>
-                  )}
-                </Box>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>
-      )}
-
-      {/* Основной контент с отдельной анимацией */}
-
-      <Box
-      id="main-content"
-        component="main"
-        sx={{
-          flexGrow: 1,
-          width: "100%",
-          mr: { xs: 0, sm: "15px" },
-          ml: { xs: 0, sm: "5px" },
-          minHeight: "90vh",
-          backgroundColor: "#FFFFFF",
-          padding: { xs: "25px", sm: "35px" },
-          marginTop: { xs: "56px", sm: "64px" },
-          borderRadius: { xs: "0px", sm: "20px" },
-          height: "calc(100vh - 64px)",
-          overflowY: "auto",
-          overflowX: "none",
-          
-        }}
-      >
-        <AnimatePresence mode="wait">
+    <>
+      <AnimatePresence mode="wait">
+        {shouldRenderContent && (
           <motion.div
-            key={location.pathname}
+            key={groupKey}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.14 }}
+            transition={{ duration: 0.22 }}
             style={{
               width: "100%",
               display: shouldRenderContent ? "block" : "none",
             }}
           >
-            <Routes location={location}>
-              <Route path="/" element={<Navigate to="/tasks" replace />} />
+            <Box
+              sx={{
+                display: "flex",
+                width: "100%",
+                height: "100vh",
+                backgroundColor: isDocsPage
+                  ? "#F5F5F5"
+                  : !shouldRenderContent
+                  ? "#FFFFFF"
+                  : "#03031c",
+              }}
+            >
+              <CssBaseline />
+              <Snowfall
+                color="#d1d1dc"
+                images={[snowflakeImage]}
+                radius={[10, 12]}
+                snowflakeCount={30}
+                style={{ zIndex: 10000, opacity: "0.6" }}
+              />
+              {shouldRenderContent && (
+                <>
+                  <AppBar
+                    position="fixed"
+                    sx={{
+                      zIndex: (theme) => theme.zIndex.drawer + 1,
+                      backgroundColor: isDocsPage
+                        ? "#F5F5F5"
+                        : !shouldRenderContent
+                        ? "#FFFFFF"
+                        : "#03031c",
+                    }}
+                  >
+                    <Toolbar style={{ paddingLeft: "16px" }}>
+                      {isMobile && (
+                        <IconButton
+                          color="#202123"
+                          aria-label="open drawer"
+                          edge="start"
+                          onClick={handleDrawerToggle}
+                          sx={{ mr: "4px", padding: "6px" }}
+                        >
+                          <MenuIcon />
+                        </IconButton>
+                      )}
 
-              {/* Маршруты дашборда */}
-              <Route
-                path="/tasks"
-                element={
-                  <ProtectedRoute>
-                    <Tasks />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/billing"
-                element={
-                  <ProtectedRoute>
-                    <Billing />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/api-keys"
-                element={
-                  <ProtectedRoute>
-                    <ApiKeys />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organization-settings"
-                element={
-                  <ProtectedRoute>
-                    <OrganizationSettings />
-                  </ProtectedRoute>
-                }
-              />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          color: "#202123",
+                        }}
+                      >
+                        <Typography
+                          variant="h5"
+                          noWrap
+                          component={Link}
+                          to="/"
+                          sx={{
+                            textDecoration: "none",
+                            color: isDocsPage ? "inherit" : "white",
+                          }}
+                        >
+                          PrimeWay
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <OrganizationSwitcher />
+                        </Box>
+                      </Box>
 
-              {/* Маршруты документации */}
-              <Route
-                path="/docs"
-                element={<Navigate to="/docs/welcome" replace />}
-              />
-              <Route
-                path="/docs/:docName"
-                element={
-                  <ProtectedRoute>
-                    <Docs />
-                  </ProtectedRoute>
-                }
-              />
+                      {/* Растягивающий элемент */}
+                      <Box sx={{ flexGrow: 1 }} />
 
-              {/* Маршрут для обработки колбэка аутентификации */}
-              <Route path="/auth/callback" element={<AuthCallback />} />
-            </Routes>
+                      {/* Кнопки переключения между дашбордом и документацией */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginRight: 2,
+                        }}
+                      >
+                        <Button
+                          component={Link}
+                          to="/tasks"
+                          color="inherit"
+                          sx={{
+                            textTransform: "none",
+                            color: !location.pathname.startsWith("/docs")
+                              ? "primary.main"
+                              : "#acacbe",
+                          }}
+                        >
+                          Dashboard
+                        </Button>
+                        <Button
+                          component={Link}
+                          to="/docs"
+                          color="inherit"
+                          sx={{
+                            textTransform: "none",
+                            color: location.pathname.startsWith("/docs")
+                              ? "primary.main"
+                              : "#acacbe",
+                          }}
+                        >
+                          Docs
+                        </Button>
+                      </Box>
 
-            
+                      {isLoggedIn && (
+                        <>
+                          <Tooltip title={user?.username || "Пользователь"}>
+                            <ButtonBase onClick={handleAvatarClick}>
+                              <Box
+                                sx={{
+                                  background:
+                                    "linear-gradient(to right top, blue, skyblue, orange)",
+                                  borderRadius: "51%",
+                                  padding: "2.4px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    backgroundColor: isDocsPage ? "#F5F5F5" : "#03031c",
+                                    borderRadius: "50%",
+                                    padding: "2.6px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <Avatar
+                                    alt={user?.username}
+                                    src={user?.avatar_url}
+                                    sx={{
+                                      width: isMobile ? 32 : 40,
+                                      height: isMobile ? 32 : 40,
+                                    }}
+                                  />
+                                </Box>
+                              </Box>
+                            </ButtonBase>
+                          </Tooltip>
+                        </>
+                      )}
+                    </Toolbar>
+                  </AppBar>
+
+                  {/* Drawer */}
+                  <Box
+                    component="nav"
+                    sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+                  >
+                    {/* Мобильный Drawer */}
+                    {isMobile && (
+                      <Drawer
+                        variant="temporary"
+                        open={mobileOpen}
+                        onClose={handleDrawerToggle}
+                        ModalProps={{
+                          keepMounted: true, // Better open performance on mobile.
+                        }}
+                        sx={{
+                          "& .MuiDrawer-paper": {
+                            width: drawerWidth,
+                            backgroundColor: isDocsPage ? "#F5F5F5" : "#03031c",
+                          },
+                        }}
+                      >
+                        {drawer}
+                      </Drawer>
+                    )}
+                    {/* Десктопный Drawer */}
+                    {!isMobile && (
+                      <Drawer
+                        variant="permanent"
+                        sx={{
+                          width: drawerWidth,
+                          flexShrink: 0,
+                          "& .MuiDrawer-paper": {
+                            width: drawerWidth,
+                            boxSizing: "border-box",
+                            backgroundColor: isDocsPage
+                              ? "#F5F5F5"
+                              : !shouldRenderContent
+                              ? "#FFFFFF"
+                              : "#03031c",
+                            border: "none",
+                          },
+                        }}
+                        open
+                      >
+                        {drawer}
+                      </Drawer>
+                    )}
+                  </Box>
+                </>
+              )}
+
+              {/* Основной контент с отдельной анимацией */}
+
+              <Box
+                id="main-content"
+                component="main"
+                sx={{
+                  flexGrow: 1,
+                  width: "100%",
+                  mr: { xs: 0, sm: "15px" },
+                  ml: { xs: 0, sm: "5px" },
+                  minHeight: "90vh",
+                  backgroundColor: "#FFFFFF",
+                  padding: { xs: "25px", sm: "35px" },
+                  marginTop: { xs: "56px", sm: "64px" },
+                  borderRadius: { xs: "0px", sm: "20px" },
+                  height: "calc(100vh - 64px)",
+                  overflowY: "auto",
+                  overflowX: "none",
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.14 }}
+                    style={{
+                      width: "100%",
+                      display: shouldRenderContent ? "block" : "none",
+                    }}
+                  >
+                    <Routes location={location}>
+                      <Route
+                        path="/"
+                        element={<Navigate to="/tasks" replace />}
+                      />
+
+                      {/* Маршруты дашборда */}
+                      <Route
+                        path="/tasks"
+                        element={
+                          <ProtectedRoute>
+                            <Tasks />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/billing"
+                        element={
+                          <ProtectedRoute>
+                            <Billing />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/api-keys"
+                        element={
+                          <ProtectedRoute>
+                            <ApiKeys />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/organization-settings"
+                        element={
+                          <ProtectedRoute>
+                            <OrganizationSettings />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      {/* Маршруты документации */}
+                      <Route
+                        path="/docs"
+                        element={<Navigate to="/docs/welcome" replace />}
+                      />
+                      <Route
+                        path="/docs/:docName"
+                        element={
+                          <ProtectedRoute>
+                            <Docs />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      {/* Маршрут для обработки колбэка аутентификации */}
+                      <Route path="/auth/callback" element={<AuthCallback />} />
+                    </Routes>
+                  </motion.div>
+                </AnimatePresence>
+              </Box>
+            </Box>
           </motion.div>
-        </AnimatePresence>
-      </Box>
+        )}
+      </AnimatePresence>
 
+      {/* Модальные окна вынесены за пределы AnimatePresence и motion.div */}
       {!loading && (
         <Modal
           open={openRegistrationModal}
@@ -679,7 +740,7 @@ export function Layout() {
           onClose={() => setOpenCaptchaModal(false)}
         />
       )}
-    </Box>
+    </>
   );
 }
 

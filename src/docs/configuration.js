@@ -11,28 +11,31 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import "./docs.css"
 
-
 const Configuration = () => {
-  // Компонент для отображения блока кода с кнопкой копирования
-  const CodeBlock = ({ code }) => {
+  // Компонент для отображения блока кода с подсветкой синтаксиса и кнопкой копирования
+  const CodeBlock = ({ code, language }) => {
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
     };
 
     return (
       <div style={{ position: "relative", marginBottom: "20px" }}>
-        <pre
-          style={{
-            backgroundColor: "#e9ecef",
-            padding: "10px",
+        <SyntaxHighlighter
+          language={language}
+          style={prism}
+          customStyle={{
             margin: 0,
-            whiteSpace: "pre-wrap",
+            padding: '8px',
+            borderRadius: "7px",
           }}
+          showLineNumbers
         >
-          <code>{code}</code>
-        </pre>
+          {code}
+        </SyntaxHighlighter>
         <Tooltip title="Copy">
           <IconButton
             size="small"
@@ -71,15 +74,13 @@ const Configuration = () => {
           Configuration
         </Typography>
 
-        {/* Оберните каждую секцию с id для якоря */}
+        {/* Секция: Creating a Job */}
         <section id="creating-a-job">
-          {/* Создание задачи */}
           <Typography variant="h2">Creating a Job</Typography>
           <Typography variant="h3">Writing the Configuration</Typography>
           <p>
             <strong>Create the Configuration File:</strong> Write a YAML file
-            (e.g.,
-            <code>job_config.yaml</code>) with the necessary fields.
+            (e.g., <code>job_config.yaml</code>) with the necessary fields.
           </p>
           <CodeBlock
             code={`docker_image: python:3.9-slim
@@ -127,6 +128,7 @@ apt_packages:
   - libpq-dev
 
 timeout: 3600  # 1 hour`}
+            language="yaml"
           />
 
           <p>
@@ -135,41 +137,42 @@ timeout: 3600  # 1 hour`}
           </p>
         </section>
 
+        {/* Секция: Running a Job */}
         <section id="running-a-job">
-          {/* Запуск задачи */}
           <Typography variant="h2">Running a Job</Typography>
           <Typography variant="h3">Using the CLI</Typography>
           <p>
-            To run the job using the <code>primeway</code> CLI, use the
-            following command:
+            To run the job using the <code>primeway</code> CLI, use the following command:
           </p>
-          <CodeBlock code={`primeway create job --config job_config.yaml`} />
+          <CodeBlock
+            code={`primeway create job --config job_config.yaml`}
+            language="bash"
+          />
 
           <p>Response</p>
           <CodeBlock
             code={`{"job_id": "ewkljngp-weglngg-weklgn-wegnkln"}`}
+            language="json"
           />
 
           <p>Run job</p>
           <CodeBlock
             code={`primeway run job ewkljngp-weglngg-weklgn-wegnkln --data-file ./local_dir/data.csv`}
+            language="bash"
           />
 
           <p>This command will:</p>
           <ol>
             <li>Validate your configuration.</li>
             <li>
-              Package and upload your project directory if{" "}
-              <code>project_dir</code> is specified.
+              Package and upload your project directory if <code>project_dir</code> is specified.
             </li>
             <li>Start the job on the primeway platform.</li>
             <li>Provide feedback on the job's execution status.</li>
           </ol>
 
           <p>
-            As you can see, the job has to be created just once, and then you
-            can use different data for running it. Meaning that build process is
-            required only on creation stage.
+            As you can see, the job has to be created just once, and then you can use different data for running it. Meaning that build process is required only on creation stage.
           </p>
 
           <Typography variant="h3">CLI Options:</Typography>
@@ -183,8 +186,8 @@ timeout: 3600  # 1 hour`}
           </ul>
         </section>
 
+        {/* Секция: Example Deploy Job Configuration */}
         <section id="example-deploy-job-configuration">
-          {/* Пример конфигурации развертывания */}
           <Typography variant="h2">Example Deploy Job Configuration</Typography>
           <CodeBlock
             code={`docker_image: pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
@@ -230,6 +233,7 @@ port: 8000
 health_endpoint: "/health"
 
 idle_timeout: 300  # 5 minutes`}
+            language="yaml"
           />
 
           <Typography variant="h3">Notes:</Typography>
@@ -240,8 +244,7 @@ idle_timeout: 300  # 5 minutes`}
               <code>port</code> and <code>health_endpoint</code> are required.
             </li>
             <li>
-              <code>idle_timeout</code> can be used to auto-scale down the
-              service when not in use.
+              <code>idle_timeout</code> can be used to auto-scale down the service when not in use.
             </li>
           </ul>
 
@@ -251,27 +254,20 @@ idle_timeout: 300  # 5 minutes`}
           </p>
         </section>
 
+        {/* Секция: Using args vs entry_script vs command */}
         <section id="using-args-vs-entry_script-vs-command">
-          {/* Использование args, entry_script и command */}
-          <Typography variant="h3">
-            Using args vs entry_script vs command
-          </Typography>
+          <Typography variant="h3">Using args vs entry_script vs command</Typography>
           <p>
-            <code>entry_script</code>: Specify the script to run within your
-            project directory.
+            <code>entry_script</code>: Specify the script to run within your project directory.
           </p>
           <p>
-            <code>args</code>: Provide arguments to the script specified in{" "}
-            <code>entry_script</code>.
+            <code>args</code>: Provide arguments to the script specified in <code>entry_script</code>.
           </p>
           <p>
-            <code>command</code>: Override both <code>entry_script</code> and{" "}
-            <code>args</code> to run a custom command. Use this when you need
-            full control over the execution command.
+            <code>command</code>: Override both <code>entry_script</code> and <code>args</code> to run a custom command. Use this when you need full control over the execution command.
           </p>
           <p>
-            <strong>Recommendation:</strong> Use <code>args</code> to pass
-            parameters to your script for flexibility and reusability.
+            <strong>Recommendation:</strong> Use <code>args</code> to pass parameters to your script for flexibility and reusability.
           </p>
 
           <Typography variant="h4">Example:</Typography>
@@ -281,20 +277,21 @@ idle_timeout: 300  # 5 minutes`}
             code={`entry_script: train.py
 
 args: --epochs 10 --batch_size 32`}
+            language="yaml"
           />
 
           <p>Using <code>command</code>:</p>
           <CodeBlock
             code={`command: python train.py --epochs 10 --batch_size 32`}
+            language="bash"
           />
         </section>
 
+        {/* Секция: Environment Variables */}
         <section id="environment-variables">
-          {/* Переменные окружения */}
           <Typography variant="h3">Environment Variables</Typography>
           <p>
-            <strong>Purpose:</strong> Store configuration values or secrets
-            without hardcoding them.
+            <strong>Purpose:</strong> Store configuration values or secrets without hardcoding them.
           </p>
           <p>
             <strong>Definition:</strong>
@@ -309,15 +306,15 @@ args: --epochs 10 --batch_size 32`}
   - name: DEBUG
 
     value: "false"`}
+            language="yaml"
           />
         </section>
 
+        {/* Секция: Managing Dependencies */}
         <section id="managing-dependencies">
-          {/* Управление зависимостями */}
           <Typography variant="h3">Managing Dependencies</Typography>
           <p>
-            <strong>Python Packages:</strong> Use the <code>requirements</code>{" "}
-            field to specify packages.
+            <strong>Python Packages:</strong> Use the <code>requirements</code> field to specify packages.
           </p>
           <CodeBlock
             code={`requirements:
@@ -327,11 +324,11 @@ args: --epochs 10 --batch_size 32`}
   - numpy
 
   - scikit-learn`}
+            language="yaml"
           />
 
           <p>
-            <strong>System Packages:</strong> Use <code>apt_packages</code> for
-            system-level dependencies.
+            <strong>System Packages:</strong> Use <code>apt_packages</code> for system-level dependencies.
           </p>
           <CodeBlock
             code={`apt_packages:
@@ -339,6 +336,7 @@ args: --epochs 10 --batch_size 32`}
   - libgl1-mesa-glx
 
   - libglib2.0-0`}
+            language="yaml"
           />
 
           <p>
@@ -350,6 +348,7 @@ args: --epochs 10 --batch_size 32`}
   - name: NVIDIA H100
 
     count: 8`}
+            language="yaml"
           />
         </section>
       </Box>

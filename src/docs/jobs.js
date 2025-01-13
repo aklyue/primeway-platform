@@ -2,20 +2,27 @@ import React from "react";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Scrollspy from "react-scrollspy";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import "./docs.css"; 
 
 const Jobs = () => {
-  // Компонент для отображения блока кода с кнопкой копирования
-  const CodeBlock = ({ code }) => {
+  // Компонент для отображения блока кода с подсветкой синтаксиса и кнопкой копирования
+  const CodeBlock = ({ code, language }) => {
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
     };
 
     return (
       <div style={{ position: 'relative', marginBottom: '20px' }}>
-        <pre style={{ backgroundColor: "#e9ecef", padding: "10px", margin: 0 }}>
-          <code>{code}</code>
-        </pre>
+        <SyntaxHighlighter
+          language={language}
+          style={prism}
+          customStyle={{ margin: 0, padding: '8px', borderRadius: '7px' }}
+          showLineNumbers
+        >
+          {code}
+        </SyntaxHighlighter>
         <Tooltip title="Copy">
           <IconButton
             size="small"
@@ -51,7 +58,7 @@ const Jobs = () => {
         <section id="introduction">
           <Typography variant="h2">Introduction</Typography>
           <p>
-            A Job in primeway represents a task that you want to execute on the cloud. Jobs can be used for various purposes, such as data processing, model training, web service deployment, etc.
+            A Job in Primeway represents a task that you want to execute on the cloud. Jobs can be used for various purposes, such as data processing, model training, web service deployment, etc.
           </p>
           <p>
             Jobs can be configured to run independently or as part of a pipeline, and they can be executed using a prepared Docker image or built from your project code.
@@ -61,7 +68,7 @@ const Jobs = () => {
         {/* Типы задач */}
         <section id="job-types">
           <Typography variant="h2">Job Types</Typography>
-          <p>There are two types of jobs in primeway:</p>
+          <p>There are two types of jobs in Primeway:</p>
           <ul>
             <li>
               <strong>Run Jobs</strong>: Executed once and terminated after completion. Ideal for tasks like data processing, batch jobs, or model training.
@@ -85,7 +92,7 @@ const Jobs = () => {
             <li><code>docker_image</code> (string): The base Docker image to use for the job.</li>
             <li><code>job_name</code> (string): A unique name for your job.</li>
             <li><code>job_type</code> (string): Either <code>run</code> or <code>deploy</code>.</li>
-            <li><code>primeway_api_token</code> (string): Your primeway API token.</li>
+            <li><code>primeway_api_token</code> (string): Your Primeway API token.</li>
             <li><code>entry_script</code> (string): The script to execute within your project directory.</li>
             <li><code>project_dir</code> (string): The directory containing your project files.</li>
             <li><code>args</code> (string): Arguments to pass to your script.</li>
@@ -138,8 +145,8 @@ const Jobs = () => {
         <section id="example-configuration" style={{marginTop:'50px'}}>
           <Typography variant="h2">Example Configuration</Typography>
           <p>Here's an example of a job configuration file:</p>
-          <CodeBlock code={
-`job_name: my-data-processing-job
+          <CodeBlock
+            code={`job_name: my-data-processing-job
 job_type: run
 docker_image: python:3.8-slim
 primeway_api_token: YOUR_API_TOKEN
@@ -149,8 +156,9 @@ requirements:
   - pandas
   - numpy
 memory: 4
-cpu_count: 2`
-          } />
+cpu_count: 2`}
+            language="yaml"
+          />
         </section>
       </Box>
 

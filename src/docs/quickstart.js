@@ -1,24 +1,31 @@
-import { Box, IconButton, Tooltip } from "@mui/material";
-import React from "react";
+import React from 'react';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Quickstart = () => {
   // Компонент для отображения блока кода с кнопкой копирования
-  const CodeBlock = ({ code }) => {
+  const CodeBlock = ({ code, language }) => {
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
     };
 
     return (
       <div style={{ position: 'relative', marginBottom: '20px' }}>
-        <pre style={{ backgroundColor: "#e9ecef", padding: "10px", margin: 0 }}>
-          <code>{code}</code>
-        </pre>
+        <SyntaxHighlighter
+          language={language}
+          style={prism}
+          customStyle={{ margin: 0, padding: '8px', borderRadius: '7px' }}
+          showLineNumbers
+        >
+          {code}
+        </SyntaxHighlighter>
         <Tooltip title="Copy">
           <IconButton
             size="small"
             onClick={handleCopy}
-            style={{ position: 'absolute', top: '5px', right: '5px', fontSize:'1.1rem' }}
+            style={{ position: 'absolute', top: '5px', right: '5px', fontSize: '1.1rem', color: '#333333' }}
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
@@ -30,20 +37,22 @@ const Quickstart = () => {
   return (
     <div>
       {/* Заголовок */}
-      <h1 style={{ marginBottom: "25px" }}>Quickstart</h1>
+      <h1 style={{ marginBottom: '25px' }}>Quickstart</h1>
 
       {/* Раздел Overview */}
       <h2>Overview</h2>
       <p>
-        Primeway is designed to simplify the deployment and execution of tasks and applications on the cloud. Whether you're running a one-time job or deploying a persistent service, Primeway provides the tools and infrastructure to make it seamless.
+        Primeway is designed to simplify the deployment and execution of tasks and applications on the cloud.
+        Whether you're running a one-time job or deploying a persistent service, Primeway provides the tools
+        and infrastructure to make it seamless.
       </p>
 
       {/* Основной контент */}
       <div
         style={{
-          display: "flex",
-          alignItems: "flex-start",
-          marginBottom: "20px",
+          display: 'flex',
+          alignItems: 'flex-start',
+          marginBottom: '20px',
         }}
       >
         {/* Основной контент */}
@@ -78,13 +87,15 @@ const Quickstart = () => {
 
           <h2 id="getting-started">Getting Started</h2>
           <p>Install the Primeway CLI:</p>
-          <CodeBlock code={`pip install primeway-cli`} />
+          <CodeBlock code={`pip install primeway-cli`} language="bash" />
 
-          <p>Authenticate: Retrieve your API token from the Primeway UI and set it as an environment variable.</p>
-          <CodeBlock code={`export PRIMEWAY_API_TOKEN=your_api_token_here`} />
+          <p>
+            Authenticate: Retrieve your API token from the Primeway UI and set it as an environment variable.
+          </p>
+          <CodeBlock code={`export PRIMEWAY_API_TOKEN=your_api_token_here`} language="bash" />
 
           <p>Run a Sample Job:</p>
-          <CodeBlock code={`primeway run job --config job_config.yaml`} />
+          <CodeBlock code={`primeway run job --config job_config.yaml`} language="bash" />
         </div>
       </div>
 

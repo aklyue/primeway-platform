@@ -251,7 +251,7 @@ function Billing() {
             </Box>
 
             {/* Правая сторона: Таблица транзакций */}
-            <Box component={Paper}  sx={{ flex: 1, overflowY: "auto" }}>
+            <Box component={Paper}  sx={{ flex: 1, overflowY: "auto", maxHeight:'500px' }}>
               {transactions.length > 0 ? (
                 <TableContainer>
                   <Table>

@@ -47,9 +47,6 @@ const GPUList = () => {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                },
               }}
             >
               <CardContent

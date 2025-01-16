@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { coldarkCold } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Quickstart = () => {
   // Компонент для отображения блока кода с кнопкой копирования
@@ -15,7 +15,7 @@ const Quickstart = () => {
       <div style={{ position: 'relative', marginBottom: '20px' }}>
         <SyntaxHighlighter
           language={language}
-          style={prism}
+          style={coldarkCold}
           customStyle={{ margin: 0, padding: '8px', borderRadius: '7px' }}
           showLineNumbers
         >

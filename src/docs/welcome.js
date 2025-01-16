@@ -1,9 +1,24 @@
 // src/docs/welcome.js
-import { Box } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
+import { Box } from "@mui/material";
+
+// Импортируем компоненты для подсветки синтаксиса
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const Welcome = () => {
+  const jsonCode = `{
+  "id": "quickstart",
+  "title": "Quickstart",
+  "path": "/docs/quickstart"
+},
+{
+  "id": "jobs",
+  "title": "Jobs",
+  "path": "/docs/jobs"
+}`;
+
   return (
     <div>
       {/* Заголовок */}
@@ -16,7 +31,8 @@ const Welcome = () => {
           alignItems: "center",
           marginTop: "20px",
           marginBottom: "20px",
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "rgb(227, 234, 242)", // rgb(227, 234, 242)
+          borderRadius:'10px',
           padding: "15px",
         }}
       >
@@ -31,21 +47,9 @@ const Welcome = () => {
 
         {/* Основной контент */}
         <div style={{ padding: "10px", flex: 1 }}>
-          <pre style={{ margin: "0" }}>
-            {`
-        JSON:
-        {
-          "id": "quickstart",
-          "title": "Quickstart",
-          "path": "/docs/quickstart",
-        },
-        {
-          "id": "jobs",
-          "title": "Jobs",
-          "path": "/docs/jobs",
-        },
-    `}
-          </pre>
+          <SyntaxHighlighter language="json" style={coldarkCold}>
+            {jsonCode}
+          </SyntaxHighlighter>
         </div>
       </div>
 
@@ -69,16 +73,16 @@ const Welcome = () => {
           <Box
             sx={{
               padding: "15px",
-              backgroundColor: "#e9ecef",
+              backgroundColor: "#e8eaf6",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               height: "100%", // Заполнение всей высоты сетки
               boxSizing: "border-box",
-              transition:'transform 0.16s ease-in-out',
+              transition: "transform 0.16s ease-in-out",
               "&:hover": {
-                transform:'translateY(-6px)',
+                transform: "translateY(-6px)",
               },
             }}
           >
@@ -98,16 +102,16 @@ const Welcome = () => {
           <Box
             sx={{
               padding: "15px",
-              backgroundColor: "#e9ecef",
+              backgroundColor: "#e8eaf6",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
-              height: "100%", // Заполнение всей высоты сетки
+              height: "100%",
               boxSizing: "border-box",
-              transition:'transform 0.16s ease-in-out',
+              transition: "transform 0.16s ease-in-out",
               "&:hover": {
-                transform:'translateY(-6px)',
+                transform: "translateY(-6px)",
               },
             }}
           >
@@ -127,16 +131,16 @@ const Welcome = () => {
           <Box
             sx={{
               padding: "15px",
-              backgroundColor: "#e9ecef",
+              backgroundColor: "#e8eaf6",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
-              height: "100%", // Заполнение всей высоты сетки
+              height: "100%",
               boxSizing: "border-box",
-              transition:'transform 0.16s ease-in-out',
+              transition: "transform 0.16s ease-in-out",
               "&:hover": {
-                transform:'translateY(-6px)',
+                transform: "translateY(-6px)",
               },
             }}
           >

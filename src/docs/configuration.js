@@ -12,7 +12,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { coldarkCold } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import "./docs.css"
 
 const Configuration = () => {
@@ -26,7 +26,7 @@ const Configuration = () => {
       <div style={{ position: "relative", marginBottom: "20px" }}>
         <SyntaxHighlighter
           language={language}
-          style={prism}
+          style={coldarkCold}
           customStyle={{
             margin: 0,
             padding: '8px',

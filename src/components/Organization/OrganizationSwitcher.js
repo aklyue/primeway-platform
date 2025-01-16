@@ -39,7 +39,7 @@ const OrganizationSwitcher = () => {
           display: "flex",
         }}
       >
-        <Typography sx={{ ml: "8px", mr: "8px", fontSize: "17px", fontWeight:600 }}>
+        <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight:600 }}>
           /
         </Typography>
         <Button

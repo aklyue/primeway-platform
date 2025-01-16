@@ -98,9 +98,36 @@ function Billing() {
   }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id]);
 
   // Обработка успешной оплаты
-  const handlePaymentSuccess = (paymentResult) => {
-    console.log("Оплата успешна:", paymentResult);
-    // Здесь вы можете обновить баланс и историю транзакций
+  const handlePaymentSuccess = () => {
+    // Перезагрузить данные после успешной оплаты
+    setIsLoadingBalance(true);
+    setIsLoadingTransactions(true);
+
+    // Загрузка баланса кошелька
+    axiosInstance
+      .get(`/billing/${user.billing_account_id}/balance`)
+      .then((response) => {
+        setWalletBalance(response.data.balance);
+      })
+      .catch((error) => {
+        setErrorBalance(error?.response?.data?.detail || error.message);
+      })
+      .finally(() => {
+        setIsLoadingBalance(false);
+      });
+
+    // Загрузка истории транзакций
+    axiosInstance
+      .get(`/billing/${user.billing_account_id}/transactions`)
+      .then((response) => {
+        setTransactions(response.data.transactions || []);
+      })
+      .catch((error) => {
+        setErrorTransactions(error?.response?.data?.detail || error.message);
+      })
+      .finally(() => {
+        setIsLoadingTransactions(false);
+      });
   };
 
   const handlePaymentError = (error) => {
@@ -204,7 +231,7 @@ function Billing() {
       </Box>
 
       {/* Секция истории транзакций */}
-      <Box sx={{ marginTop: "40px", }}>
+      <Box sx={{ marginTop: "40px" }}>
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>
@@ -251,10 +278,15 @@ function Billing() {
             </Box>
 
             {/* Правая сторона: Таблица транзакций */}
-            <Box component={Paper}  sx={{ flex: 1, overflowY: "auto", maxHeight:'500px' }}>
+            <Box
+              sx={{ flex: 1 }}
+            >
               {transactions.length > 0 ? (
-                <TableContainer>
-                  <Table>
+                <TableContainer
+                  component={Paper}
+                  sx={{ maxHeight: 500 }}
+                >
+                  <Table stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell>Дата</TableCell>

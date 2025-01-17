@@ -1,4 +1,3 @@
-// App.js
 import React, { useContext, useState, useEffect } from "react";
 import {
   Routes,
@@ -28,11 +27,12 @@ import {
   IconButton,
   Button,
   ListItemIcon,
+  Popover,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./AuthContext";
-import { OrganizationProvider } from "./components/Organization/OrganizationContext";
+import { OrganizationContext, OrganizationProvider } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
@@ -53,9 +53,10 @@ import WorkIcon from "@mui/icons-material/Work";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import CodeIcon from "@mui/icons-material/Code";
-
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
+import axiosInstance from "./api";
 
 const drawerWidth = 240;
 
@@ -69,6 +70,7 @@ export function Layout() {
     setOpenRegistrationModal,
     loading,
   } = useContext(AuthContext);
+  const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию из контекста
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -148,6 +150,43 @@ export function Layout() {
 
   // Создаем ключ для анимации переходов
   const groupKey = isDocsPage ? "docs" : "dashboard";
+
+  // Состояния для иконки и списка событий
+  const [eventsAnchorEl, setEventsAnchorEl] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+
+  const handleEventsClick = (event) => {
+    setEventsAnchorEl(event.currentTarget);
+  };
+
+  const handleEventsClose = () => {
+    setEventsAnchorEl(null);
+  };
+
+  const isEventsOpen = Boolean(eventsAnchorEl);
+
+  useEffect(() => {
+    if (isEventsOpen && currentOrganization) {
+      fetchEvents();
+    }
+  }, [isEventsOpen, currentOrganization]);
+
+  const fetchEvents = () => {
+    setEventsLoading(true);
+    // Замените этот URL на ваш реальный эндпоинт для получения событий организации
+    axiosInstance
+      .get(`/organizations/${currentOrganization.id}/events`)
+      .then((response) => {
+        setEvents(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Ошибка при получении событий организации:", error);
+      })
+      .finally(() => {
+        setEventsLoading(false);
+      });
+  };
 
   // Содержимое Drawer
   const drawer = (
@@ -479,6 +518,7 @@ export function Layout() {
                               : "transparent",
                             color: isDocsPage ? "#FFFFFF" : "#acacbe",
                             borderRadius: "8px",
+                            marginRight: "8px",
                             "&:hover": {
                               backgroundColor: isDocsPage
                                 ? "primary.dark"
@@ -488,6 +528,15 @@ export function Layout() {
                         >
                           Docs
                         </Button>
+
+                        {/* Добавляем иконку событий */}
+                        <IconButton
+                          
+                          onClick={handleEventsClick}
+                          sx={{color: isEventsOpen ? 'secondary.main' : '#202123' }}
+                        >
+                          <NotificationsNoneIcon />
+                        </IconButton>
                       </Box>
 
                       {isLoggedIn && (
@@ -754,6 +803,57 @@ export function Layout() {
           onClose={() => setOpenCaptchaModal(false)}
         />
       )}
+
+      {/* Поповер для событий организации */}
+      <Popover
+        open={isEventsOpen}
+        anchorEl={eventsAnchorEl}
+        onClose={handleEventsClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        PaperProps={{
+          style: { maxHeight: 500, width: '400px' },
+        }}
+      >
+        {eventsLoading ? (
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        ) : events.length > 0 ? (
+          <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+            {events.map((event, index) => (
+              <ListItem key={index} alignItems="flex-start">
+                <ListItemText
+                  primary={event.title || "Событие"}
+                  secondary={
+                    <>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color="textPrimary"
+                      >
+                        {new Date(event.timestamp).toLocaleString()}
+                      </Typography>
+                      {" — "}
+                      {event.description}
+                    </>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2">Событий пока нет.</Typography>
+          </Box>
+        )}
+      </Popover>
     </>
   );
 }

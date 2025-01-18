@@ -1,22 +1,13 @@
+// src/components/Tasks.js
+
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
   CircularProgress,
-  Paper,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   IconButton,
   Tooltip,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Switch,
   FormControlLabel,
   Select,
@@ -24,18 +15,31 @@ import {
   OutlinedInput,
   InputLabel,
   FormControl,
-  Checkbox,
+  Radio,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   ListItemText,
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
   FiberManualRecord as FiberManualRecordIcon,
   CalendarToday as CalendarIcon,
+  EventNote as EventNoteIcon,
+  BugReport as BugReportIcon,
+  Download as DownloadIcon,
+  ContentPasteSearch as ContentPasteSearchIcon,
+  Stop as StopIcon,
 } from "@mui/icons-material";
-import StopCircleIcon from "@mui/icons-material/StopCircle";
 import axiosInstance from "../api";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
+import { format, parseISO } from "date-fns";
 
 const statusOptions = [
   "running",
@@ -53,32 +57,41 @@ const jobTypeOptions = ["deploy", "run"];
 function Tasks() {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
-  const [allJobs, setAllJobs] = useState([]); // Храним все загруженные задачи
-  const [jobs, setJobs] = useState([]); // Храним отфильтрованные задачи
+  const [allJobs, setAllJobs] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Состояния фильтров
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
-  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedJobType, setSelectedJobType] = useState("");
   const [isScheduledFilter, setIsScheduledFilter] = useState(false);
 
-  // Состояния для управления диалоговым окном логов
+  // Состояния для управления диалогами
   const [logsModalOpen, setLogsModalOpen] = useState(false);
   const [currentLogs, setCurrentLogs] = useState("");
   const [currentJobName, setCurrentJobName] = useState("");
   const [logsLoading, setLogsLoading] = useState(false);
 
-  // Состояния для управления диалоговым окном Запусков (Executions)
   const [executionsModalOpen, setExecutionsModalOpen] = useState(false);
   const [currentExecutions, setCurrentExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(false);
   const [currentJobId, setCurrentJobId] = useState("");
 
-  // Состояния для управления диалоговым окном Расписания
+  // Добавлены состояния для отображения логов под выполнением
+  const [logsByExecutionId, setLogsByExecutionId] = useState({});
+
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [currentScheduleData, setCurrentScheduleData] = useState(null);
+
+  // Состояния для логов сборки
+  const [buildLogsModalOpen, setBuildLogsModalOpen] = useState(false);
+  const [buildLogsLoading, setBuildLogsLoading] = useState(false);
+
+  // Состояние для подтверждения остановки
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [jobToStop, setJobToStop] = useState(null);
 
   // Состояние для переключения между моковыми данными и реальными данными
   const [useMockData, setUseMockData] = useState(true);
@@ -88,21 +101,21 @@ function Tasks() {
     {
       id: "job1",
       job_id: "job1",
-      job_name: "Test Job Very Long Name 1",
+      job_name: "Test Job 1",
       job_type: "run",
-      created_at: "2023-10-07T14:48:00.000Z",
+      created_at: "2023-10-07T14:48:00Z",
       status: "completed",
-      start_time: "2023-10-07T15:00:00.000Z",
+      start_time: "2023-10-07T15:00:00Z",
       build_status: "success",
       last_execution_status: "success",
-      last_execution_start_time: "2023-10-07T15:05:00.000Z",
-      last_execution_end_time: "2023-10-07T15:10:00.000Z",
+      last_execution_start_time: "2023-10-07T15:05:00Z",
+      last_execution_end_time: "2023-10-07T15:10:00Z",
       gpu_type: "NVIDIA A100",
       url: null,
       is_scheduled: true,
       schedule: {
-        start_date: "2023-10-10T08:00:00.000Z",
-        end_date: "2023-10-20T18:00:00.000Z",
+        start_date: "2023-10-10T08:00:00Z",
+        end_date: "2023-10-20T18:00:00Z",
         days_of_week: ["Monday", "Wednesday", "Friday"],
       },
     },
@@ -111,12 +124,12 @@ function Tasks() {
       job_id: "job2",
       job_name: "Job 2",
       job_type: "deploy",
-      created_at: "2023-10-07T14:50:00.000Z",
+      created_at: "2023-10-07T14:50:00Z",
       status: "running",
-      start_time: "2023-10-07T15:05:00.000Z",
+      start_time: "2023-10-07T15:05:00Z",
       build_status: "building",
       last_execution_status: "running",
-      last_execution_start_time: "2023-10-07T15:15:00.000Z",
+      last_execution_start_time: "2023-10-07T15:15:00Z",
       last_execution_end_time: null,
       gpu_type: "NVIDIA RTX 3090",
       url: "https://example.com/deploy/job2",
@@ -127,7 +140,7 @@ function Tasks() {
       job_id: "job3",
       job_name: "Another Job With Long Name 3",
       job_type: "run",
-      created_at: "2023-10-07T14:55:00.000Z",
+      created_at: "2023-10-07T14:55:00Z",
       status: "creating",
       start_time: null,
       build_status: "failed",
@@ -138,29 +151,35 @@ function Tasks() {
       url: null,
       is_scheduled: true,
       schedule: {
-        start_date: "2023-10-15T09:00:00.000Z",
-        end_date: "2023-10-25T17:00:00.000Z",
+        start_date: "2023-10-15T09:00:00Z",
+        end_date: "2023-10-25T17:00:00Z",
         days_of_week: ["Tuesday", "Thursday"],
       },
     },
     // Добавьте больше тестовых задач по необходимости
   ];
 
-  // Моковые данные для запусков (executions) задачи
+  // Моковые данные для выполнений задачи
   const mockExecutions = [
     {
-      execution_id: "exec1",
+      job_execution_id: "exec1",
       status: "running",
-      start_time: "2023-10-07T15:05:00.000Z",
+      start_time: "2023-10-07T15:05:00Z",
       end_time: null,
+      created_at: "2023-10-07T15:00:00Z",
+      gpu_info: { type: "NVIDIA A100", memory: "40GB" },
+      health_status: "healthy",
     },
     {
-      execution_id: "exec2",
+      job_execution_id: "exec2",
       status: "completed",
-      start_time: "2023-10-07T14:50:00.000Z",
-      end_time: "2023-10-07T15:00:00.000Z",
+      start_time: "2023-10-07T14:50:00Z",
+      end_time: "2023-10-07T15:00:00Z",
+      created_at: "2023-10-07T14:45:00Z",
+      gpu_info: { type: "NVIDIA V100", memory: "32GB" },
+      health_status: "healthy",
     },
-    // Добавьте больше запусков по необходимости
+    // Добавьте больше выполнений по необходимости
   ];
 
   useEffect(() => {
@@ -170,8 +189,7 @@ function Tasks() {
   // Применяем фильтры при их изменении
   useEffect(() => {
     applyFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStatuses, selectedJobTypes, isScheduledFilter, allJobs]);
+  }, [selectedStatus, selectedJobType, isScheduledFilter, allJobs]);
 
   const fetchJobs = () => {
     setLoading(true);
@@ -185,7 +203,6 @@ function Tasks() {
       // Используем реальные данные
       const endpoint = `/jobs/${currentOrganization.id}`;
 
-      // Запрашиваем все задачи без фильтров
       axiosInstance
         .get(endpoint)
         .then((response) => {
@@ -194,13 +211,14 @@ function Tasks() {
         })
         .catch((error) => {
           console.error("Ошибка при получении списка задач:", error);
-          setError("Не удалось загрузить список задач.");
+          const errorMessage =
+            error.response?.data?.detail || "Не удалось загрузить список задач.";
+          setError(errorMessage);
         })
         .finally(() => {
           setLoading(false);
         });
     } else {
-      // Если нет организации или токена, сбрасываем загрузку
       setLoading(false);
     }
   };
@@ -208,21 +226,16 @@ function Tasks() {
   const applyFilters = () => {
     let filteredJobs = [...allJobs];
 
-    // Применяем фильтр по статусу
-    if (selectedStatuses.length > 0) {
-      filteredJobs = filteredJobs.filter((job) =>
-        selectedStatuses.includes(job.status)
+    if (selectedStatus) {
+      filteredJobs = filteredJobs.filter((job) => job.status === selectedStatus);
+    }
+
+    if (selectedJobType) {
+      filteredJobs = filteredJobs.filter(
+        (job) => job.job_type === selectedJobType
       );
     }
 
-    // Применяем фильтр по типу задачи
-    if (selectedJobTypes.length > 0) {
-      filteredJobs = filteredJobs.filter((job) =>
-        selectedJobTypes.includes(job.job_type)
-      );
-    }
-
-    // Применяем фильтр по запланированным задачам
     if (isScheduledFilter) {
       filteredJobs = filteredJobs.filter((job) => job.is_scheduled);
     }
@@ -232,17 +245,13 @@ function Tasks() {
 
   // Обработчики для фильтров
   const handleStatusChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedStatuses(typeof value === "string" ? value.split(",") : value);
+    const value = event.target.value;
+    setSelectedStatus(value);
   };
 
   const handleJobTypeChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedJobTypes(typeof value === "string" ? value.split(",") : value);
+    const value = event.target.value;
+    setSelectedJobType(value);
   };
 
   const handleIsScheduledChange = (event) => {
@@ -250,8 +259,8 @@ function Tasks() {
   };
 
   const resetFilters = () => {
-    setSelectedStatuses([]);
-    setSelectedJobTypes([]);
+    setSelectedStatus("");
+    setSelectedJobType("");
     setIsScheduledFilter(false);
   };
 
@@ -266,13 +275,14 @@ function Tasks() {
     }
   };
 
-  const formatJobName = (jobName) => {
-    if (!jobName || typeof jobName !== "string") return "N/A";
-    if (jobName.length <= 8) {
-      return jobName;
-    } else {
-      const firstFour = jobName.substring(0, 4);
-      return `${firstFour}***`;
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "N/A";
+    try {
+      const date = parseISO(dateTimeString);
+      return format(date, "dd.MM.yyyy HH:mm:ss");
+    } catch (error) {
+      console.error("Ошибка при форматировании даты:", error);
+      return dateTimeString;
     }
   };
 
@@ -302,21 +312,36 @@ function Tasks() {
     }
   };
 
-  const handleLogsClick = (job) => {
-    // Получаем логи для задачи и открываем диалог
+  const handleLogsClick = (job, jobExecutionId = null) => {
+    // Получаем логи для задачи или выполнения и открываем диалог
     setLogsLoading(true);
     setCurrentJobName(job.job_name || "N/A");
+
+    const params = {};
+    if (jobExecutionId) {
+      params.job_execution_id = jobExecutionId;
+    } else {
+      params.job_id = job.id || job.job_id;
+    }
 
     if (useMockData) {
       // Используем моковые логи
       setTimeout(() => {
-        setCurrentLogs(`Логи для задачи ${job.job_name} (ID: ${job.id})`);
+        if (jobExecutionId) {
+          setCurrentLogs(
+            `Логи для выполнения ${jobExecutionId} задачи ${job.job_name} (ID: ${job.id})`
+          );
+        } else {
+          setCurrentLogs(`Логи для задачи ${job.job_name} (ID: ${job.id})`);
+        }
         setLogsLoading(false);
         setLogsModalOpen(true);
       }, 1000);
     } else {
       axiosInstance
-        .get(`/jobs/${job.id}/logs`)
+        .get("/jobs/job-logs", {
+          params: params,
+        })
         .then((response) => {
           const logs = response.data.logs || "Логи отсутствуют.";
           setCurrentLogs(logs);
@@ -326,7 +351,12 @@ function Tasks() {
             `Ошибка при получении логов для задачи ${job.id}:`,
             error
           );
-          setCurrentLogs("Ошибка при получении логов.");
+          const errorMessage =
+            error.response?.data?.detail ||
+            (error.response?.status === 404
+              ? "Логи недоступны."
+              : "Ошибка при получении логов.");
+          setCurrentLogs(errorMessage);
         })
         .finally(() => {
           setLogsLoading(false);
@@ -335,49 +365,173 @@ function Tasks() {
     }
   };
 
+  const handleExecutionLogsToggle = (execution) => {
+    const executionId = execution.job_execution_id || execution.execution_id;
+
+    // Проверяем, есть ли уже логи для этого выполнения
+    if (logsByExecutionId[executionId]) {
+      // Если есть, удаляем их (скрываем)
+      setLogsByExecutionId((prevLogs) => {
+        const newLogs = { ...prevLogs };
+        delete newLogs[executionId];
+        return newLogs;
+      });
+    } else {
+      // Иначе, загружаем логи и отображаем под выполнением
+      const params = { job_execution_id: executionId };
+
+      if (useMockData) {
+        // Используем моковые данные
+        setTimeout(() => {
+          const logs = `Логи выполнения ${executionId}`;
+          setLogsByExecutionId((prevLogs) => ({
+            ...prevLogs,
+            [executionId]: { logs, loading: false },
+          }));
+        }, 1000);
+
+        // Пока логи загружаются, устанавливаем состояние загрузки
+        setLogsByExecutionId((prevLogs) => ({
+          ...prevLogs,
+          [executionId]: { logs: "", loading: true },
+        }));
+      } else {
+        // Пока логи загружаются, устанавливаем состояние загрузки
+        setLogsByExecutionId((prevLogs) => ({
+          ...prevLogs,
+          [executionId]: { logs: "", loading: true },
+        }));
+
+        axiosInstance
+          .get("/jobs/job-logs", { params })
+          .then((response) => {
+            const logs = response.data.logs || "Логи отсутствуют.";
+            setLogsByExecutionId((prevLogs) => ({
+              ...prevLogs,
+              [executionId]: { logs, loading: false },
+            }));
+          })
+          .catch((error) => {
+            console.error(
+              `Ошибка при получении логов для выполнения ${executionId}:`,
+              error
+            );
+            const errorMessage =
+              error.response?.data?.detail ||
+              (error.response?.status === 404
+                ? "Логи недоступны."
+                : "Ошибка при получении логов.");
+            setLogsByExecutionId((prevLogs) => ({
+              ...prevLogs,
+              [executionId]: { logs: errorMessage, loading: false },
+            }));
+          });
+      }
+    }
+  };
+
   const handleStopClick = (job) => {
-    console.log("Остановить задачу:", job);
+    // Подтверждение остановки
+    setJobToStop(job);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmStopJob = () => {
     // Реализация остановки задачи
+    if (useMockData) {
+      // Моковое уведомление об успешной остановке
+      setTimeout(() => {
+        alert(`Задача ${jobToStop.job_name} успешно остановлена.`);
+        fetchJobs();
+      }, 1000);
+    } else {
+      const params = {};
+
+      if (jobToStop.job_execution_id) {
+        params.job_execution_id = jobToStop.job_execution_id;
+      } else if (jobToStop.job_id) {
+        params.job_id = jobToStop.job_id;
+      } else if (jobToStop.id) {
+        params.job_id = jobToStop.id;
+      }
+
+      // Проверяем, что хотя бы один из параметров указан
+      if (!params.job_id && !params.job_execution_id) {
+        alert("Не указан идентификатор задачи или выполнения.");
+        setConfirmDialogOpen(false);
+        return;
+      }
+
+      axiosInstance
+        .post("/jobs/job-stop", null, { params })
+        .then((response) => {
+          const message = response.data.message || "Задача успешно остановлена.";
+          alert(message);
+          fetchJobs();
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при остановке задачи:`,
+            error
+          );
+          const errorMessage =
+            error.response?.data?.detail ||
+            "Ошибка при остановке задачи.";
+          alert(errorMessage);
+        })
+        .finally(() => {
+          setConfirmDialogOpen(false);
+          setJobToStop(null);
+        });
+    }
   };
 
   const handleBuildLogsClick = (job) => {
     // Получаем build logs для задачи и открываем диалог
-    setLogsLoading(true);
+    setBuildLogsLoading(true);
     setCurrentJobName(job.job_name || "N/A");
 
     if (useMockData) {
       // Используем моковые логи сборки
       setTimeout(() => {
         setCurrentLogs(`Build Logs для задачи ${job.job_name} (ID: ${job.id})`);
-        setLogsLoading(false);
-        setLogsModalOpen(true);
+        setBuildLogsLoading(false);
+        setBuildLogsModalOpen(true);
       }, 1000);
     } else {
       axiosInstance
-        .get(`/jobs/${job.id}/build-logs`)
+        .get("/jobs/build-logs", {
+          params: { job_id: job.id || job.job_id },
+        })
         .then((response) => {
-          const logs = response.data.logs || "Логи отсутствуют.";
+          const logs = response.data.build_logs || "Логи сборки отсутствуют.";
           setCurrentLogs(logs);
         })
         .catch((error) => {
           console.error(
-            `Ошибка при получении build logs для задачи ${job.id}:`,
+            `Ошибка при получении логов сборки для задачи ${job.id}:`,
             error
           );
-          setCurrentLogs("Ошибка при получении логов сборки.");
+          const errorMessage =
+            error.response?.data?.detail ||
+            (error.response?.status === 404
+              ? "Логи сборки недоступны."
+              : "Ошибка при получении логов сборки.");
+          setCurrentLogs(errorMessage);
         })
         .finally(() => {
-          setLogsLoading(false);
-          setLogsModalOpen(true);
+          setBuildLogsLoading(false);
+          setBuildLogsModalOpen(true);
         });
     }
   };
 
   const handleExecutionsClick = (job) => {
-    // Получаем запуски для задачи и открываем диалог
+    // Получаем список выполнений для задачи и открываем диалог
     setExecutionsLoading(true);
     setCurrentJobName(job.job_name || "N/A");
     setCurrentJobId(job.id || job.job_id || "");
+    setLogsByExecutionId({}); // Сбрасываем состояние логов
 
     if (useMockData) {
       // Используем моковые данные
@@ -387,18 +541,17 @@ function Tasks() {
         setExecutionsModalOpen(true);
       }, 1000);
     } else {
-      // Используем корректный эндпоинт для получения запусков задачи
-      const endpoint = `/jobs/${currentOrganization.id}/${job.id}/executions`;
-
       axiosInstance
-        .get(endpoint)
+        .get("/jobs/executions", {
+          params: { job_id: job.id || job.job_id },
+        })
         .then((response) => {
           const executions = response.data || [];
           setCurrentExecutions(executions);
         })
         .catch((error) => {
           console.error(
-            `Ошибка при получении executions для задачи ${job.id}:`,
+            `Ошибка при получении выполнений для задачи ${job.id}:`,
             error
           );
           setCurrentExecutions([]);
@@ -425,7 +578,6 @@ function Tasks() {
         setScheduleModalOpen(true);
       }, 1000);
     } else {
-      // Запрос к API для получения расписания задачи
       axiosInstance
         .get(`/jobs/${job.id}/schedule`)
         .then((response) => {
@@ -437,6 +589,9 @@ function Tasks() {
             `Ошибка при получении расписания для задачи ${job.id}:`,
             error
           );
+          const errorMessage =
+            error.response?.data?.detail ||
+            "Информация о расписании недоступна.";
           setCurrentScheduleData(null);
         })
         .finally(() => {
@@ -453,22 +608,20 @@ function Tasks() {
     if (useMockData) {
       alert(`Скачивание артефактов для задачи ${job.job_name} (ID: ${job.id})`);
     } else {
-      // Реальный запрос для скачивания артефактов
       axiosInstance
         .get(`/jobs/${job.id}/artifacts`, {
           responseType: "blob", // Ожидаем файл в ответе
         })
         .then((response) => {
-          // Создаем ссылку для скачивания файла
           const url = window.URL.createObjectURL(new Blob([response.data]));
           const link = document.createElement("a");
           link.href = url;
-          // Предполагаем, что в заголовках ответа есть имя файла
           const contentDisposition = response.headers["content-disposition"];
           let fileName = "artifacts.zip";
           if (contentDisposition) {
             const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
-            if (fileNameMatch.length === 2) fileName = fileNameMatch[1];
+            if (fileNameMatch && fileNameMatch.length === 2)
+              fileName = fileNameMatch[1];
           }
           link.setAttribute("download", fileName);
           document.body.appendChild(link);
@@ -480,7 +633,9 @@ function Tasks() {
             `Ошибка при скачивании артефактов для задачи ${job.id}:`,
             error
           );
-          alert("Ошибка при скачивании артефактов.");
+          const errorMessage =
+            error.response?.data?.detail || "Ошибка при скачивании артефактов.";
+          alert(errorMessage);
         });
     }
   };
@@ -490,15 +645,11 @@ function Tasks() {
     const stoppedStatuses = ["stopped", "failed", "completed", "terminated"];
 
     if (creatingStatuses.includes(status)) {
-      return <CircularProgress size={16} sx={{ ml: 1 }} />;
+      return <CircularProgress size={20} color="inherit" />;
     } else if (status === "running") {
-      return (
-        <FiberManualRecordIcon sx={{ color: "green", fontSize: 16, ml: 1 }} />
-      );
+      return <FiberManualRecordIcon sx={{ color: "green", fontSize: 20 }} />;
     } else if (stoppedStatuses.includes(status)) {
-      return (
-        <FiberManualRecordIcon sx={{ color: "red", fontSize: 16, ml: 1 }} />
-      );
+      return <FiberManualRecordIcon sx={{ color: "red", fontSize: 20 }} />;
     } else {
       return null;
     }
@@ -523,151 +674,21 @@ function Tasks() {
     return <Typography color="error">{error}</Typography>;
   }
 
-  // Переименованные заголовки столбцов
-  const fixedColumns = [
-    { field: "job_id", headerName: "ID" },
-    { field: "gpu_type", headerName: "Тип GPU" },
-  ];
-
-  const dynamicColumns = [
-    { field: "job_name", headerName: "Имя" },
-    { field: "job_type", headerName: "Тип" },
-    { field: "created_at", headerName: "Создана" },
-    { field: "status", headerName: "Статус" },
-    { field: "start_time", headerName: "Начало" },
-    { field: "build_status", headerName: "Статус сборки" },
-    { field: "last_execution_status", headerName: "Статус последнего запуска" },
-    {
-      field: "last_execution_start_time",
-      headerName: "Начало последнего запуска",
-    },
-    {
-      field: "last_execution_end_time",
-      headerName: "Окончание последнего запуска",
-    },
-    // Добавьте другие колонки по необходимости
-  ];
-
-  const availableDynamicColumns = dynamicColumns.filter((column) =>
-    jobs.some(
-      (job) =>
-        job[column.field] !== undefined &&
-        job[column.field] !== null &&
-        job[column.field] !== ""
-    )
-  );
-
-  const columnsToDisplay =
-    availableDynamicColumns.length > 0
-      ? [fixedColumns[0], ...availableDynamicColumns, fixedColumns[1]]
-      : [fixedColumns[0], ...dynamicColumns, fixedColumns[1]];
-
-  const renderCellContent = (job, field) => {
-    const value = job[field];
-    switch (field) {
-      case "job_id":
-        const jobId = value || job.id || "N/A";
-        const fullJobId = value || job.id || "";
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-            }}
-          >
-            {formatJobId(jobId)}
-            {fullJobId && (
-              <Tooltip title="Скопировать ID">
-                <IconButton size="small" onClick={() => handleCopy(fullJobId)}>
-                  <ContentCopyIcon sx={{ fontSize: "1rem" }} />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        );
-      case "job_name":
-        const jobName = value || "N/A";
-        const formattedJobName = formatJobName(jobName);
-        return (
-          <Tooltip title={jobName}>
-            <Typography>{formattedJobName}</Typography>
-          </Tooltip>
-        );
-      case "status":
-        return value || "N/A";
-      case "job_type":
-        return (
-          <Typography
-            sx={{
-              padding: "3px 7px",
-              borderRadius: "5px",
-              backgroundColor: "#ff77004d",
-              fontWeight: "bold",
-              color:
-                value === "deploy"
-                  ? "blue"
-                  : value === "run"
-                  ? "green"
-                  : "inherit",
-            }}
-          >
-            {value || "N/A"}
-          </Typography>
-        );
-      case "created_at":
-      case "start_time":
-      case "last_execution_start_time":
-      case "last_execution_end_time":
-        return value ? new Date(value).toLocaleString() : "N/A";
-      case "build_status":
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {value || "N/A"}
-            {value === "building" && (
-              <CircularProgress size={16} sx={{ ml: 1 }} />
-            )}
-          </Box>
-        );
-      case "gpu_type":
-        return value
-          ? typeof value === "string"
-            ? value
-            : value.type
-            ? value.type
-            : "N/A"
-          : "N/A";
-      default:
-        return value || "N/A";
-    }
-  };
-
   return (
     <Box>
-      {/* Заголовок и переключатель моковых данных */}
+      {/* Заголовок страницы */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          mb: 2,
-          justifyContent: "space-between",
+          p: 2,
+          borderBottom: "1px solid #e0e0e0",
         }}
       >
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ fontSize: { xs: "1.2rem", sm: "1.6rem" } }}
-        >
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Задачи
         </Typography>
-        {/* Переключатель между моковыми данными и реальными данными */}
+        {/* Переключатель моковых данных */}
         <FormControlLabel
           control={
             <Switch
@@ -680,354 +701,292 @@ function Tasks() {
         />
       </Box>
 
-      {/* Элементы управления фильтрами */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", mb: 2, gap: 2 }}>
-        {/* Фильтр по статусу */}
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel id="status-label">Статус</InputLabel>
-          <Select
-            labelId="status-label"
-            multiple
-            value={selectedStatuses}
-            onChange={handleStatusChange}
-            input={<OutlinedInput label="Статус" />}
-            renderValue={(selected) => selected.join(", ")}
-          >
-            {statusOptions.map((status) => (
-              <MenuItem key={status} value={status}>
-                <Checkbox checked={selectedStatuses.indexOf(status) > -1} />
-                <ListItemText primary={status} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {/* Рендерим фильтры сверху */}
+      <Box sx={{ p: 2 }}>{renderFilters()}</Box>
 
-        {/* Фильтр по типу задачи */}
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel id="job-type-label">Тип задачи</InputLabel>
-          <Select
-            labelId="job-type-label"
-            multiple
-            value={selectedJobTypes}
-            onChange={handleJobTypeChange}
-            input={<OutlinedInput label="Тип задачи" />}
-            renderValue={(selected) => selected.join(", ")}
-          >
-            {jobTypeOptions.map((type) => (
-              <MenuItem key={type} value={type}>
-                <Checkbox checked={selectedJobTypes.indexOf(type) > -1} />
-                <ListItemText primary={type} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* Фильтр по расписанию */}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isScheduledFilter}
-              onChange={handleIsScheduledChange}
-              color="primary"
-            />
-          }
-          label="Запланировано"
-        />
-        {/* Кнопка сброса фильтров */}
-        <Button variant="outlined" onClick={resetFilters}>
-          Сбросить фильтры
-        </Button>
-      </Box>
-
-      {/* Отображаем таблицу */}
-      <TableContainer
-        component={Paper}
-        sx={{ boxShadow: "none", overflowX: "auto", width: "100%" }}
-      >
-        <Table>
-          <TableHead
-            sx={{
-              "& .MuiTableCell-root": {
-                padding: "5px",
-                color: "black",
-                textAlign: "center",
-                height: "50px",
-                width: "100px",
-              },
-            }}
-          >
-            <TableRow>
-              {columnsToDisplay.map((column) => (
-                <TableCell
-                  key={column.field}
+      {/* Основное содержимое */}
+      <Grid container spacing={2}>
+        {jobs.length > 0 ? (
+          jobs.map((job) => (
+            <Grid item xs={12} key={job.job_id || job.id}>
+              <Card
+                sx={{
+                  position: "relative",
+                  mb: 3,
+                  boxShadow: 4,
+                  borderRadius: "15px",
+                  background:
+                    "linear-gradient(135deg, #f0f2f5 30%, #ffffff 90%)",
+                }}
+              >
+                {/* Тип задачи в верхнем левом углу */}
+                <Box
                   sx={{
-                    width:
-                      column.field === "job_id" || column.field === "gpu_type"
-                        ? "100px"
-                        : "100px",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    px: 2,
+                    py: 0.5,
+                    borderTopLeftRadius: "15px",
+                    borderBottomRightRadius: "15px",
+                    color:
+                      job.job_type === "run"
+                        ? "#4caf50"
+                        : job.job_type === "deploy"
+                        ? "#1976d2"
+                        : "white",
+                    backgroundColor: "white",
+                    fontWeight: "bold",
+                    textTransform: "uppercase",
                   }}
                 >
-                  {column.headerName}
-                </TableCell>
-              ))}
-              {/* Добавляем пустую ячейку для индикатора статуса */}
-              <TableCell sx={{ width: "50px", ml: 0 }}></TableCell>
-              {/* Добавляем ячейку для значка расписания */}
-              <TableCell sx={{ width: "50px", ml: 0 }}></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody
-            sx={{
-              "& .MuiTableCell-root": {
-                padding: "5px",
-                color: "#6e6e80",
-                textAlign: "center",
-                height: "auto",
-                width: "100px",
-                borderBottom: "none",
-              },
-            }}
-          >
-            {jobs.length > 0 ? (
-              jobs.map((job) => (
-                <TableRow
-                  key={job.job_id || job.id || Math.random()}
+                  {job.job_type}
+                </Box>
+
+                {/* Статус задачи в правом верхнем углу */}
+                <Box
                   sx={{
-                    "&:not(:last-child)": {
-                      borderBottom: "1px solid rgba(224, 224, 224, 1)",
-                    },
+                    position: "absolute",
+                    top: 9,
+                    right: 9,
                   }}
                 >
-                  <TableCell colSpan={columnsToDisplay.length + 2}>
-                    {/* Объединяем все данные и кнопки действий в одну ячейку */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "stretch",
-                      }}
-                    >
-                      {/* Строка данных задачи с индикатором статуса */}
+                  {getStatusIndicator(job.status)}
+                </Box>
+
+                <CardContent>
+                  {/* Первый ряд: Последний запуск */}
+
+                  <Grid container spacing={2} sx={{ mb: 2, mt: 2 }}>
+                    {/* Название и ID */}
+                    <Grid item xs={3}>
                       <Box>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              {columnsToDisplay.map((column) => (
-                                <TableCell
-                                  key={column.field}
-                                  sx={{
-                                    padding: "5px",
-                                    color: "#6e6e80",
-                                    textAlign: "center",
-                                    borderBottom: "none",
-                                  }}
-                                >
-                                  {renderCellContent(job, column.field)}
-                                </TableCell>
-                              ))}
-                              {/* Индикатор статуса задачи */}
-                              <TableCell>
-                                {getStatusIndicator(job.status)}
-                              </TableCell>
-                              {/* Значок расписания, если задача запланирована */}
-                              <TableCell>
-                                {job.is_scheduled && (
-                                  <Tooltip title="Запланированная задача">
-                                    <CalendarIcon sx={{ color: "blue", fontSize:'1.2rem' }} />
-                                  </Tooltip>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </Box>
-                      {/* Контейнер для URL и кнопок действий */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          mt: 1,
-                          mb: 0.5,
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        {/* Левая часть с URL */}
-                        {job.job_type === "deploy" && job.url && (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              mt: 1,
-                            }}
-                          >
-                            <Tooltip title="Скопировать URL">
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  mr: 1,
-                                  padding: "5px 10px",
-                                  borderRadius: "5px",
-                                  backgroundColor: "#1976d2",
-                                  color: "white",
-                                  cursor: "pointer",
-                                  wordBreak: "break-all",
-                                  "&:hover": {
-                                    backgroundColor: "#1565c0",
-                                  },
-                                }}
-                                onClick={() => handleCopy(job.url)}
-                              >
-                                {job.url}
-                              </Typography>
-                            </Tooltip>
-                          </Box>
-                        )}
-                        {/* Правая часть с кнопками */}
                         <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            alignItems: "center",
-                            ml: "auto",
-                          }}
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
                         >
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: "bold", color: "#333" }}
+                          >
+                            {job.job_name}
+                          </Typography>
+                          {/* Иконка запланированной задачи */}
                           {job.is_scheduled && (
-                            <Button
-                              variant="outlined"
-                              sx={{ mr: 1, mb: 1, padding: "5px 7px", }}
-                              onClick={() => handleScheduleClick(job)}
-                            >
-                              Расписание
-                            </Button>
-                          )}
-                          {(job.build_status === "failed" ||
-                            job.build_status === "building") && (
-                            <Button
-                              variant="outlined"
-                              sx={{ mr: 1, mb: 1, padding: "5px 7px", }}
-                              onClick={() => handleBuildLogsClick(job)}
-                            >
-                              Build Logs
-                            </Button>
-                          )}
-
-                          {/* Кнопка "Запуски" */}
-                          <Button
-                            variant="outlined"
-                            sx={{ mr: 1, mb: 1, padding: "5px 7px", }}
-                            onClick={() => handleExecutionsClick(job)}
-                          >
-                            Запуски
-                          </Button>
-
-                          {/* Кнопка "Скачать артефакты" */}
-                          {job.job_type === "run" && job.status === "completed" && (
-                            <Button
-                              variant="outlined"
-                              sx={{
-                                mr: 1,
-                                mb: 1,
-                                padding: "5px 7px",
-                              }}
-                              onClick={() => handleDownloadArtifacts(job)}
-                            >
-                              Скачать артефакты
-                            </Button>
-                          )}
-
-                          <Button
-                            variant="outlined"
-                            sx={{
-                              mr: 1,
-                              mb: 1,
-                              padding: "5px 7px",
-                              border: "1px solid #5282ff",
-                            }}
-                            onClick={() => handleLogsClick(job)}
-                          >
-                            Логи
-                          </Button>
-                          {(job.status === "creating" ||
-                            job.status === "running") && (
-                            <Button
-                              variant="contained"
-                              sx={{
-                                ml: 1,
-                                mr: 1,
-                                mb: 1,
-                                backgroundColor: "inherit",
-                                boxShadow: "none",
-                                border: "1px solid #5282ff",
-                                padding:'5px 7px'
-                              }}
-                              onClick={() => handleStopClick(job)}
-                            >
-                              <StopCircleIcon
-                                sx={{ fontSize: "20px", color: "#5282ff" }}
+                            <Tooltip title="Запланированная задача">
+                              <CalendarIcon
+                                sx={{ color: "#1976d2", fontSize: "1.1rem" }}
                               />
-                            </Button>
+                            </Tooltip>
                           )}
                         </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "#555",
+                            wordBreak: "break-all",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {formatJobId(job.job_id)}
+                          <Tooltip title="Скопировать ID">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleCopy(job.job_id)}
+                            >
+                              <ContentCopyIcon sx={{ fontSize: "1rem" }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Typography>
                       </Box>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              // Если нет задач, отображаем одну строку с N/A
-              <TableRow>
-                <TableCell colSpan={columnsToDisplay.length + 2}>N/A</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </Grid>
 
-      {/* Диалоговое окно Расписания */}
-      <Dialog
-        open={scheduleModalOpen}
-        onClose={() => setScheduleModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Расписание задачи: ${currentJobName}`}</DialogTitle>
-        <DialogContent dividers>
-          {scheduleLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : currentScheduleData ? (
-            <Box>
-              <Typography variant="body1">
-                <strong>Начало:</strong>{" "}
-                {new Date(currentScheduleData.start_date).toLocaleString()}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Конец:</strong>{" "}
-                {new Date(currentScheduleData.end_date).toLocaleString()}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Дни недели:</strong>{" "}
-                {currentScheduleData.days_of_week.join(", ")}
-              </Typography>
-              {/* Добавьте отображение других данных расписания по необходимости */}
-            </Box>
-          ) : (
-            <Typography>Информация о расписании недоступна.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setScheduleModalOpen(false)}>Закрыть</Button>
-        </DialogActions>
-      </Dialog>
+                    {/* Создана */}
+                    <Grid item xs={3}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", color: "#333" }}
+                      >
+                        Создана
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#555" }}>
+                        {formatDateTime(job.created_at)}
+                      </Typography>
+                    </Grid>
+
+                    {/* Статус образа */}
+                    <Grid item xs={4}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", color: "#333" }}
+                      >
+                        Статус образа
+                      </Typography>
+                      {/* Добавлен плейсхолдер */}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2" sx={{ color: "#555" }}>
+                          {job.build_status}
+                        </Typography>
+                        {job.build_status === "building" && (
+                          <CircularProgress size={16} />
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                  {/* Второй ряд: Название и другие детали */}
+                  <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
+                    {/* Начало */}
+                    <Grid item xs={3}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", color: "#333" }}
+                      >
+                        Начало:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#555" }}>
+                        {job.last_execution_start_time
+                          ? formatDateTime(job.last_execution_start_time)
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
+                    {/* Конец */}
+                    <Grid item xs={3}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", color: "#333" }}
+                      >
+                        Конец:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#555" }}>
+                        {job.last_execution_end_time
+                          ? formatDateTime(job.last_execution_end_time)
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
+                    {/* Статус */}
+                    <Grid item xs={4}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", color: "#333" }}
+                      >
+                        Статус:
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#555", textTransform: "capitalize" }}
+                      >
+                        {job.status || "N/A"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+                <CardActions
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: -1,
+                    backgroundColor: "#f9f9f9",
+                    borderTop: "1px solid #e0e0e0",
+                  }}
+                >
+                  {/* Группа основных кнопок */}
+                  <Box>
+                    <Button
+                      onClick={() => handleLogsClick(job)}
+                      variant="contained"
+                      color="secondary"
+                      sx={{ mr: 1 }}
+                    >
+                      Логи
+                    </Button>
+                    <Tooltip title="Выполнения">
+                      <IconButton
+                        onClick={() => handleExecutionsClick(job)}
+                        color="primary"
+                      >
+                        <ContentPasteSearchIcon />
+                      </IconButton>
+                    </Tooltip>
+                    {job.is_scheduled && (
+                      <Tooltip title="Расписание">
+                        <IconButton
+                          onClick={() => handleScheduleClick(job)}
+                          color="primary"
+                        >
+                          <EventNoteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {(job.build_status === "failed" ||
+                      job.build_status === "building") && (
+                      <Tooltip title="Build Logs">
+                        <IconButton
+                          onClick={() => handleBuildLogsClick(job)}
+                          color="primary"
+                        >
+                          <BugReportIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {job.job_type === "run" && job.status === "completed" && (
+                      <Tooltip title="Скачать артефакты">
+                        <IconButton
+                          onClick={() => handleDownloadArtifacts(job)}
+                          color="primary"
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {/* Кнопка остановки */}
+                    {(job.status === "creating" || job.status === "running") && (
+                      <Tooltip title="Остановить задачу">
+                        <IconButton
+                          onClick={() => handleStopClick(job)}
+                          sx={{
+                            backgroundColor: "rgba(255,0,0,0.1)",
+                            "&:hover": { backgroundColor: "rgba(255,0,0,0.2)" },
+                          }}
+                        >
+                          <StopIcon sx={{ color: "red" }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                  {/* URL */}
+                  {job.job_type === "deploy" && job.url && (
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Tooltip title="Скопировать URL">
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            backgroundColor: "#1976d2",
+                            color: "white",
+                            cursor: "pointer",
+                            wordBreak: "break-all",
+                            "&:hover": {
+                              backgroundColor: "#125ea3",
+                            },
+                          }}
+                          onClick={() => handleCopy(job.url)}
+                        >
+                          {job.url}
+                        </Typography>
+                      </Tooltip>
+                    </Box>
+                  )}
+                </CardActions>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Typography variant="body1">Нет доступных задач.</Typography>
+        )}
+      </Grid>
 
       {/* Диалоговое окно логов */}
       <Dialog
@@ -1036,7 +995,7 @@ function Tasks() {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{`Логи задачи: ${currentJobName}`}</DialogTitle>
+        <DialogTitle>{`Логи: ${currentJobName}`}</DialogTitle>
         <DialogContent dividers>
           {logsLoading ? (
             <Box
@@ -1071,14 +1030,56 @@ function Tasks() {
         </DialogActions>
       </Dialog>
 
-      {/* Диалоговое окно Запусков */}
+      {/* Диалоговое окно логов сборки */}
+      <Dialog
+        open={buildLogsModalOpen}
+        onClose={() => setBuildLogsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Логи сборки: ${currentJobName}`}</DialogTitle>
+        <DialogContent dividers>
+          {buildLogsLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+            >
+              {currentLogs}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBuildLogsModalOpen(false)}>Закрыть</Button>
+          <Button
+            onClick={() => {
+              // Копирование логов сборки в буфер обмена
+              handleCopy(currentLogs);
+            }}
+          >
+            Скопировать Логи
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Диалоговое окно Выполнений */}
       <Dialog
         open={executionsModalOpen}
         onClose={() => setExecutionsModalOpen(false)}
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{`Запуски задачи: ${currentJobName}`}</DialogTitle>
+        <DialogTitle>{`Выполнения задачи: ${currentJobName}`}</DialogTitle>
         <DialogContent dividers>
           {executionsLoading ? (
             <Box
@@ -1092,45 +1093,247 @@ function Tasks() {
               <CircularProgress />
             </Box>
           ) : currentExecutions.length > 0 ? (
-            // Отображаем таблицу запусков
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID запуска</TableCell>
-                  <TableCell>Статус</TableCell>
-                  <TableCell>Начало</TableCell>
-                  <TableCell>Окончание</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {currentExecutions.map((execution) => (
-                  <TableRow key={execution.execution_id}>
-                    <TableCell>{execution.execution_id}</TableCell>
-                    <TableCell>{execution.status}</TableCell>
-                    <TableCell>
-                      {execution.start_time
-                        ? new Date(execution.start_time).toLocaleString()
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {execution.end_time
-                        ? new Date(execution.end_time).toLocaleString()
-                        : "N/A"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            // Отображаем список выполнений
+            <Box>
+              {currentExecutions.map((execution) => {
+                const executionId =
+                  execution.job_execution_id || execution.execution_id;
+                const logsData = logsByExecutionId[executionId];
+                return (
+                  <Box key={executionId} sx={{ mb: 2 }}>
+                    <Box
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "#f0f0f0",
+                          cursor: "pointer",
+                        },
+                        p: 1,
+                        borderRadius: "5px",
+                      }}
+                      onClick={() => handleExecutionLogsToggle(execution)}
+                    >
+                      <Typography variant="body2">
+                        <strong>ID выполнения:</strong> {executionId}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Статус:</strong> {execution.status}
+                      </Typography>
+                      {execution.created_at && (
+                        <Typography variant="body2">
+                          <strong>Создано:</strong>{" "}
+                          {formatDateTime(execution.created_at)}
+                        </Typography>
+                      )}
+                      <Typography variant="body2">
+                        <strong>Начало:</strong>{" "}
+                        {execution.start_time
+                          ? formatDateTime(execution.start_time)
+                          : "N/A"}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Окончание:</strong>{" "}
+                        {execution.end_time
+                          ? formatDateTime(execution.end_time)
+                          : "N/A"}
+                      </Typography>
+                      {execution.gpu_info && (
+                        <Typography variant="body2">
+                          <strong>GPU:</strong> {execution.gpu_info.type} (
+                          {execution.gpu_info.memory})
+                        </Typography>
+                      )}
+                      {execution.health_status && (
+                        <Typography variant="body2">
+                          <strong>Состояние:</strong> {execution.health_status}
+                        </Typography>
+                      )}
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "gray", mt: 1 }}
+                      >
+                        Нажмите, чтобы увидеть логи выполнения
+                      </Typography>
+                    </Box>
+                    {/* Отображение логов под выполнением */}
+                    {logsData && (
+                      <Box sx={{ pl: 2, mt: 1 }}>
+                        {logsData.loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Typography
+                            variant="body2"
+                            style={{ whiteSpace: "pre-wrap" }}
+                          >
+                            {logsData.logs}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                    <Box
+                      sx={{
+                        borderBottom: "1px solid #ccc",
+                        mt: 1,
+                        mb: 1,
+                      }}
+                    />
+                  </Box>
+                );
+              })}
+            </Box>
           ) : (
-            <Typography>Нет доступных запусков для этой задачи.</Typography>
+            <Typography>Нет доступных выполнений для этой задачи.</Typography>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExecutionsModalOpen(false)}>Закрыть</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Диалог подтверждения остановки */}
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+      >
+        <DialogTitle>Подтверждение остановки</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Вы уверены, что хотите остановить задачу "{jobToStop?.job_name}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Отмена</Button>
+          <Button onClick={confirmStopJob} color="secondary">
+            Остановить
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Диалоговое окно Расписания */}
+      <Dialog
+        open={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Расписание задачи: ${currentJobName}`}</DialogTitle>
+        <DialogContent dividers>
+          {scheduleLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : currentScheduleData ? (
+            <Box>
+              <Typography variant="body1">
+                <strong>Начало:</strong>{" "}
+                {formatDateTime(currentScheduleData.start_date)}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Конец:</strong>{" "}
+                {formatDateTime(currentScheduleData.end_date)}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Дни недели:</strong>{" "}
+                {currentScheduleData.days_of_week.join(", ")}
+              </Typography>
+              {/* Добавьте отображение других данных расписания по необходимости */}
+            </Box>
+          ) : (
+            <Typography>Информация о расписании недоступна.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setScheduleModalOpen(false)}>Закрыть</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
+
+  // Функция для рендеринга фильтров
+  function renderFilters() {
+    return (
+      <Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* Фильтр по статусу */}
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="status-label">Статус</InputLabel>
+            <Select
+              labelId="status-label"
+              value={selectedStatus}
+              onChange={handleStatusChange}
+              input={<OutlinedInput label="Статус" />}
+              renderValue={(selected) => (selected ? selected : "Все")}
+            >
+              <MenuItem value="">
+                <Radio checked={selectedStatus === ""} />
+                <ListItemText primary="Все" />
+              </MenuItem>
+              {statusOptions.map((status) => (
+                <MenuItem key={status} value={status}>
+                  <Radio checked={selectedStatus === status} />
+                  <ListItemText primary={status} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Фильтр по типу задачи */}
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="job-type-label">Тип задачи</InputLabel>
+            <Select
+              labelId="job-type-label"
+              value={selectedJobType}
+              onChange={handleJobTypeChange}
+              input={<OutlinedInput label="Тип задачи" />}
+              renderValue={(selected) => (selected ? selected : "Все")}
+            >
+              <MenuItem value="">
+                <Radio checked={selectedJobType === ""} />
+                <ListItemText primary="Все" />
+              </MenuItem>
+              {jobTypeOptions.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Radio checked={selectedJobType === type} />
+                  <ListItemText primary={type} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Фильтр по расписанию */}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isScheduledFilter}
+                onChange={handleIsScheduledChange}
+                color="primary"
+              />
+            }
+            label="Только запланированные"
+          />
+
+          {/* Кнопка сброса фильтров */}
+          <Button variant="outlined" onClick={resetFilters}>
+            Сбросить фильтры
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 }
 
 export default Tasks;

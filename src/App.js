@@ -32,7 +32,10 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider, { AuthContext } from "./AuthContext";
-import { OrganizationContext, OrganizationProvider } from "./components/Organization/OrganizationContext";
+import {
+  OrganizationContext,
+  OrganizationProvider,
+} from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
@@ -53,7 +56,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import CodeIcon from "@mui/icons-material/Code";
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
@@ -373,6 +376,10 @@ export function Layout() {
 
   return (
     <>
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+      </Routes>
+
       <AnimatePresence mode="wait">
         {shouldRenderContent && (
           <motion.div
@@ -531,9 +538,10 @@ export function Layout() {
 
                         {/* Добавляем иконку событий */}
                         <IconButton
-                          
                           onClick={handleEventsClick}
-                          sx={{color: isEventsOpen ? 'secondary.main' : '#202123' }}
+                          sx={{
+                            color: isEventsOpen ? "secondary.main" : "#202123",
+                          }}
                         >
                           <NotificationsNoneIcon />
                         </IconButton>
@@ -818,15 +826,15 @@ export function Layout() {
           horizontal: "right",
         }}
         PaperProps={{
-          style: { maxHeight: 500, width: '400px' },
+          style: { maxHeight: 500, width: "400px" },
         }}
       >
         {eventsLoading ? (
-          <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
             <CircularProgress />
           </Box>
         ) : events.length > 0 ? (
-          <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+          <List sx={{ maxHeight: 400, overflow: "auto" }}>
             {events.map((event, index) => (
               <ListItem key={index} alignItems="flex-start">
                 <ListItemText

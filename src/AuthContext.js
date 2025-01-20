@@ -12,36 +12,23 @@ const AuthProvider = ({ children }) => {
   const [openRegistrationModal, setOpenRegistrationModal] = useState(false);
   const [loading, setLoading] = useState(true); // Добавлено состояние загрузки
 
-  // Функция для получения данных пользователя
   const fetchUserData = async () => {
-    setLoading(true); // Начало загрузки
+    setLoading(true);
     try {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        axiosInstance.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${token}`;
-        const response = await axiosInstance.get("/auth/me");
-        // console.log("fetchUserData response", response);
-        setUser(response.data);
-        setAuthToken(token);
-        setIsLoggedIn(true);
-      } else {
-        setUser(null);
-        setAuthToken(null);
-        setIsLoggedIn(false);
-      }
+      const response = await axiosInstance.get("/auth/me");
+      setUser(response.data);
+      setIsLoggedIn(true);
     } catch (error) {
-      console.error("Ошибка при получении данных пользователя:", error);
-      // Если ошибка (например, токен недействителен), очищаем данные
-      localStorage.removeItem("auth_token");
-      setUser(null);
-      setAuthToken(null);
-      setIsLoggedIn(false);
+      console.error("Error fetching user data:", error);
+      if (error.response && error.response.status === 401) {
+        logout();
+      } else {
+        // Handle other errors differently if needed
+      }
     } finally {
       setTimeout(() => {
-        setLoading(false);
-      }, 500);
+          setLoading(false);
+        }, 500);
     }
   };
 
@@ -50,22 +37,29 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   // Функции входа и выхода
-  const login = (token, userData) => {
-    setAuthToken(token);
+  const login = (userData) => {
     setUser(userData);
     setIsLoggedIn(true);
-    localStorage.setItem("auth_token", token);
   };
 
   const logout = () => {
-    localStorage.removeItem("auth_token");
-    setUser(null);
-    setAuthToken(null);
-    setIsLoggedIn(false);
-    setOpenCaptchaModal(false);
-    setOpenRegistrationModal(false);
+    axiosInstance.post("/auth/logout")
+      .then(() => {
+        setUser(null);
+        setIsLoggedIn(false);
+        setOpenCaptchaModal(false);
+        setOpenRegistrationModal(false);
+      })
+      .catch(error => {
+        console.error("Error logging out:", error);
+        // Even if logout fails, we still clear the local state
+        setUser(null);
+        setIsLoggedIn(false);
+        setOpenCaptchaModal(false);
+        setOpenRegistrationModal(false);
+      });
   };
-
+  
   return (
     <AuthContext.Provider
       value={{

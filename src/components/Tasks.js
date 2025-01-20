@@ -56,7 +56,6 @@ const statusOptions = [
 const jobTypeOptions = ["deploy", "run"];
 
 function Tasks() {
-  const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
   const [allJobs, setAllJobs] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -188,7 +187,6 @@ function Tasks() {
     fetchJobs();
   }, [
     currentOrganization,
-    authToken,
     useMockData,
     isScheduledFilter,
     selectedStatus,
@@ -208,7 +206,7 @@ function Tasks() {
         setAllJobs(mockJobs);
         setLoading(false);
       }, 500); // Имитируем задержку
-    } else if (currentOrganization && authToken) {
+    } else if (currentOrganization) {
       // Используем реальные данные
       const endpoint = `/jobs/get-organization-jobs`;
       const params = {

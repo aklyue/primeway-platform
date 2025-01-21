@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: 'https://api.primeway.io',
-  withCredentials: true,  // Include cookies in requests
+  // withCredentials: true,  // Include cookies in requests
 });
 
 

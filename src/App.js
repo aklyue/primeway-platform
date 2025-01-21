@@ -39,7 +39,6 @@ import {
 import AuthCallback from "./components/AuthCallback";
 import Snowfall from "react-snowfall";
 import snowflakeSvg from "./assets/snowflake.svg";
-import Tasks from "./components/Tasks";
 import Billing from "./components/Billing";
 import ApiKeys from "./components/ApiKeys";
 import Settings from "./components/Settings";
@@ -60,6 +59,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
+import Tasks from "./components/Tasks/Tasks";
 
 const drawerWidth = 240;
 

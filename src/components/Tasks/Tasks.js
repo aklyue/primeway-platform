@@ -19,7 +19,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -36,11 +35,12 @@ import {
   ContentPasteSearch as ContentPasteSearchIcon,
   Stop as StopIcon,
 } from "@mui/icons-material";
-import axiosInstance from "../api";
-import { AuthContext } from "../AuthContext";
-import { OrganizationContext } from "./Organization/OrganizationContext";
+import axiosInstance from "../../api";
+import { AuthContext } from "../../AuthContext";
+import { OrganizationContext } from "../Organization/OrganizationContext";
 import { format, parseISO } from "date-fns";
-import JobDetailsDialog from "./JobDetailsDialog";
+import TasksDetailsDialog from "./TasksDetailsDialog";
+import TasksActions from "./TasksActions";
 
 const statusOptions = [
   "running",
@@ -100,6 +100,11 @@ function Tasks() {
   // Состояние для переключения между моковыми данными и реальными данными
   const [useMockData, setUseMockData] = useState(false);
 
+  const formatJobName = (name) => {
+    if (!name) return "N/A";
+    return name.length > 12 ? `${name.slice(0, 12)}**` : name;
+  };
+
   // Моковые данные для тестирования
   const mockJobs = [
     {
@@ -114,7 +119,7 @@ function Tasks() {
       last_execution_start_time: "2023-10-07T15:05:00Z",
       last_execution_end_time: "2023-10-07T15:10:00Z",
       gpu_type: "NVIDIA A100",
-      url: null,
+      job_url: null,
       is_scheduled: true,
       schedule: {
         start_date: "2023-10-10T08:00:00Z",
@@ -134,13 +139,13 @@ function Tasks() {
       last_execution_start_time: "2023-10-07T15:15:00Z",
       last_execution_end_time: null,
       gpu_type: "NVIDIA RTX 3090",
-      url: "https://example.com/deploy/job2",
+      job_url: "https://example.com/deploy/job2",
       is_scheduled: false,
     },
     {
       id: "job3",
       job_id: "job3",
-      job_name: "Another Job With Long Name 3",
+      job_name: "Another Job 3",
       job_type: "run",
       created_at: "2023-10-07T14:55:00Z",
       start_time: null,
@@ -149,7 +154,7 @@ function Tasks() {
       last_execution_start_time: null,
       last_execution_end_time: null,
       gpu_type: "NVIDIA V100",
-      url: null,
+      job_url: null,
       is_scheduled: true,
       schedule: {
         start_date: "2023-10-15T09:00:00Z",
@@ -756,6 +761,7 @@ function Tasks() {
                 <Card
                   onClick={() => handleTaskClick(job)}
                   sx={{
+                    cursor: "pointer",
                     position: "relative",
                     mb: 3,
                     boxShadow: 4,
@@ -764,28 +770,69 @@ function Tasks() {
                       "linear-gradient(135deg, #f0f2f5 30%, #ffffff 90%)",
                   }}
                 >
-                  {/* Тип задачи в верхнем левом углу */}
+                  {/* Верхний блок с типом задачи и URL */}
                   <Box
                     sx={{
                       position: "absolute",
                       top: 0,
                       left: 0,
-                      px: 2,
-                      py: 0.5,
-                      borderTopLeftRadius: "15px",
-                      borderBottomRightRadius: "15px",
-                      color:
-                        job.job_type === "run"
-                          ? "#4caf50"
-                          : job.job_type === "deploy"
-                          ? "#1976d2"
-                          : "white",
-                      backgroundColor: "white",
+
+                      display: "flex",
+                      alignItems: "center",
+
                       fontWeight: "bold",
-                      textTransform: "uppercase",
                     }}
                   >
-                    {job.job_type}
+                    {/* Тип задачи */}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color:
+                          job.job_type === "run"
+                            ? "#4caf50"
+                            : job.job_type === "deploy"
+                            ? "#1976d2"
+                            : "black",
+                        textTransform: "uppercase",
+                        fontWeight: "bold",
+                        backgroundColor: "white",
+                        px: 2,
+                        py: 0.5,
+                        borderTopLeftRadius: "15px",
+                        borderBottomRightRadius: "15px",
+                      }}
+                    >
+                      {job.job_type}
+                    </Typography>
+
+                    {/* URL задачи */}
+                    {job.job_type === "deploy" && job.job_url && (
+                      <Tooltip title="Скопировать URL">
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            marginLeft: 2,
+                            padding: "3px 8px",
+                            borderRadius: "12px",
+                            border: "1px solid #5282ff",
+                            backgroundColor: "none",
+                            color: "secondary.main",
+                            cursor: "pointer",
+                            wordBreak: "break-all",
+                            "&:hover": {
+                              backgroundColor: "#8fa8ea",
+                              color: "white",
+                            },
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(job.job_url);
+                          }}
+                        >
+                          {job.job_url}
+                        </Typography>
+                      </Tooltip>
+                    )}
                   </Box>
 
                   {/* Статус задачи в правом верхнем углу */}
@@ -800,239 +847,193 @@ function Tasks() {
                   </Box>
 
                   <CardContent>
-                    {/* Первый ряд: Последний запуск */}
+                    <Grid container direction="row" spacing={2}>
+                      {/* Левая часть с информацией */}
+                      <Grid item xs={12} md={9}>
+                        <Grid container spacing={2} sx={{ mb: 2, mt: 2 }}>
+                          {/* Название и ID */}
+                          <Grid item xs={12} sm={2.2}>
+                            <Box>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                {/* Оборачиваем Typography в Tooltip без дополнительного Typography */}
+                                <Tooltip title={job.job_name}>
+                                  <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: "bold", color: "#333" }}
+                                  >
+                                    {formatJobName(job.job_name)}
+                                  </Typography>
+                                </Tooltip>
+                                {/* Иконка запланированной задачи */}
+                                {job.is_scheduled && (
+                                  <Tooltip title="Запланированная задача">
+                                    <CalendarIcon
+                                      sx={{
+                                        color: "#1976d2",
+                                        fontSize: "1.1rem",
+                                      }}
+                                    />
+                                  </Tooltip>
+                                )}
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "#555",
+                                  wordBreak: "break-all",
+                                  display: "flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                {formatJobId(job.job_id)}
+                                <Tooltip title="Скопировать ID">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCopy(job.job_id);
+                                    }}
+                                  >
+                                    <ContentCopyIcon
+                                      sx={{ fontSize: "1rem" }}
+                                    />
+                                  </IconButton>
+                                </Tooltip>
+                              </Typography>
+                            </Box>
+                          </Grid>
 
-                    <Grid container spacing={2} sx={{ mb: 2, mt: 2 }}>
-                      {/* Название и ID */}
-                      <Grid item xs={3}>
-                        <Box>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
+                          {/* Создана */}
+                          <Grid item xs={12} sm={6} md={2}>
                             <Typography
-                              variant="h6"
+                              variant="body1"
                               sx={{ fontWeight: "bold", color: "#333" }}
                             >
-                              {job.job_name}
+                              Создана
                             </Typography>
-                            {/* Иконка запланированной задачи */}
-                            {job.is_scheduled && (
-                              <Tooltip title="Запланированная задача">
-                                <CalendarIcon
-                                  sx={{ color: "#1976d2", fontSize: "1.1rem" }}
-                                />
-                              </Tooltip>
-                            )}
-                          </Box>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: "#555",
-                              wordBreak: "break-all",
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            {formatJobId(job.job_id)}
-                            <Tooltip title="Скопировать ID">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleCopy(job.job_id)}
+                            <Typography variant="body2" sx={{ color: "#555" }}>
+                              {formatDateTime(job.created_at)}
+                            </Typography>
+                          </Grid>
+
+                          {/* Статус образа */}
+                          <Grid item xs={12} sm={6} md={2}>
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: "bold", color: "#333" }}
+                            >
+                              Статус образа
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#555" }}
                               >
-                                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
-                              </IconButton>
-                            </Tooltip>
-                          </Typography>
-                        </Box>
+                                {job.build_status}
+                              </Typography>
+                              {job.build_status === "building" && (
+                                <CircularProgress size={16} />
+                              )}
+                            </Box>
+                          </Grid>
+
+                          {/* Начало */}
+                          <Grid item xs={12} sm={6} md={2}>
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: "bold", color: "#333" }}
+                            >
+                              Начало:
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#555" }}>
+                              {job.last_execution_start_time
+                                ? formatDateTime(job.last_execution_start_time)
+                                : "N/A"}
+                            </Typography>
+                          </Grid>
+
+                          {/* Конец */}
+                          <Grid item xs={12} sm={6} md={2}>
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: "bold", color: "#333" }}
+                            >
+                              Конец:
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#555" }}>
+                              {job.last_execution_end_time
+                                ? formatDateTime(job.last_execution_end_time)
+                                : "N/A"}
+                            </Typography>
+                          </Grid>
+
+                          {/* Статус */}
+                          <Grid item xs={12} sm={6} md={1}>
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: "bold", color: "#333" }}
+                            >
+                              Статус:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "#555",
+                                textTransform: "capitalize",
+                              }}
+                            >
+                              {job.last_execution_status || "N/A"}
+                            </Typography>
+                          </Grid>
+                        </Grid>
                       </Grid>
 
-                      {/* Создана */}
-                      <Grid item xs={3}>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", color: "#333" }}
-                        >
-                          Создана
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#555" }}>
-                          {formatDateTime(job.created_at)}
-                        </Typography>
-                      </Grid>
-
-                      {/* Статус образа */}
-                      <Grid item xs={4}>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", color: "#333" }}
-                        >
-                          Статус образа
-                        </Typography>
-                        {/* Добавлен плейсхолдер */}
+                      {/* Вертикальная черта-разделитель */}
+                      <Grid item>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          sx={{
+                            borderLeft: "1px solid #e0e0e0",
+                            height: "100%",
+                          }}
+                        />
+                      </Grid>
+
+                      {/* Правая часть с кнопками */}
+                      <Grid item xs={12} md={2.75}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center", // или 'flex-start', в зависимости от вашего предпочтения
+                            justifyContent: "center",
+                            height: "100%",
+                          }}
                         >
-                          <Typography variant="body2" sx={{ color: "#555" }}>
-                            {job.build_status}
-                          </Typography>
-                          {job.build_status === "building" && (
-                            <CircularProgress size={16} />
-                          )}
+                          <TasksActions
+                            job={job}
+                            onLogsClick={handleLogsClick}
+                            onExecutionsClick={handleExecutionsClick}
+                            onScheduleClick={handleScheduleClick}
+                            onBuildLogsClick={handleBuildLogsClick}
+                            onDownloadArtifacts={handleDownloadArtifacts}
+                            onStopClick={handleStopClick}
+                          />
                         </Box>
-                      </Grid>
-                    </Grid>
-                    {/* Второй ряд: Название и другие детали */}
-                    <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
-                      {/* Начало */}
-                      <Grid item xs={3}>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", color: "#333" }}
-                        >
-                          Начало:
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#555" }}>
-                          {job.last_execution_start_time
-                            ? formatDateTime(job.last_execution_start_time)
-                            : "N/A"}
-                        </Typography>
-                      </Grid>
-                      {/* Конец */}
-                      <Grid item xs={3}>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", color: "#333" }}
-                        >
-                          Конец:
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#555" }}>
-                          {job.last_execution_end_time
-                            ? formatDateTime(job.last_execution_end_time)
-                            : "N/A"}
-                        </Typography>
-                      </Grid>
-                      {/* Статус */}
-                      <Grid item xs={4}>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", color: "#333" }}
-                        >
-                          Статус:
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#555", textTransform: "capitalize" }}
-                        >
-                          {job.last_execution_status || "N/A"}
-                        </Typography>
                       </Grid>
                     </Grid>
                   </CardContent>
-                  <CardActions
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mt: -1,
-                      backgroundColor: "#f9f9f9",
-                      borderTop: "1px solid #e0e0e0",
-                    }}
-                  >
-                    {/* Группа основных кнопок */}
-                    <Box>
-                      <Button
-                        onClick={() => handleLogsClick(job)}
-                        variant="contained"
-                        color="secondary"
-                        sx={{ mr: 1 }}
-                      >
-                        Логи
-                      </Button>
-                      <Tooltip title="Выполнения">
-                        <IconButton
-                          onClick={() => handleExecutionsClick(job)}
-                          color="primary"
-                        >
-                          <ContentPasteSearchIcon />
-                        </IconButton>
-                      </Tooltip>
-                      {job.is_scheduled && (
-                        <Tooltip title="Расписание">
-                          <IconButton
-                            onClick={() => handleScheduleClick(job)}
-                            color="primary"
-                          >
-                            <EventNoteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {(job.build_status === "failed" ||
-                        job.build_status === "building") && (
-                        <Tooltip title="Build Logs">
-                          <IconButton
-                            onClick={() => handleBuildLogsClick(job)}
-                            color="primary"
-                          >
-                            <BugReportIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {job.job_type === "run" &&
-                        job.last_execution_status === "completed" && (
-                          <Tooltip title="Скачать артефакты">
-                            <IconButton
-                              onClick={() => handleDownloadArtifacts(job)}
-                              color="primary"
-                            >
-                              <DownloadIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      {/* Кнопка остановки */}
-                      {(job.last_execution_status === "creating" ||
-                        job.last_execution_status === "running") && (
-                        <Tooltip title="Остановить задачу">
-                          <IconButton
-                            onClick={() => handleStopClick(job)}
-                            sx={{
-                              backgroundColor: "rgba(255,0,0,0.1)",
-                              "&:hover": {
-                                backgroundColor: "rgba(255,0,0,0.2)",
-                              },
-                            }}
-                          >
-                            <StopIcon sx={{ color: "red" }} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
-                    {/* URL */}
-                    {job.job_type === "deploy" && job.job_url && (
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Tooltip title="Скопировать URL">
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              padding: "5px 10px",
-                              borderRadius: "5px",
-                              backgroundColor: "#1976d2",
-                              color: "white",
-                              cursor: "pointer",
-                              wordBreak: "break-all",
-                              "&:hover": {
-                                backgroundColor: "#125ea3",
-                              },
-                            }}
-                            onClick={() => handleCopy(job.job_url)}
-                          >
-                            {job.job_url}
-                          </Typography>
-                        </Tooltip>
-                      </Box>
-                    )}
-                  </CardActions>
                 </Card>
               </Grid>
             ))
@@ -1040,278 +1041,286 @@ function Tasks() {
             <Typography variant="body1">Нет доступных задач.</Typography>
           )}
         </Grid>
-        <JobDetailsDialog
+
+        {/* Компоненты модальных окон */}
+        <TasksDetailsDialog
           open={detailsModalOpen}
           onClose={() => setDetailsModalOpen(false)}
           job={currentJob}
-          useMockData={useMockData} // Передаем useMockData, если используете моковые данные
+          useMockData={useMockData}
+          getStatusIndicator={getStatusIndicator}
         />
-      </Box>
 
-      {/* Диалоговое окно логов */}
-      <Dialog
-        open={logsModalOpen}
-        onClose={() => setLogsModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Логи: ${currentJobName}`}</DialogTitle>
-        <DialogContent dividers>
-          {logsLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
+        {/* Диалоговое окно логов */}
+        <Dialog
+          open={logsModalOpen}
+          onClose={() => setLogsModalOpen(false)}
+          fullWidth
+          maxWidth="md"
+        >
+          <DialogTitle>{`Логи: ${currentJobName}`}</DialogTitle>
+          <DialogContent dividers>
+            {logsLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "200px",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Typography
+                variant="body2"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+              >
+                {currentLogs}
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
+            <Button
+              onClick={() => {
+                // Копирование логов в буфер обмена
+                handleCopy(currentLogs);
               }}
             >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Typography
-              variant="body2"
-              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
-            >
-              {currentLogs}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
-          <Button
-            onClick={() => {
-              // Копирование логов в буфер обмена
-              handleCopy(currentLogs);
-            }}
-          >
-            Скопировать Логи
-          </Button>
-        </DialogActions>
-      </Dialog>
+              Скопировать Логи
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Диалоговое окно логов сборки */}
-      <Dialog
-        open={buildLogsModalOpen}
-        onClose={() => setBuildLogsModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Логи сборки: ${currentJobName}`}</DialogTitle>
-        <DialogContent dividers>
-          {buildLogsLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
+        {/* Диалоговое окно логов сборки */}
+        <Dialog
+          open={buildLogsModalOpen}
+          onClose={() => setBuildLogsModalOpen(false)}
+          fullWidth
+          maxWidth="md"
+        >
+          <DialogTitle>{`Логи сборки: ${currentJobName}`}</DialogTitle>
+          <DialogContent dividers>
+            {buildLogsLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "200px",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Typography
+                variant="body2"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+              >
+                {currentLogs}
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setBuildLogsModalOpen(false)}>
+              Закрыть
+            </Button>
+            <Button
+              onClick={() => {
+                // Копирование логов сборки в буфер обмена
+                handleCopy(currentLogs);
               }}
             >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Typography
-              variant="body2"
-              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
-            >
-              {currentLogs}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBuildLogsModalOpen(false)}>Закрыть</Button>
-          <Button
-            onClick={() => {
-              // Копирование логов сборки в буфер обмена
-              handleCopy(currentLogs);
-            }}
-          >
-            Скопировать Логи
-          </Button>
-        </DialogActions>
-      </Dialog>
+              Скопировать Логи
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Диалоговое окно Выполнений */}
-      <Dialog
-        open={executionsModalOpen}
-        onClose={() => setExecutionsModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Выполнения задачи: ${currentJobName}`}</DialogTitle>
-        <DialogContent dividers>
-          {executionsLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : currentExecutions.length > 0 ? (
-            // Отображаем список выполнений
-            <Box>
-              {currentExecutions.map((execution) => {
-                const executionId =
-                  execution.job_execution_id || execution.execution_id;
-                const logsData = logsByExecutionId[executionId];
-                return (
-                  <Box key={executionId} sx={{ mb: 2 }}>
-                    <Box
-                      sx={{
-                        "&:hover": {
-                          backgroundColor: "#f0f0f0",
-                          cursor: "pointer",
-                        },
-                        p: 1,
-                        borderRadius: "5px",
-                      }}
-                      onClick={() => handleExecutionLogsToggle(execution)}
-                    >
-                      <Typography variant="body2">
-                        <strong>ID выполнения:</strong> {executionId}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Статус:</strong> {execution.status}
-                      </Typography>
-                      {execution.created_at && (
-                        <Typography variant="body2">
-                          <strong>Создано:</strong>{" "}
-                          {formatDateTime(execution.created_at)}
-                        </Typography>
-                      )}
-                      <Typography variant="body2">
-                        <strong>Начало:</strong>{" "}
-                        {execution.start_time
-                          ? formatDateTime(execution.start_time)
-                          : "N/A"}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Окончание:</strong>{" "}
-                        {execution.end_time
-                          ? formatDateTime(execution.end_time)
-                          : "N/A"}
-                      </Typography>
-                      {execution.gpu_info && (
-                        <Typography variant="body2">
-                          <strong>GPU:</strong> {execution.gpu_info.type} (
-                          {execution.gpu_info.memory})
-                        </Typography>
-                      )}
-                      {execution.health_status && (
-                        <Typography variant="body2">
-                          <strong>Состояние:</strong> {execution.health_status}
-                        </Typography>
-                      )}
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "gray", mt: 1 }}
+        {/* Диалоговое окно Выполнений */}
+        <Dialog
+          open={executionsModalOpen}
+          onClose={() => setExecutionsModalOpen(false)}
+          fullWidth
+          maxWidth="md"
+        >
+          <DialogTitle>{`Выполнения задачи: ${currentJobName}`}</DialogTitle>
+          <DialogContent dividers>
+            {executionsLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "200px",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : currentExecutions.length > 0 ? (
+              // Отображаем список выполнений
+              <Box>
+                {currentExecutions.map((execution) => {
+                  const executionId =
+                    execution.job_execution_id || execution.execution_id;
+                  const logsData = logsByExecutionId[executionId];
+                  return (
+                    <Box key={executionId} sx={{ mb: 2 }}>
+                      <Box
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: "#f0f0f0",
+                            cursor: "pointer",
+                          },
+                          p: 1,
+                          borderRadius: "5px",
+                        }}
+                        onClick={() => handleExecutionLogsToggle(execution)}
                       >
-                        Нажмите, чтобы увидеть логи выполнения
-                      </Typography>
-                    </Box>
-                    {/* Отображение логов под выполнением */}
-                    {logsData && (
-                      <Box sx={{ pl: 2, mt: 1 }}>
-                        {logsData.loading ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            style={{ whiteSpace: "pre-wrap" }}
-                          >
-                            {logsData.logs}
+                        <Typography variant="body2">
+                          <strong>ID выполнения:</strong> {executionId}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Статус:</strong> {execution.status}
+                        </Typography>
+                        {execution.created_at && (
+                          <Typography variant="body2">
+                            <strong>Создано:</strong>{" "}
+                            {formatDateTime(execution.created_at)}
                           </Typography>
                         )}
+                        <Typography variant="body2">
+                          <strong>Начало:</strong>{" "}
+                          {execution.start_time
+                            ? formatDateTime(execution.start_time)
+                            : "N/A"}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Окончание:</strong>{" "}
+                          {execution.end_time
+                            ? formatDateTime(execution.end_time)
+                            : "N/A"}
+                        </Typography>
+                        {execution.gpu_info && (
+                          <Typography variant="body2">
+                            <strong>GPU:</strong> {execution.gpu_info.type} (
+                            {execution.gpu_info.memory})
+                          </Typography>
+                        )}
+                        {execution.health_status && (
+                          <Typography variant="body2">
+                            <strong>Состояние:</strong>{" "}
+                            {execution.health_status}
+                          </Typography>
+                        )}
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "gray", mt: 1 }}
+                        >
+                          Нажмите, чтобы увидеть логи выполнения
+                        </Typography>
                       </Box>
-                    )}
-                    <Box
-                      sx={{
-                        borderBottom: "1px solid #ccc",
-                        mt: 1,
-                        mb: 1,
-                      }}
-                    />
-                  </Box>
-                );
-              })}
-            </Box>
-          ) : (
-            <Typography>Нет доступных выполнений для этой задачи.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setExecutionsModalOpen(false)}>Закрыть</Button>
-        </DialogActions>
-      </Dialog>
+                      {/* Отображение логов под выполнением */}
+                      {logsData && (
+                        <Box sx={{ pl: 2, mt: 1 }}>
+                          {logsData.loading ? (
+                            <CircularProgress size={24} />
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              style={{ whiteSpace: "pre-wrap" }}
+                            >
+                              {logsData.logs}
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+                      <Box
+                        sx={{
+                          borderBottom: "1px solid #ccc",
+                          mt: 1,
+                          mb: 1,
+                        }}
+                      />
+                    </Box>
+                  );
+                })}
+              </Box>
+            ) : (
+              <Typography>Нет доступных выполнений для этой задачи.</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setExecutionsModalOpen(false)}>
+              Закрыть
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Диалог подтверждения остановки */}
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-      >
-        <DialogTitle>Подтверждение остановки</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Вы уверены, что хотите остановить задачу "{jobToStop?.job_name}"?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Отмена</Button>
-          <Button onClick={confirmStopJob} color="secondary">
-            Остановить
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Диалог подтверждения остановки */}
+        <Dialog
+          open={confirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+        >
+          <DialogTitle>Подтверждение остановки</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Вы уверены, что хотите остановить задачу "{jobToStop?.job_name}"?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmDialogOpen(false)}>Отмена</Button>
+            <Button onClick={confirmStopJob} color="secondary">
+              Остановить
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Диалоговое окно Расписания */}
-      <Dialog
-        open={scheduleModalOpen}
-        onClose={() => setScheduleModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Расписание задачи: ${currentJobName}`}</DialogTitle>
-        <DialogContent dividers>
-          {scheduleLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : currentScheduleData ? (
-            <Box>
-              <Typography variant="body1">
-                <strong>Начало:</strong>{" "}
-                {formatDateTime(currentScheduleData.start_date)}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Конец:</strong>{" "}
-                {formatDateTime(currentScheduleData.end_date)}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Дни недели:</strong>{" "}
-                {currentScheduleData.days_of_week.join(", ")}
-              </Typography>
-              {/* Добавьте отображение других данных расписания по необходимости */}
-            </Box>
-          ) : (
-            <Typography>Информация о расписании недоступна.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setScheduleModalOpen(false)}>Закрыть</Button>
-        </DialogActions>
-      </Dialog>
+        {/* Диалоговое окно Расписания */}
+        <Dialog
+          open={scheduleModalOpen}
+          onClose={() => setScheduleModalOpen(false)}
+          fullWidth
+          maxWidth="md"
+        >
+          <DialogTitle>{`Расписание задачи: ${currentJobName}`}</DialogTitle>
+          <DialogContent dividers>
+            {scheduleLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "200px",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : currentScheduleData ? (
+              <Box>
+                <Typography variant="body1">
+                  <strong>Начало:</strong>{" "}
+                  {formatDateTime(currentScheduleData.start_date)}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Конец:</strong>{" "}
+                  {formatDateTime(currentScheduleData.end_date)}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Дни недели:</strong>{" "}
+                  {currentScheduleData.days_of_week.join(", ")}
+                </Typography>
+                {/* Добавьте отображение других данных расписания по необходимости */}
+              </Box>
+            ) : (
+              <Typography>Информация о расписании недоступна.</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setScheduleModalOpen(false)}>Закрыть</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Box>
   );
 

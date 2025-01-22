@@ -11,32 +11,17 @@ import {
   TableRow,
   Paper,
   CircularProgress,
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
 } from "@mui/material";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
 import TPaymentWidget from "./TPaymentWidget";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
 import axiosInstance from "../api";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 function Billing() {
   const { user } = useContext(AuthContext);
@@ -48,27 +33,55 @@ function Billing() {
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
   const [errorBalance, setErrorBalance] = useState(null);
 
-  // Состояния для истории транзакций
-  const [transactions, setTransactions] = useState([]);
+  // Состояния для транзакций списания и покупки кредитов
+  const [creditUsageTransactions, setCreditUsageTransactions] = useState([]);
+  const [creditPurchaseTransactions, setCreditPurchaseTransactions] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [errorTransactions, setErrorTransactions] = useState(null);
 
-  const [currentMonth] = useState("Сентябрь");
+  // Состояния для деталей биллингового аккаунта
+  const [billingAccountDetails, setBillingAccountDetails] = useState(null);
+  const [isLoadingBillingAccount, setIsLoadingBillingAccount] = useState(true);
+  const [errorBillingAccount, setErrorBillingAccount] = useState(null);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Объединенное состояние загрузки
-  const isLoading = isLoadingBalance || isLoadingTransactions;
+  const isLoading =
+    isLoadingBalance || isLoadingTransactions || isLoadingBillingAccount;
 
-  // Загрузка баланса и транзакций при изменении текущей организации
+  // Загрузка баланса, транзакций и деталей биллингового аккаунта при изменении текущей организации
   useEffect(() => {
     if (currentOrganization && isCurrentOrgOwner()) {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`, // Убедитесь, что токен доступа доступен в user.token
+        },
+      };
+
+      // Загрузка деталей биллингового аккаунта
+      setIsLoadingBillingAccount(true);
+      setErrorBillingAccount(null);
+
+      axiosInstance
+        .get(`/billing/${user.billing_account_id}`, config)
+        .then((response) => {
+          setBillingAccountDetails(response.data);
+        })
+        .catch((error) => {
+          setErrorBillingAccount(error?.response?.data?.detail || error.message);
+        })
+        .finally(() => {
+          setIsLoadingBillingAccount(false);
+        });
+
       // Загрузка баланса кошелька
       setIsLoadingBalance(true);
       setErrorBalance(null);
 
       axiosInstance
-        .get(`/billing/${user.billing_account_id}/balance`)
+        .get(`/billing/${user.billing_account_id}/balance`, config)
         .then((response) => {
           setWalletBalance(response.data.balance);
         })
@@ -79,33 +92,65 @@ function Billing() {
           setIsLoadingBalance(false);
         });
 
-      // Загрузка истории транзакций
+      // Загрузка транзакций списания и покупки кредитов
       setIsLoadingTransactions(true);
       setErrorTransactions(null);
 
-      axiosInstance
-        .get(`/billing/${user.billing_account_id}/transactions`)
-        .then((response) => {
-          setTransactions(response.data.transactions || []);
+      // Обещания для одновременной загрузки транзакций
+      Promise.all([
+        axiosInstance.get(
+          `/billing/${user.billing_account_id}/transactions/credit_usage`,
+          config
+        ),
+        axiosInstance.get(
+          `/billing/${user.billing_account_id}/transactions/credit_purchase`,
+          config
+        ),
+      ])
+        .then(([usageResponse, purchaseResponse]) => {
+          setCreditUsageTransactions(usageResponse.data.transactions || []);
+          setCreditPurchaseTransactions(purchaseResponse.data.transactions || []);
         })
         .catch((error) => {
-          setErrorTransactions(error?.response?.data?.detail || error.message);
+          setErrorTransactions(
+            error?.response?.data?.detail || error.message
+          );
         })
         .finally(() => {
           setIsLoadingTransactions(false);
         });
     }
-  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id]);
+  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id, user.token]);
 
   // Обработка успешной оплаты
   const handlePaymentSuccess = () => {
     // Перезагрузить данные после успешной оплаты
     setIsLoadingBalance(true);
     setIsLoadingTransactions(true);
+    setIsLoadingBillingAccount(true);
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    };
+
+    // Загрузка деталей биллингового аккаунта
+    axiosInstance
+      .get(`/billing/${user.billing_account_id}`, config)
+      .then((response) => {
+        setBillingAccountDetails(response.data);
+      })
+      .catch((error) => {
+        setErrorBillingAccount(error?.response?.data?.detail || error.message);
+      })
+      .finally(() => {
+        setIsLoadingBillingAccount(false);
+      });
 
     // Загрузка баланса кошелька
     axiosInstance
-      .get(`/billing/${user.billing_account_id}/balance`)
+      .get(`/billing/${user.billing_account_id}/balance`, config)
       .then((response) => {
         setWalletBalance(response.data.balance);
       })
@@ -116,14 +161,25 @@ function Billing() {
         setIsLoadingBalance(false);
       });
 
-    // Загрузка истории транзакций
-    axiosInstance
-      .get(`/billing/${user.billing_account_id}/transactions`)
-      .then((response) => {
-        setTransactions(response.data.transactions || []);
+    // Загрузка транзакций списания и покупки кредитов
+    Promise.all([
+      axiosInstance.get(
+        `/billing/${user.billing_account_id}/transactions/credit_usage`,
+        config
+      ),
+      axiosInstance.get(
+        `/billing/${user.billing_account_id}/transactions/credit_purchase`,
+        config
+      ),
+    ])
+      .then(([usageResponse, purchaseResponse]) => {
+        setCreditUsageTransactions(usageResponse.data.transactions || []);
+        setCreditPurchaseTransactions(purchaseResponse.data.transactions || []);
       })
       .catch((error) => {
-        setErrorTransactions(error?.response?.data?.detail || error.message);
+        setErrorTransactions(
+          error?.response?.data?.detail || error.message
+        );
       })
       .finally(() => {
         setIsLoadingTransactions(false);
@@ -133,23 +189,6 @@ function Billing() {
   const handlePaymentError = (error) => {
     console.error("Ошибка оплаты:", error);
     alert("Оплата не прошла. Пожалуйста, попробуйте снова.");
-  };
-
-  // Данные для графика расходов
-  const spendingData = {
-    labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString()),
-    datasets: [
-      {
-        label: "Ежедневные расходы (₽)",
-        data: [
-          50, 100, 75, 200, 125, 90, 60, 130, 80, 150, 120, 170, 140, 60, 110,
-          95, 180, 75, 90, 130, 160, 120, 100, 140, 180, 110, 90, 100, 170, 160,
-        ],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
   };
 
   // Если нет выбранной организации
@@ -203,26 +242,61 @@ function Billing() {
         Биллинг и Кошелек
       </Typography>
 
+      {/* Отображение деталей биллингового аккаунта */}
+      {errorBillingAccount ? (
+        <Alert severity="error" sx={{ marginBottom: 2 }}>
+          {errorBillingAccount}
+        </Alert>
+      ) : billingAccountDetails ? (
+        <Card sx={{ marginBottom: 2 }}>
+          <CardHeader title="Детали биллингового аккаунта" />
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1">Название:</Typography>
+                <Typography variant="body1">{billingAccountDetails.name}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1">Кредитный лимит:</Typography>
+                <Typography variant="body1">
+                  {billingAccountDetails.credit_limit !== null
+                    ? `${billingAccountDetails.credit_limit} ₽`
+                    : "Не установлен"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1">Баланс кошелька:</Typography>
+                {errorBalance ? (
+                  <Typography variant="body1" color="error">
+                    {errorBalance}
+                  </Typography>
+                ) : (
+                  <Typography variant="body1" sx={{ color: "secondary.main" }}>
+                    {walletBalance} ₽
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle1">Создан:</Typography>
+                <Typography variant="body1">
+                  {new Date(billingAccountDetails.created_at).toLocaleDateString()}
+                </Typography>
+              </Grid>
+              {/* Добавьте любые другие поля, если они есть */}
+            </Grid>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {/* Кнопка оплаты */}
       <Box
         sx={{
           display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "center",
           marginBottom: "10px",
         }}
       >
-        {errorBalance ? (
-          <Alert severity="error">{errorBalance}</Alert>
-        ) : (
-          <Typography variant="h6">
-            Баланс кошелька:{" "}
-            <Box component="span" sx={{ color: "secondary.main" }}>
-              {walletBalance} ₽
-            </Box>
-          </Typography>
-        )}
-
         <TPaymentWidget
           user={user}
           onSuccess={handlePaymentSuccess}
@@ -249,7 +323,7 @@ function Billing() {
               marginTop: "20px",
             }}
           >
-            {/* Левая сторона: График расходов */}
+            {/* Левая таблица: Покупка кредитов */}
             <Box
               sx={{
                 flex: 1,
@@ -258,59 +332,64 @@ function Billing() {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                Расходы за {currentMonth}
+                Покупка кредитов
               </Typography>
-              <Bar
-                data={spendingData}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: "top",
-                    },
-                    title: {
-                      display: true,
-                      text: `Статистика расходов за ${currentMonth}`,
-                    },
-                  },
-                }}
-              />
-            </Box>
-
-            {/* Правая сторона: Таблица транзакций */}
-            <Box
-              sx={{ flex: 1 }}
-            >
-              {transactions.length > 0 ? (
-                <TableContainer
-                  component={Paper}
-                  sx={{ maxHeight: 500 }}
-                >
+              {creditPurchaseTransactions.length > 0 ? (
+                <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
                   <Table stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell>Дата</TableCell>
-                        <TableCell>Тип транзакции</TableCell>
                         <TableCell>Количество (₽)</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {transactions.map((tx) => (
-                        <TableRow key={tx.id}>
+                      {creditPurchaseTransactions.map((tx, index) => (
+                        <TableRow key={index}>
                           <TableCell>
                             {new Date(tx.created_at).toLocaleString()}
                           </TableCell>
-                          <TableCell>
-                            {tx.transaction_type || tx.status}
-                          </TableCell>
-                          <TableCell>{tx.amount || tx.credits}</TableCell>
+                          <TableCell>+{tx.credits}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
               ) : (
-                <Typography>Нет транзакций для отображения.</Typography>
+                <Typography>Нет транзакций покупки кредитов.</Typography>
+              )}
+            </Box>
+
+            {/* Правая таблица: Использование кредитов */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h6" gutterBottom>
+                Использование кредитов
+              </Typography>
+              {creditUsageTransactions.length > 0 ? (
+                <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Дата</TableCell>
+                        <TableCell>Описание</TableCell>
+                        <TableCell>Количество (₽)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {creditUsageTransactions.map((tx, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            {new Date(tx.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>{tx.job_execution_id || "Списание кредитов"}</TableCell>
+                          <TableCell>-{tx.credits}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography>Нет транзакций использования кредитов.</Typography>
               )}
             </Box>
           </Box>

@@ -6,7 +6,7 @@ import { ReactComponent as TBankLogo } from '../assets/tbank.svg';
 function TPaymentWidget(props) {
   const { user, token, onSuccess, onError } = props;
   const [addFunds, setAddFunds] = useState(""); // Сумма пополнения
-  const [orderId, setOrderId] = useState(""); // ID платежа
+  const [orderId, setOrderId] = useState("");
   const [loading, setLoading] = useState(false); // Индикатор загрузки
   const formRef = useRef(null);
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ function TPaymentWidget(props) {
       // Обновляем значение orderId в форме
       if (formRef.current) {
         const orderIdInput = formRef.current.querySelector(
-          'input[name="OrderId"]'
+          'input[name="order"]'
         );
         console.log("orderIdInput", orderIdInput);
         if (orderIdInput) {
@@ -136,7 +136,7 @@ function TPaymentWidget(props) {
       <input type="hidden" name="language" value="ru" />
       <input type="hidden" name="amount" value={parseFloat(addFunds)} />
       <input type="hidden" name="description" value="Пополнение кошелька" />
-      <input type="hidden" name="OrderId" value={orderId} />
+      <input type="hidden" name="order" value={orderId} />
       <input
         type="hidden"
         name="SuccessURL"

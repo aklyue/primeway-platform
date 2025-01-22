@@ -31,14 +31,20 @@ import {
   Save as SaveIcon,
   BugReport as BugReportIcon,
 } from "@mui/icons-material";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import axiosInstance from "../../api"; // Импортируем axiosInstance
 import TasksActions from "../Tasks/TasksActions"; // Импортируем кнопки из TasksActions
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ru } from "date-fns/locale";
 
-function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
+function JobDetailsDialog({
+  open,
+  onClose,
+  job,
+  getStatusIndicator,
+  useMockData,
+}) {
   // Состояния компонента
   const [executions, setExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(true);
@@ -81,13 +87,17 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
   };
 
   // Функции-обработчики
-  const handleLogsClick = () => {
+  const handleLogsClick = (execution = null) => {
     setLogsLoading(true);
     setCurrentJobName(job.job_name || "N/A");
 
-    // Получение логов задачи
+    const params = execution
+      ? { job_execution_id: execution.job_execution_id }
+      : { job_id: job.job_id };
+
+    // Получение логов выполнения задачи
     axiosInstance
-      .get("/jobs/job-logs", { params: { job_id: job.job_id } })
+      .get("/jobs/job-logs", { params })
       .then((response) => {
         const logs = response.data.logs || "Логи отсутствуют.";
         setCurrentLogs(logs);
@@ -102,16 +112,6 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
         setLogsLoading(false);
         setLogsModalOpen(true);
       });
-  };
-
-  const handleExecutionsClick = () => {
-    showAlert("Отображение выполнений");
-    // Реализуйте логику отображения выполнений, если необходимо
-  };
-
-  const handleScheduleClick = () => {
-    showAlert("Отображение расписания");
-    // Реализуйте логику отображения расписания, если необходимо
   };
 
   const handleBuildLogsClick = () => {
@@ -137,15 +137,83 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
       });
   };
 
-  const handleDownloadArtifacts = () => {
-    alert(
-      `Скачивание артефактов для задачи ${job.job_name} (ID: ${job.job_id})`
-    );
+  const handleDownloadArtifacts = (job, execution = null) => {
+    console.log("Скачать артефакты для задачи:", job);
+
+    if (useMockData) {
+      alert(
+        `Скачивание артефактов для задачи ${job.job_name} (ID: ${job.job_id})`
+      );
+    } else {
+      // Проверяем, что задача имеет тип "run"
+      if (job.job_type !== "run") {
+        alert("Артефакты доступны только для задач типа 'run'.");
+        return;
+      }
+
+      const params = {};
+
+      // Используем job_execution_id выполнения
+      if (execution && execution.job_execution_id) {
+        params.job_execution_id = execution.job_execution_id;
+      } else if (job.last_execution_id) {
+        // Если у вас есть идентификатор последнего выполнения
+        params.job_execution_id = job.last_execution_id;
+      } else if (job.job_id) {
+        params.job_id = job.job_id;
+      } else {
+        alert("Не указан идентификатор задачи или выполнения.");
+        return;
+      }
+
+      axiosInstance
+        .get("/jobs/get-job-artifacts", {
+          params: params,
+          responseType: "blob", // Ожидаем файл в ответе
+        })
+        .then((response) => {
+          // Логика для обработки ответа и скачивания артефактов
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
+            error
+          );
+          const errorMessage =
+            error.response?.data?.detail || "Ошибка при скачивании артефактов.";
+          alert(errorMessage);
+        });
+    }
   };
 
-  const handleStopClick = () => {
-    showAlert(`Задача ${job.job_name} остановлена.`);
-    // Реализуйте логику остановки задачи
+  const handleStopClick = (jobExecutionId = null) => {
+    // Если jobExecutionId не предоставлен, попробовать использовать last_execution_id
+    const executionId = jobExecutionId || job.last_execution_id;
+
+    if (!executionId) {
+      showAlert("Нет выполнения для остановки.", "error");
+      return;
+    }
+
+    // Отправляем POST-запрос для остановки выполнения задачи
+    axiosInstance
+      .post("/jobs/job-stop", null, {
+        params: { job_execution_id: executionId },
+      })
+      .then((response) => {
+        const message =
+          response.data.message ||
+          `Выполнение задачи ${executionId} успешно остановлено.`;
+        showAlert(message, "success");
+        // Обновляем список выполнений, чтобы отразить изменения
+        fetchExecutions();
+      })
+      .catch((error) => {
+        handleApiError(
+          error,
+          `Ошибка при остановке выполнения задачи ${executionId}.`
+        );
+      });
   };
 
   // Функция для получения списка выполнений задачи
@@ -239,14 +307,15 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
   // Функция для отображения деталей расписания
   const renderScheduleDetails = (schedule) => {
     const { schedule_type, start_time, end_time, day_of_week } = schedule;
-    console.log("start_time-", start_time,"end_time-", end_time)
     return (
       <Box>
         <Typography variant="subtitle1">
           Тип расписания: {schedule_type}
         </Typography>
         <Typography variant="body1">Время начала: {start_time}</Typography>
-        <Typography variant="body1">Время окончания: {end_time || "run"}</Typography>
+        <Typography variant="body1">
+          Время окончания: {end_time || "run"}
+        </Typography>
         {day_of_week !== null && (
           <Typography variant="body1">День недели: {day_of_week}</Typography>
         )}
@@ -439,6 +508,27 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
       });
   };
 
+  // Обработка удаления расписания
+  const handleDeleteSchedule = async (scheduleId) => {
+    try {
+      // Отправляем DELETE-запрос на сервер
+      await axiosInstance.delete("/jobs/delete-schedules", {
+        params: {
+          job_id: job.job_id,
+          schedule_id: scheduleId,
+        },
+      });
+
+      // Показываем уведомление об успешном удалении
+      showAlert(`Расписание ${scheduleId} успешно удалено.`);
+
+      // Обновляем список расписаний, чтобы отразить изменения
+      fetchSchedules();
+    } catch (error) {
+      handleApiError(error, `Ошибка при удалении расписания ${scheduleId}.`);
+    }
+  };
+
   // Обработка редактирования конфигурации
   const handleEditConfig = () => {
     setConfigEditing(true);
@@ -529,6 +619,15 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
               </Typography>
             </Box>
             <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
+            <Box>
+              <Typography variant="body1">
+                <strong>{job.build_status}</strong>
+              </Typography>
+              {job.build_status === "building" && (
+                <CircularProgress size={16} />
+              )}
+            </Box>
+            <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
             <Button
               sx={{
                 border: "1px solid rgba(0,0,0,0.3)",
@@ -546,11 +645,9 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <TasksActions
               job={job}
-              onLogsClick={handleLogsClick}
-              onExecutionsClick={handleExecutionsClick}
-              onScheduleClick={handleScheduleClick}
-              onDownloadArtifacts={handleDownloadArtifacts}
-              onStopClick={handleStopClick}
+              onLogsClick={() => handleLogsClick()}
+              onDownloadArtifacts={() => handleDownloadArtifacts(job)}
+              onStopClick={() => handleStopClick()}
             />
           </Box>
         </Box>
@@ -561,7 +658,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
         <DialogContent dividers>
           <Box sx={{ display: "flex", height: "100%", mt: 1 }}>
             {/* Левая часть - Выполнения */}
-            <Box sx={{ flex: 1, mr: 2 }}>
+            <Box sx={{ flex: 1.2, mr: 2 }}>
               <Typography
                 variant="h6"
                 gutterBottom
@@ -633,7 +730,12 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                   {executions.map((execution) => (
                     <Grid item xs={12} key={execution.job_execution_id}>
                       <Paper variant="outlined" sx={{ p: 1 }}>
-                        <Grid container spacing={1} alignItems="center">
+                        <Grid
+                          container
+                          spacing={1}
+                          alignItems="center"
+                          sx={{ textAlign: "center" }}
+                        >
                           <Grid item xs>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
                               <Typography variant="body2">
@@ -690,11 +792,13 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                             {/* Кнопки действий */}
                             <TasksActions
                               job={job}
-                              onLogsClick={handleLogsClick}
-                              onExecutionsClick={handleExecutionsClick}
-                              onScheduleClick={handleScheduleClick}
-                              onDownloadArtifacts={handleDownloadArtifacts}
-                              onStopClick={handleStopClick}
+                              onLogsClick={() => handleLogsClick(execution)}
+                              onDownloadArtifacts={() =>
+                                handleDownloadArtifacts(job, execution)
+                              }
+                              onStopClick={() =>
+                                handleStopClick(execution.job_execution_id)
+                              }
                             />
                           </Grid>
                         </Grid>
@@ -711,7 +815,9 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
             <Divider orientation="vertical" flexItem />
 
             {/* Правая часть - Расписание и Конфиг */}
-            <Box sx={{ flex: 1, ml: 2, display: "flex", flexDirection: "row" }}>
+            <Box
+              sx={{ flex: 0.7, ml: 2, display: "flex", flexDirection: "row" }}
+            >
               {/* Расписание */}
               <Box sx={{ flex: 1, mr: 1 }}>
                 <Typography
@@ -735,13 +841,16 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                 ) : schedulesError ? (
                   <Typography color="error">{schedulesError}</Typography>
                 ) : schedules.length > 0 ? (
-                  <List dense={true} sx={{ maxHeight: "500px", overflow: "auto"}}>
+                  <List
+                    dense={true}
+                    sx={{ maxHeight: "510px", overflow: "auto" }}
+                  >
                     {schedules.map((schedule) => (
                       <ListItem key={schedule.schedule_id}>
                         <ListItemText
                           primary={`ID: ${schedule.schedule_id}`}
                           secondary={renderScheduleDetails(schedule)}
-                          secondaryTypographyProps={{ component: 'div' }}
+                          secondaryTypographyProps={{ component: "div" }}
                         />
                         {/* Кнопки действий */}
                         <Tooltip title="Редактировать расписание">
@@ -759,9 +868,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                         <Tooltip title="Удалить расписание">
                           <IconButton
                             onClick={() =>
-                              showAlert(
-                                `Расписание ${schedule.schedule_id} успешно удалено.`
-                              )
+                              handleDeleteSchedule(schedule.schedule_id)
                             }
                             size="small"
                           >
@@ -784,7 +891,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
               </Box>
 
               {/* Конфигурация */}
-              <Box sx={{ flex: 1, ml: 1 }}>
+              <Box sx={{ flex: 0.8, ml: 1 }}>
                 <Typography
                   variant="h6"
                   gutterBottom
@@ -821,7 +928,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                       InputProps={{
                         readOnly: !configEditing,
                       }}
-                      sx={{ flexGrow: 1, maxHeight: "450px", overflow: "auto" }}
+                      sx={{ flexGrow: 1, maxHeight: "445px", overflow: "auto" }}
                     />
                     <Box
                       sx={{
@@ -837,7 +944,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                           startIcon={<SaveIcon />}
                           onClick={handleSaveConfig}
                         >
-                          Сохранить конфигурацию
+                          Сохранить
                         </Button>
                       ) : (
                         <Button
@@ -846,7 +953,7 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                           startIcon={<EditIcon />}
                           onClick={() => setConfigEditing(true)}
                         >
-                          Редактировать конфигурацию
+                          Редактировать
                         </Button>
                       )}
                     </Box>
@@ -894,13 +1001,22 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                     window.start ? new Date(`1970-01-01T${window.start}`) : null
                   }
                   onChange={(time) => {
-                    const formattedTime = time ? format(time, "HH:mm:ss") : "";
-                    const updatedWorkdays = [...newSchedule.workdays];
-                    updatedWorkdays[index].start = formattedTime;
-                    setNewSchedule((prev) => ({
-                      ...prev,
-                      workdays: updatedWorkdays,
-                    }));
+                    if (time && isValid(time)) {
+                      const formattedTime = format(time, "HH:mm:ss");
+                      const updatedWorkdays = [...newSchedule.workdays];
+                      updatedWorkdays[index].start = formattedTime;
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        workdays: updatedWorkdays,
+                      }));
+                    } else {
+                      const updatedWorkdays = [...newSchedule.workdays];
+                      updatedWorkdays[index].start = "";
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        workdays: updatedWorkdays,
+                      }));
+                    }
                   }}
                   renderInput={(params) => (
                     <TextField {...params} sx={{ mr: 1 }} fullWidth />
@@ -912,13 +1028,22 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                     window.end ? new Date(`1970-01-01T${window.end}`) : null
                   }
                   onChange={(time) => {
-                    const formattedTime = time ? format(time, "HH:mm:ss") : "";
-                    const updatedWorkdays = [...newSchedule.workdays];
-                    updatedWorkdays[index].end = formattedTime;
-                    setNewSchedule((prev) => ({
-                      ...prev,
-                      workdays: updatedWorkdays,
-                    }));
+                    if (time && isValid(time)) {
+                      const formattedTime = format(time, "HH:mm:ss");
+                      const updatedWorkdays = [...newSchedule.workdays];
+                      updatedWorkdays[index].end = formattedTime;
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        workdays: updatedWorkdays,
+                      }));
+                    } else {
+                      const updatedWorkdays = [...newSchedule.workdays];
+                      updatedWorkdays[index].end = "";
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        workdays: updatedWorkdays,
+                      }));
+                    }
                   }}
                   renderInput={(params) => <TextField {...params} fullWidth />}
                 />
@@ -948,13 +1073,22 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                     window.start ? new Date(`1970-01-01T${window.start}`) : null
                   }
                   onChange={(time) => {
-                    const formattedTime = time ? format(time, "HH:mm:ss") : "";
-                    const updatedWeekends = [...newSchedule.weekends];
-                    updatedWeekends[index].start = formattedTime;
-                    setNewSchedule((prev) => ({
-                      ...prev,
-                      weekends: updatedWeekends,
-                    }));
+                    if (time && isValid(time)) {
+                      const formattedTime = format(time, "HH:mm:ss");
+                      const updatedWeekends = [...newSchedule.weekends];
+                      updatedWeekends[index].start = formattedTime;
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        weekends: updatedWeekends,
+                      }));
+                    } else {
+                      const updatedWeekends = [...newSchedule.weekends];
+                      updatedWeekends[index].start = "";
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        weekends: updatedWeekends,
+                      }));
+                    }
                   }}
                   renderInput={(params) => (
                     <TextField {...params} sx={{ mr: 1 }} fullWidth />
@@ -966,13 +1100,22 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                     window.end ? new Date(`1970-01-01T${window.end}`) : null
                   }
                   onChange={(time) => {
-                    const formattedTime = time ? format(time, "HH:mm:ss") : "";
-                    const updatedWeekends = [...newSchedule.weekends];
-                    updatedWeekends[index].end = formattedTime;
-                    setNewSchedule((prev) => ({
-                      ...prev,
-                      weekends: updatedWeekends,
-                    }));
+                    if (time && isValid(time)) {
+                      const formattedTime = format(time, "HH:mm:ss");
+                      const updatedWeekends = [...newSchedule.weekends];
+                      updatedWeekends[index].end = formattedTime;
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        weekends: updatedWeekends,
+                      }));
+                    } else {
+                      const updatedWeekends = [...newSchedule.weekends];
+                      updatedWeekends[index].end = "";
+                      setNewSchedule((prev) => ({
+                        ...prev,
+                        weekends: updatedWeekends,
+                      }));
+                    }
                   }}
                   renderInput={(params) => <TextField {...params} fullWidth />}
                 />
@@ -1026,12 +1169,16 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                           : null
                       }
                       onChange={(time) => {
-                        const formattedTime = time
-                          ? format(time, "HH:mm:ss")
-                          : "";
-                        const updatedWindows = [...day.windows];
-                        updatedWindows[wIndex].start = formattedTime;
-                        handleSpecificDayWindowsChange(index, updatedWindows);
+                        if (time && isValid(time)) {
+                          const formattedTime = format(time, "HH:mm:ss");
+                          const updatedWindows = [...day.windows];
+                          updatedWindows[wIndex].start = formattedTime;
+                          handleSpecificDayWindowsChange(index, updatedWindows);
+                        } else {
+                          const updatedWindows = [...day.windows];
+                          updatedWindows[wIndex].start = "";
+                          handleSpecificDayWindowsChange(index, updatedWindows);
+                        }
                       }}
                       renderInput={(params) => (
                         <TextField {...params} sx={{ mr: 1 }} fullWidth />
@@ -1043,12 +1190,16 @@ function JobDetailsDialog({ open, onClose, job, getStatusIndicator }) {
                         window.end ? new Date(`1970-01-01T${window.end}`) : null
                       }
                       onChange={(time) => {
-                        const formattedTime = time
-                          ? format(time, "HH:mm:ss")
-                          : "";
-                        const updatedWindows = [...day.windows];
-                        updatedWindows[wIndex].end = formattedTime;
-                        handleSpecificDayWindowsChange(index, updatedWindows);
+                        if (time && isValid(time)) {
+                          const formattedTime = format(time, "HH:mm:ss");
+                          const updatedWindows = [...day.windows];
+                          updatedWindows[wIndex].end = formattedTime;
+                          handleSpecificDayWindowsChange(index, updatedWindows);
+                        } else {
+                          const updatedWindows = [...day.windows];
+                          updatedWindows[wIndex].end = "";
+                          handleSpecificDayWindowsChange(index, updatedWindows);
+                        }
                       }}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />

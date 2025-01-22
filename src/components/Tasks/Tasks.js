@@ -764,10 +764,14 @@ function Tasks() {
                     cursor: "pointer",
                     position: "relative",
                     mb: 3,
-                    boxShadow: 4,
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
                     borderRadius: "15px",
-                    background:
-                      "linear-gradient(135deg, #f0f2f5 30%, #ffffff 90%)",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.02)",
+                      boxShadow: "0 6px 25px rgba(0, 0, 0, 0.15)",
+                    },
+                    backgroundColor: "#fff",
                   }}
                 >
                   {/* Верхний блок с типом задачи и URL */}
@@ -776,36 +780,38 @@ function Tasks() {
                       position: "absolute",
                       top: 0,
                       left: 0,
-
                       display: "flex",
                       alignItems: "center",
-
                       fontWeight: "bold",
                     }}
                   >
-                    {/* Тип задачи */}
                     <Typography
                       variant="body2"
                       sx={{
                         color:
-                          job.job_type === "run"
-                            ? "#4caf50"
-                            : job.job_type === "deploy"
-                            ? "#1976d2"
-                            : "black",
+                          job.job_type === "run" ? "#10a37f" : "secondary.main",
                         textTransform: "uppercase",
                         fontWeight: "bold",
-                        backgroundColor: "white",
-                        px: 2,
-                        py: 0.5,
+                        mr: 1,
+                        backgroundColor:
+                          job.job_type === "run" ? "#e0f7fa" : "#e0f2f1",
+                        padding: "8px 12px",
                         borderTopLeftRadius: "15px",
                         borderBottomRightRadius: "15px",
+                        display: "flex",
+                        gap: "7px",
+                        alignItems: "flex-start",
                       }}
                     >
                       {job.job_type}
+                      {job.is_scheduled && (
+                        <Tooltip title="Запланированная задача">
+                          <CalendarIcon
+                            sx={{ color: "#00695c", fontSize: "1.1rem" }}
+                          />
+                        </Tooltip>
+                      )}
                     </Typography>
-
-                    {/* URL задачи */}
                     {job.job_type === "deploy" && job.job_url && (
                       <Tooltip title="Скопировать URL">
                         <Typography
@@ -835,190 +841,173 @@ function Tasks() {
                     )}
                   </Box>
 
-                  {/* Статус задачи в правом верхнем углу */}
+                  {/* Статус задачи */}
                   <Box
                     sx={{
                       position: "absolute",
-                      top: 9,
-                      right: 9,
+                      top: 10,
+                      right: 10,
                     }}
                   >
                     {getStatusIndicator(job.last_execution_status)}
                   </Box>
 
+                  {/* Контент карточки */}
                   <CardContent>
-                    <Grid container direction="row" spacing={2}>
+                    <Grid container spacing={2}>
                       {/* Левая часть с информацией */}
                       <Grid item xs={12} md={9}>
-                        <Grid container spacing={2} sx={{ mb: 2, mt: 2 }}>
-                          {/* Название и ID */}
-                          <Grid item xs={12} sm={2.2}>
-                            <Box>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1,
+                        <Box sx={{ mt: 4 }}>
+                          {/* Название задачи */}
+                          <Typography
+                            variant="h5"
+                            sx={{ fontWeight: "bold", color: "#333" }}
+                          >
+                            {job.job_name}
+                          </Typography>
+                          {/* ID задачи */}
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "#888",
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                            }}
+                          >
+                            ID: {formatJobId(job.job_id)}
+                            <Tooltip title="Скопировать ID">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(job.job_id);
                                 }}
                               >
-                                {/* Оборачиваем Typography в Tooltip без дополнительного Typography */}
-                                <Tooltip title={job.job_name}>
-                                  <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: "bold", color: "#333" }}
-                                  >
-                                    {formatJobName(job.job_name)}
-                                  </Typography>
-                                </Tooltip>
-                                {/* Иконка запланированной задачи */}
-                                {job.is_scheduled && (
-                                  <Tooltip title="Запланированная задача">
-                                    <CalendarIcon
-                                      sx={{
-                                        color: "#1976d2",
-                                        fontSize: "1.1rem",
-                                      }}
-                                    />
-                                  </Tooltip>
-                                )}
-                              </Box>
+                                <ContentCopyIcon sx={{ fontSize: "1rem" }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Typography>
+                          {/* Основная информация */}
+                          <Grid container spacing={2}>
+                            {/* Создана */}
+                            <Grid item xs={12} sm={6} md={2.5}>
                               <Typography
                                 variant="body2"
-                                sx={{
-                                  color: "#555",
-                                  wordBreak: "break-all",
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
+                                sx={{ color: "#555", fontWeight: "bold" }}
                               >
-                                {formatJobId(job.job_id)}
-                                <Tooltip title="Скопировать ID">
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCopy(job.job_id);
-                                    }}
-                                  >
-                                    <ContentCopyIcon
-                                      sx={{ fontSize: "1rem" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
+                                Создана
                               </Typography>
-                            </Box>
-                          </Grid>
-
-                          {/* Создана */}
-                          <Grid item xs={12} sm={6} md={2}>
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: "bold", color: "#333" }}
-                            >
-                              Создана
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: "#555" }}>
-                              {formatDateTime(job.created_at)}
-                            </Typography>
-                          </Grid>
-
-                          {/* Статус образа */}
-                          <Grid item xs={12} sm={6} md={2}>
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: "bold", color: "#333" }}
-                            >
-                              Статус образа
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#555" }}
+                              >
+                                {formatDateTime(job.created_at)}
+                              </Typography>
+                            </Grid>
+                            {/* Статус образа */}
+                            <Grid item xs={12} sm={6} md={2.5}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#555", fontWeight: "bold" }}
+                              >
+                                Статус образа
+                              </Typography>
                               <Typography
                                 variant="body2"
                                 sx={{ color: "#555" }}
                               >
                                 {job.build_status}
+                                {job.build_status === "building" && (
+                                  <CircularProgress size={16} sx={{ ml: 1 }} />
+                                )}
                               </Typography>
-                              {job.build_status === "building" && (
-                                <CircularProgress size={16} />
-                              )}
-                            </Box>
+                            </Grid>
+                            {/* Начало с заголовком "Последний запуск" */}
+                            <Grid item xs={12} sm={6} md={3}>
+                              <Box sx={{ position: "relative" }}>
+                                <Typography
+                                  variant="h5"
+                                  sx={{
+                                    fontWeight: "bold", color: "#333",
+                                    position: "absolute",
+                                    top: -45,
+                                  }}
+                                >
+                                  Последний запуск
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#555", fontWeight: "bold" }}
+                                >
+                                  Начало
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#555" }}
+                                >
+                                  {job.last_execution_start_time
+                                    ? formatDateTime(
+                                        job.last_execution_start_time
+                                      )
+                                    : "N/A"}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            {/* Конец */}
+                            <Grid item xs={12} sm={6} md={2.5}>
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#555", fontWeight: "bold" }}
+                                >
+                                  Конец
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#555" }}
+                                >
+                                  {job.last_execution_end_time
+                                    ? formatDateTime(
+                                        job.last_execution_end_time
+                                      )
+                                    : "N/A"}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            {/* Статус */}
+                            <Grid item xs={12} sm={6} md={1}>
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "#555", fontWeight: "bold" }}
+                                >
+                                  Статус
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: "#555",
+                                    textTransform: "capitalize",
+                                  }}
+                                >
+                                  {job.last_execution_status || "N/A"}
+                                </Typography>
+                              </Box>
+                            </Grid>
                           </Grid>
-
-                          {/* Начало */}
-                          <Grid item xs={12} sm={6} md={2}>
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: "bold", color: "#333" }}
-                            >
-                              Начало:
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: "#555" }}>
-                              {job.last_execution_start_time
-                                ? formatDateTime(job.last_execution_start_time)
-                                : "N/A"}
-                            </Typography>
-                          </Grid>
-
-                          {/* Конец */}
-                          <Grid item xs={12} sm={6} md={2}>
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: "bold", color: "#333" }}
-                            >
-                              Конец:
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: "#555" }}>
-                              {job.last_execution_end_time
-                                ? formatDateTime(job.last_execution_end_time)
-                                : "N/A"}
-                            </Typography>
-                          </Grid>
-
-                          {/* Статус */}
-                          <Grid item xs={12} sm={6} md={1}>
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: "bold", color: "#333" }}
-                            >
-                              Статус:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "#555",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {job.last_execution_status || "N/A"}
-                            </Typography>
-                          </Grid>
-                        </Grid>
+                        </Box>
                       </Grid>
-
-                      {/* Вертикальная черта-разделитель */}
-                      <Grid item>
-                        <Box
-                          sx={{
-                            borderLeft: "1px solid #e0e0e0",
-                            height: "100%",
-                          }}
-                        />
-                      </Grid>
-
                       {/* Правая часть с кнопками */}
-                      <Grid item xs={12} md={2.75}>
+                      <Grid item xs={12} md={3}>
                         <Box
                           sx={{
                             display: "flex",
                             flexDirection: "column",
-                            alignItems: "center", // или 'flex-start', в зависимости от вашего предпочтения
-                            justifyContent: "center",
+                            alignItems: "flex-end",
+                            justifyContent: "flex-end",
                             height: "100%",
+                            pr: 2,
                           }}
                         >
                           <TasksActions

@@ -1,5 +1,6 @@
 // components/GPUList.js
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,22 +9,69 @@ import {
   Grid,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+
 
 import NvidiaIcon from "./NvidiaIcon";
-
-const gpuData = [
-  { id: "DFdef12d", name: "RTX 3090", price: "1099" },
-  { id: "gpu2", name: "RTX 3080", price: "699" },
-  { id: "gpu3", name: "RTX 3070", price: "599" },
-  { id: "gpu4", name: "A40", price: "959" },
-  { id: "gpu5", name: "RTX 4060", price: "1299" },
-];
+import axiosInstance from "../api";
 
 const GPUList = () => {
-  const [copiedId, setCopiedId] = React.useState(null);
+  const [gpuData, setGpuData] = useState([]);
+  const [copiedName, setCopiedName] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchGpuData();
+  }, []);
+
+  const fetchGpuData = async () => {
+    try {
+      const response = await axiosInstance.get("/jobs/get-gpu-list");
+      const data = response.data || [];
+      setGpuData(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Ошибка при получении списка GPU:", err);
+      setError(
+        err.response?.data?.detail || "Не удалось загрузить список GPU."
+      );
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = (name) => {
+    navigator.clipboard.writeText(name).then(
+      () => {
+        setCopiedName(name);
+      },
+      (err) => {
+        console.error("Ошибка при копировании имени:", err);
+      }
+    );
+  };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{ display: "flex", justifyContent: "center", mt: 4 }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="body1" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ padding: { xs: "15px", sm: "25px" } }}>
@@ -32,18 +80,17 @@ const GPUList = () => {
       </Typography>
       <Typography variant="body1" paragraph>
         Ознакомьтесь с доступными GPU и их характеристиками. Используйте
-        указанные ID в вашем конфиге для настройки.
+        указанные имена в вашем конфиге для настройки.
       </Typography>
 
-      <Grid container spacing={4} justifyContent="flex-start" sx={{ mt: 2 }}>
-        {gpuData.map((gpu) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={gpu.id}>
+      <Grid container spacing={5} justifyContent="flex-start" sx={{ mt: 2 }}>
+        {gpuData.map((gpu, index) => (
+          <Grid item xs={12} sm={6} md={5} lg={4} key={gpu.name || index}>
             <Card
               sx={{
-                position: "relative",
+                position: "relative", // Это важно для позиционирования иконки копирования
                 backgroundColor: "#FFFFFF",
                 borderRadius: "15px",
-                // border:'1px solid rgba(116, 183, 27, 0.3)',
                 boxShadow: "0 6px 18px rgba(0, 0, 0, 0.12)",
                 transition: "transform 0.3s, box-shadow 0.3s",
                 height: "100%",
@@ -52,12 +99,34 @@ const GPUList = () => {
                 justifyContent: "center",
               }}
             >
+              {/* Иконка копирования в правом верхнем углу */}
+              <Tooltip
+                title={
+                  copiedName === gpu.name ? "Скопировано!" : "Скопировать имя"
+                }
+                arrow
+              >
+                <IconButton
+                  size="small"
+                  onClick={() => handleCopy(gpu.name)}
+                  onMouseLeave={() => setCopiedName(null)}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    zIndex: 1,
+                  }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
               <CardContent
                 sx={{
                   padding: "20px",
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center", // Выравниваем содержимое по центру
+                  alignItems: "center",
                   textAlign: "center",
                   gap: "8px",
                 }}
@@ -68,10 +137,15 @@ const GPUList = () => {
                 <Typography variant="h5" component="div" gutterBottom>
                   {gpu.name}
                 </Typography>
+
+                <Typography variant="h6" color="textSecondary">
+                  <strong>Память:</strong> {gpu.memoryInGb} GB
+                </Typography>
+
                 <Typography
                   variant="body1"
                   color="text.secondary"
-                  sx={{ mb: 1 }}
+                  sx={{ mb: 1, mt:1 }}
                 >
                   <Box
                     component="span"
@@ -82,41 +156,9 @@ const GPUList = () => {
                       borderRadius: "5px",
                     }}
                   >
-                    {gpu.price} ₽/час
+                    {gpu.costPerHour} ₽/час
                   </Box>
                 </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography variant="body1" color="text.secondary">
-                    ID: <b>{gpu.id}</b>
-                  </Typography>
-                  <CopyToClipboard
-                    text={gpu.id}
-                    onCopy={() => setCopiedId(gpu.id)}
-                  >
-                    <Tooltip
-                      title={
-                        copiedId === gpu.id ? "Скопировано!" : "Скопировать ID"
-                      }
-                      arrow
-                    >
-                      <IconButton
-                        size="small"
-                        onMouseLeave={() => setCopiedId(null)}
-                      >
-                        <ContentCopyIcon
-                          fontSize="small"
-                          sx={{ fontSize: "1rem" }}
-                        />
-                      </IconButton>
-                    </Tooltip>
-                  </CopyToClipboard>
-                </Box>
               </CardContent>
             </Card>
           </Grid>

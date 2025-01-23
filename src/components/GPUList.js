@@ -9,19 +9,23 @@ import {
   Grid,
   IconButton,
   Tooltip,
+  Snackbar,
+  Alert,
   CircularProgress,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
 
 import NvidiaIcon from "./NvidiaIcon";
 import axiosInstance from "../api";
 
 const GPUList = () => {
   const [gpuData, setGpuData] = useState([]);
-  const [copiedName, setCopiedName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Состояние для управления отображением сообщения о копировании
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [copiedName, setCopiedName] = useState("");
 
   useEffect(() => {
     fetchGpuData();
@@ -45,7 +49,9 @@ const GPUList = () => {
   const handleCopy = (name) => {
     navigator.clipboard.writeText(name).then(
       () => {
+        // После успешного копирования устанавливаем имя и показываем Snackbar
         setCopiedName(name);
+        setSnackbarOpen(true);
       },
       (err) => {
         console.error("Ошибка при копировании имени:", err);
@@ -53,11 +59,13 @@ const GPUList = () => {
     );
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   if (loading) {
     return (
-      <Box
-        sx={{ display: "flex", justifyContent: "center", mt: 4 }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -79,92 +87,128 @@ const GPUList = () => {
         Доступные GPU
       </Typography>
       <Typography variant="body1" paragraph>
-        Ознакомьтесь с доступными GPU и их характеристиками. Используйте
-        указанные имена в вашем конфиге для настройки.
+        Ознакомьтесь с доступными GPU и их характеристиками. Кликните по карточке, чтобы скопировать имя и использовать его в вашем конфиге.
       </Typography>
 
-      <Grid container spacing={5} justifyContent="flex-start" sx={{ mt: 2 }}>
+      <Grid container spacing={4.5} justifyContent="flex-start" sx={{ mt: 2 }}>
         {gpuData.map((gpu, index) => (
-          <Grid item xs={12} sm={6} md={5} lg={4} key={gpu.name || index}>
-            <Card
-              sx={{
-                position: "relative", // Это важно для позиционирования иконки копирования
-                backgroundColor: "#FFFFFF",
-                borderRadius: "15px",
-                boxShadow: "0 6px 18px rgba(0, 0, 0, 0.12)",
-                transition: "transform 0.3s, box-shadow 0.3s",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              {/* Иконка копирования в правом верхнем углу */}
-              <Tooltip
-                title={
-                  copiedName === gpu.name ? "Скопировано!" : "Скопировать имя"
-                }
-                arrow
-              >
-                <IconButton
-                  size="small"
-                  onClick={() => handleCopy(gpu.name)}
-                  onMouseLeave={() => setCopiedName(null)}
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    zIndex: 1,
-                  }}
-                >
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-
-              <CardContent
-                sx={{
-                  padding: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                  gap: "8px",
-                }}
-              >
-                {/* Используем компонент NvidiaIcon */}
-                <NvidiaIcon />
-
-                <Typography variant="h5" component="div" gutterBottom>
-                  {gpu.name}
-                </Typography>
-
-                <Typography variant="h6" color="textSecondary">
-                  <strong>Память:</strong> {gpu.memoryInGb} GB
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 1, mt:1 }}
-                >
-                  <Box
-                    component="span"
-                    sx={{
-                      color: "rgba(116, 183, 27, 0.9)",
-                      padding: "5px 20px",
-                      backgroundColor: "rgba(0, 0, 0, 0.1)",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    {gpu.costPerHour} ₽/час
-                  </Box>
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <GpuCard key={gpu.name || index} gpu={gpu} onCopy={handleCopy} />
         ))}
       </Grid>
+
+      {/* Snackbar для отображения сообщения о копировании */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {`Имя GPU "${copiedName}" скопировано в буфер обмена!`}
+        </Alert>
+      </Snackbar>
     </Box>
+  );
+};
+
+// Отдельный компонент для карточки GPU
+const GpuCard = ({ gpu, onCopy }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Grid item xs={12} sm={6} md={5} lg={2.3}>
+      <Card
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => onCopy(gpu.name)}
+        sx={{
+          position: "relative",
+          backgroundColor: "#FFFFFF",
+          borderRadius: "15px",
+          boxShadow: "0 6px 18px rgba(0, 0, 0, 0.12)",
+          transition: "transform 0.3s, box-shadow 0.3s",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          cursor: "pointer", // Курсор меняется на указатель
+        }}
+      >
+        {/* Иконка копирования в правом верхнем углу при наведении */}
+        {isHovered && (
+          <Tooltip title="Скопировать имя" arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation(); // Чтобы клик не срабатывал на карточке
+                onCopy(gpu.name);
+              }}
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 1)",
+                },
+              }}
+            >
+              <ContentCopyIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        <CardContent
+          sx={{
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            gap: "8px",
+          }}
+        >
+          {/* Используем компонент NvidiaIcon */}
+          <NvidiaIcon />
+
+          <Typography
+            sx={{ fontSize: "15px", fontWeight: "bold" }}
+            component="div"
+            gutterBottom
+          >
+            {gpu.name}
+          </Typography>
+
+          <Typography sx={{ fontSize: "14px" }} color="textSecondary">
+            <strong>Память:</strong> {gpu.memoryInGb} GB
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 1, mt: 1 }}
+          >
+            <Box
+              component="span"
+              sx={{
+                color: "rgb(81, 126, 24)",
+                padding: "5px 20px",
+                backgroundColor: "rgba(0, 0, 0, 0.1)",
+                borderRadius: "5px",
+                fontSize: "15px",
+              }}
+            >
+              <strong>{gpu.costPerHour}</strong> ₽/час
+            </Box>
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
   );
 };
 

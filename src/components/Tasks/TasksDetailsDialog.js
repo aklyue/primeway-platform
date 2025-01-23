@@ -37,6 +37,9 @@ import TasksActions from "../Tasks/TasksActions"; // Импортируем кн
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ru } from "date-fns/locale";
+import yaml from "js-yaml";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function JobDetailsDialog({
   open,
@@ -49,6 +52,8 @@ function JobDetailsDialog({
   const [executions, setExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(true);
   const [executionsError, setExecutionsError] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("schedule");
 
   const [schedules, setSchedules] = useState([]);
   const [schedulesLoading, setSchedulesLoading] = useState(true);
@@ -172,7 +177,25 @@ function JobDetailsDialog({
           responseType: "blob", // Ожидаем файл в ответе
         })
         .then((response) => {
-          // Логика для обработки ответа и скачивания артефактов
+          const blob = new Blob([response.data], { type: "application/zip" });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+
+          // Получение имени файла из заголовка Content-Disposition
+          const contentDisposition = response.headers["content-disposition"];
+          let fileName = "artifacts.zip";
+          if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+            if (fileNameMatch && fileNameMatch.length === 2) {
+              fileName = fileNameMatch[1];
+            }
+          }
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+          window.URL.revokeObjectURL(url);
         })
         .catch((error) => {
           console.error(
@@ -244,9 +267,18 @@ function JobDetailsDialog({
       });
       const data = response.data || [];
       setSchedules(data);
+
+      // Устанавливаем activeTab в зависимости от наличия расписаний
+      if (data.length > 0) {
+        setActiveTab("schedule");
+      } else {
+        setActiveTab("config");
+      }
     } catch (error) {
       console.error("Ошибка при получении расписаний:", error);
       setSchedulesError("Ошибка при загрузке расписаний");
+      // Если произошла ошибка, по умолчанию показываем конфигурацию
+      setActiveTab("config");
     } finally {
       setSchedulesLoading(false);
     }
@@ -258,7 +290,9 @@ function JobDetailsDialog({
     axiosInstance
       .get("/jobs/get-config", { params: { job_id: job.job_id } })
       .then((response) => {
-        setConfig(JSON.stringify(response.data || {}, null, 2));
+        // Конвертируем конфигурацию в YAML
+        const yamlConfig = yaml.dump(response.data || {});
+        setConfig(yamlConfig);
       })
       .catch((error) => {
         console.error("Ошибка при получении конфигурации:", error);
@@ -604,21 +638,21 @@ function JobDetailsDialog({
                 {job.job_name}
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "110px", bgcolor: "black" }} />
+            <Box sx={{ height: "1px", width: "80px", bgcolor: "black" }} />
             {/* Тип задачи */}
             <Box>
               <Typography variant="body1">
                 <strong>{job.job_type}</strong>
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "110px", bgcolor: "black" }} />
+            <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
             {/* Дата создания */}
             <Box>
               <Typography variant="body1">
                 <strong>{formatDateTime(job.created_at)}</strong>
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
+            <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
             <Box>
               <Typography variant="body1">
                 <strong>{job.build_status}</strong>
@@ -627,7 +661,7 @@ function JobDetailsDialog({
                 <CircularProgress size={16} />
               )}
             </Box>
-            <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
+            <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
             <Button
               sx={{
                 border: "1px solid rgba(0,0,0,0.3)",
@@ -639,6 +673,36 @@ function JobDetailsDialog({
             >
               Build Логи
             </Button>
+            {job.job_type === "deploy" && job.job_url && (
+              <>
+                <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
+                <Tooltip title="Скопировать URL">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      marginLeft: 2,
+                      padding: "3px 8px",
+                      borderRadius: "12px",
+                      border: "1px solid #5282ff",
+                      backgroundColor: "none",
+                      color: "secondary.main",
+                      cursor: "pointer",
+                      wordBreak: "break-all",
+                      "&:hover": {
+                        backgroundColor: "#8fa8ea",
+                        color: "white",
+                      },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(job.job_url);
+                    }}
+                  >
+                    {job.job_url}
+                  </Typography>
+                </Tooltip>
+              </>
+            )}
           </Stack>
 
           {/* Кнопки */}
@@ -648,6 +712,7 @@ function JobDetailsDialog({
               onLogsClick={() => handleLogsClick()}
               onDownloadArtifacts={() => handleDownloadArtifacts(job)}
               onStopClick={() => handleStopClick()}
+              showLogsArtButton={false}
             />
           </Box>
         </Box>
@@ -714,11 +779,13 @@ function JobDetailsDialog({
                           GPU
                         </Typography>
                       </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Health
-                        </Typography>
-                      </Grid>
+                      {job.job_type !== "run" && (
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Health
+                          </Typography>
+                        </Grid>
+                      )}
                       <Grid item xs>
                         <Typography variant="subtitle2" fontWeight="bold">
                           Действия
@@ -783,11 +850,13 @@ function JobDetailsDialog({
                               {execution.gpu_info?.type || "N/A"}
                             </Typography>
                           </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {execution.health_status || "N/A"}
-                            </Typography>
-                          </Grid>
+                          {job.job_type !== "run" && (
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {execution.health_status || "N/A"}
+                              </Typography>
+                            </Grid>
+                          )}
                           <Grid item xs>
                             {/* Кнопки действий */}
                             <TasksActions
@@ -799,6 +868,7 @@ function JobDetailsDialog({
                               onStopClick={() =>
                                 handleStopClick(execution.job_execution_id)
                               }
+                              showStartButton={false}
                             />
                           </Grid>
                         </Grid>
@@ -814,152 +884,161 @@ function JobDetailsDialog({
             {/* Разделитель */}
             <Divider orientation="vertical" flexItem />
 
-            {/* Правая часть - Расписание и Конфиг */}
-            <Box
-              sx={{ flex: 0.7, ml: 2, display: "flex", flexDirection: "row" }}
-            >
-              {/* Расписание */}
-              <Box sx={{ flex: 1, mr: 1 }}>
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ textAlign: "center", mb: 2 }}
+            {/* Правая часть - Переключение между расписанием и конфигурацией */}
+            <Box sx={{ flex: 0.7, ml: 2 }}>
+              {/* Переключатель вкладок */}
+              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                <Button
+                  variant={"outlined"}
+                  onClick={() => setActiveTab("schedule")}
+                  disabled={schedules.length === 0}
+                  sx={{
+                    mr: 1,
+                    backgroundColor:
+                      activeTab === "schedule" ? "#c0c0c5" : "#ececf1",
+                  }}
                 >
                   Расписание
-                </Typography>
-                {schedulesLoading ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "200px",
-                    }}
-                  >
-                    <CircularProgress />
-                  </Box>
-                ) : schedulesError ? (
-                  <Typography color="error">{schedulesError}</Typography>
-                ) : schedules.length > 0 ? (
-                  <List
-                    dense={true}
-                    sx={{ maxHeight: "510px", overflow: "auto" }}
-                  >
-                    {schedules.map((schedule) => (
-                      <ListItem key={schedule.schedule_id}>
-                        <ListItemText
-                          primary={`ID: ${schedule.schedule_id}`}
-                          secondary={renderScheduleDetails(schedule)}
-                          secondaryTypographyProps={{ component: "div" }}
-                        />
-                        {/* Кнопки действий */}
-                        <Tooltip title="Редактировать расписание">
-                          <IconButton
-                            onClick={() => {
-                              showAlert(
-                                `Функция редактирования расписания ${schedule.schedule_id} недоступна.`
-                              );
-                            }}
-                            size="small"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Удалить расписание">
-                          <IconButton
-                            onClick={() =>
-                              handleDeleteSchedule(schedule.schedule_id)
-                            }
-                            size="small"
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography>Нет расписаний для этой задачи.</Typography>
-                )}
+                </Button>
                 <Button
-                  variant="outlined"
-                  onClick={handleAddSchedule}
-                  sx={{ mt: 2 }}
+                  variant={"outlined"}
+                  onClick={() => setActiveTab("config")}
+                  sx={{
+                    backgroundColor:
+                      activeTab === "config" ? "#c0c0c5" : "#ececf1",
+                  }}
                 >
-                  Добавить расписание
+                  Конфигурация
                 </Button>
               </Box>
 
-              {/* Конфигурация */}
-              <Box sx={{ flex: 0.8, ml: 1 }}>
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ textAlign: "center", mb: 2 }}
-                >
-                  Конфигурация
-                </Typography>
-                {configLoading ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "200px",
-                    }}
-                  >
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      flexGrow: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={10}
-                      variant="outlined"
-                      value={config}
-                      onChange={(e) => setConfig(e.target.value)}
-                      InputProps={{
-                        readOnly: !configEditing,
-                      }}
-                      sx={{ flexGrow: 1, maxHeight: "445px", overflow: "auto" }}
-                    />
+              {/* Отображаем расписание или конфигурацию */}
+              {activeTab === "schedule" && (
+                <Box sx={{ height: "100%", overflow: "auto" }}>
+                  {schedulesLoading ? (
                     <Box
                       sx={{
                         display: "flex",
-                        justifyContent: "flex-end",
-                        mt: 2,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "200px",
                       }}
                     >
-                      {configEditing ? (
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<SaveIcon />}
-                          onClick={handleSaveConfig}
-                        >
-                          Сохранить
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<EditIcon />}
-                          onClick={() => setConfigEditing(true)}
-                        >
-                          Редактировать
-                        </Button>
-                      )}
+                      <CircularProgress />
                     </Box>
-                  </Box>
-                )}
-              </Box>
+                  ) : schedulesError ? (
+                    <Typography color="error">{schedulesError}</Typography>
+                  ) : schedules.length > 0 ? (
+                    <List
+                      dense={true}
+                      sx={{ maxHeight: "510px", overflow: "auto" }}
+                    >
+                      {schedules.map((schedule) => (
+                        <ListItem key={schedule.schedule_id}>
+                          <ListItemText
+                            primary={`ID: ${schedule.schedule_id}`}
+                            secondary={renderScheduleDetails(schedule)}
+                            secondaryTypographyProps={{ component: "div" }}
+                          />
+                          {/* Кнопки действий */}
+                          <Tooltip title="Редактировать расписание">
+                            <IconButton
+                              onClick={() => {
+                                showAlert(
+                                  `Функция редактирования расписания ${schedule.schedule_id} недоступна.`
+                                );
+                              }}
+                              size="small"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Удалить расписание">
+                            <IconButton
+                              onClick={() =>
+                                handleDeleteSchedule(schedule.schedule_id)
+                              }
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography>Нет расписаний для этой задачи.</Typography>
+                  )}
+                  <Button
+                    variant="outlined"
+                    onClick={handleAddSchedule}
+                    sx={{ mt: 2 }}
+                  >
+                    Добавить расписание
+                  </Button>
+                </Box>
+              )}
+
+              {activeTab === "config" && (
+                <Box
+                  sx={{
+                    maxWidth: "500px",
+                    height: "500px",
+                    overflow: "auto",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {configLoading ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "200px",
+                      }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <SyntaxHighlighter
+                      language="yaml"
+                      style={coy}
+                      showLineNumbers
+                      customStyle={{ borderRadius: "10px" }}
+                    >
+                      {config}
+                    </SyntaxHighlighter>
+                  )}
+                </Box>
+              )}
+
+              {/* <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          mt: 2,
+                        }}
+                      >
+                        {configEditing ? (
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<SaveIcon />}
+                            onClick={handleSaveConfig}
+                          >
+                            Сохранить
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<EditIcon />}
+                            onClick={() => setConfigEditing(true)}
+                          >
+                            Редактировать
+                          </Button>
+                        )}
+                      </Box> */}
             </Box>
           </Box>
         </DialogContent>

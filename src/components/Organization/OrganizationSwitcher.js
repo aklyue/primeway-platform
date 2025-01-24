@@ -7,14 +7,21 @@ import {
   Box,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import Popover from "@mui/material/Popover";
 import BusinessIcon from "@mui/icons-material/Business";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 
 const OrganizationSwitcher = () => {
-  const { organizations, currentOrganization, switchOrganization } =
-    useContext(OrganizationContext);
+  const {
+    organizations,
+    currentOrganization,
+    switchOrganization,
+    walletBalance,
+    walletLoading,
+    walletError,
+  } = useContext(OrganizationContext);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -39,7 +46,7 @@ const OrganizationSwitcher = () => {
           display: "flex",
         }}
       >
-        <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight:600 }}>
+        <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight: 600 }}>
           /
         </Typography>
         <Button
@@ -68,17 +75,48 @@ const OrganizationSwitcher = () => {
                 whiteSpace: "normal",
               }}
             >
-              <Box component="span" sx={{ color: "secondary.main", whiteSpace: "nowrap", }}>
+              <Box
+                component="span"
+                sx={{ color: "secondary.main", whiteSpace: "nowrap" }}
+              >
                 {currentOrganization
                   ? currentOrganization.name
                   : "Organization"}
               </Box>
+              
             </Typography>
           </Box>
           <UnfoldMoreIcon
-            sx={{ color: "#353740", height: "13px", fontSize:'1rem' }}
+            sx={{ color: "#353740", height: "13px", fontSize: "1rem" }}
           />
         </Button>
+        {walletLoading ? (
+                <CircularProgress size={16} sx={{ marginLeft: 1 }} />
+              ) : walletError ? (
+                <Box
+                  component="span"
+                  sx={{
+                    marginLeft: 1,
+                    color: "error.main",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  (Ошибка загрузки баланса)
+                </Box>
+              ) : (
+                walletBalance !== null && (
+                  <Box
+                    component="span"
+                    sx={{
+                      marginLeft: 1,
+                      color: "text.secondary",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                   {walletBalance} ₽
+                  </Box>
+                )
+              )}
       </Box>
 
       {/* Используем Popover вместо Menu */}

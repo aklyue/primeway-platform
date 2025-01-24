@@ -1,6 +1,4 @@
-// src/components/JobDetailsDialog.js
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +20,10 @@ import {
   List,
   ListItem,
   ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
@@ -40,6 +42,12 @@ import { ru } from "date-fns/locale";
 import yaml from "js-yaml";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+const statusColors = {
+  success: "#28a745", // зеленый
+  failed: "#dc3545", // красный
+  building: "#007bff", // синий
+};
 
 function JobDetailsDialog({
   open,
@@ -80,11 +88,17 @@ function JobDetailsDialog({
     weekends: [],
     specific_days: [],
   });
+  const [editedSchedule, setEditedSchedule] = useState(null); // Новое состояние для редактирования
 
   // Состояния для оповещений
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
+
+  const initialExecutionsLoadRef = useRef(true);
+  const initialSchedulesLoadRef = useRef(true);
+  const initialConfigLoadRef = useRef(true);
+  const intervalRef = useRef(null);
 
   const formatJobExecutionId = (id) => {
     if (!id) return "N/A";
@@ -93,7 +107,9 @@ function JobDetailsDialog({
 
   // Функции-обработчики
   const handleLogsClick = (execution = null) => {
+    setLogsModalOpen(true); // Открываем диалог сразу
     setLogsLoading(true);
+    setCurrentLogs(""); // Сбрасываем предыдущие логи
     setCurrentJobName(job.job_name || "N/A");
 
     const params = execution
@@ -115,12 +131,13 @@ function JobDetailsDialog({
       })
       .finally(() => {
         setLogsLoading(false);
-        setLogsModalOpen(true);
       });
   };
 
   const handleBuildLogsClick = () => {
+    setBuildLogsModalOpen(true); // Открываем диалог сразу
     setBuildLogsLoading(true);
+    setCurrentLogs(""); // Сбрасываем предыдущие логи
     setCurrentJobName(job.job_name || "N/A");
 
     // Получение логов сборки
@@ -138,75 +155,66 @@ function JobDetailsDialog({
       })
       .finally(() => {
         setBuildLogsLoading(false);
-        setBuildLogsModalOpen(true);
       });
   };
 
   const handleDownloadArtifacts = (job, execution = null) => {
-    console.log("Скачать артефакты для задачи:", job);
+    // Показываем Snackbar
+    showAlert("Скачивание артефактов началось...", "info");
 
-    if (useMockData) {
-      alert(
-        `Скачивание артефактов для задачи ${job.job_name} (ID: ${job.job_id})`
-      );
-    } else {
-      // Проверяем, что задача имеет тип "run"
-      if (job.job_type !== "run") {
-        alert("Артефакты доступны только для задач типа 'run'.");
-        return;
-      }
-
-      const params = {};
-
-      // Используем job_execution_id выполнения
-      if (execution && execution.job_execution_id) {
-        params.job_execution_id = execution.job_execution_id;
-      } else if (job.last_execution_id) {
-        // Если у вас есть идентификатор последнего выполнения
-        params.job_execution_id = job.last_execution_id;
-      } else if (job.job_id) {
-        params.job_id = job.job_id;
-      } else {
-        alert("Не указан идентификатор задачи или выполнения.");
-        return;
-      }
-
-      axiosInstance
-        .get("/jobs/get-job-artifacts", {
-          params: params,
-          responseType: "blob", // Ожидаем файл в ответе
-        })
-        .then((response) => {
-          const blob = new Blob([response.data], { type: "application/zip" });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-
-          // Получение имени файла из заголовка Content-Disposition
-          const contentDisposition = response.headers["content-disposition"];
-          let fileName = "artifacts.zip";
-          if (contentDisposition) {
-            const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
-            if (fileNameMatch && fileNameMatch.length === 2) {
-              fileName = fileNameMatch[1];
-            }
-          }
-          link.setAttribute("download", fileName);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        })
-        .catch((error) => {
-          console.error(
-            `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
-            error
-          );
-          const errorMessage =
-            error.response?.data?.detail || "Ошибка при скачивании артефактов.";
-          alert(errorMessage);
-        });
+    // Проверяем, что задача имеет тип "run"
+    if (job.job_type !== "run") {
+      alert("Артефакты доступны только для задач типа 'run'.");
+      return;
     }
+
+    const params = {};
+
+    if (execution && execution.job_execution_id) {
+      params.job_execution_id = execution.job_execution_id;
+    } else if (job.last_execution_id) {
+      params.job_execution_id = job.last_execution_id;
+    } else if (job.job_id) {
+      params.job_id = job.job_id;
+    } else {
+      alert("Не указан идентификатор задачи или выполнения.");
+      return;
+    }
+
+    axiosInstance
+      .get("/jobs/get-job-artifacts", {
+        params: params,
+        responseType: "blob",
+      })
+      .then((response) => {
+        const blob = new Blob([response.data], { type: "application/zip" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+
+        const contentDisposition = response.headers["content-disposition"];
+        let fileName = "artifacts.zip";
+        if (contentDisposition) {
+          const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+          if (fileNameMatch && fileNameMatch.length === 2) {
+            fileName = fileNameMatch[1];
+          }
+        }
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error(
+          `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
+          error
+        );
+        const errorMessage =
+          error.response?.data?.detail || "Ошибка при скачивании артефактов.";
+        showAlert(errorMessage, "error");
+      });
   };
 
   const handleStopClick = (jobExecutionId = null) => {
@@ -241,7 +249,9 @@ function JobDetailsDialog({
 
   // Функция для получения списка выполнений задачи
   const fetchExecutions = async () => {
-    setExecutionsLoading(true);
+    if (initialExecutionsLoadRef.current) {
+      setExecutionsLoading(true);
+    }
     setExecutionsError(null);
     try {
       const response = await axiosInstance.get("/jobs/executions", {
@@ -253,18 +263,24 @@ function JobDetailsDialog({
       console.error("Ошибка при получении выполнений:", error);
       setExecutionsError("Ошибка при загрузке выполнений");
     } finally {
-      setExecutionsLoading(false);
+      if (initialExecutionsLoadRef.current) {
+        setExecutionsLoading(false);
+        initialExecutionsLoadRef.current = false;
+      }
     }
   };
 
   // Функция для получения расписаний задачи
   const fetchSchedules = async () => {
-    setSchedulesLoading(true);
+    if (initialSchedulesLoadRef.current) {
+      setSchedulesLoading(true);
+    }
     setSchedulesError(null);
     try {
       const response = await axiosInstance.get("/jobs/get-schedules", {
         params: { job_id: job.job_id },
       });
+      console.log("Fetched schedules:", response.data);
       const data = response.data || [];
       setSchedules(data);
 
@@ -280,36 +296,67 @@ function JobDetailsDialog({
       // Если произошла ошибка, по умолчанию показываем конфигурацию
       setActiveTab("config");
     } finally {
-      setSchedulesLoading(false);
+      if (initialSchedulesLoadRef.current) {
+        setSchedulesLoading(false);
+        initialSchedulesLoadRef.current = false;
+      }
     }
   };
 
   // Функция для получения конфигурации задачи
-  const fetchConfig = () => {
-    setConfigLoading(true);
-    axiosInstance
-      .get("/jobs/get-config", { params: { job_id: job.job_id } })
-      .then((response) => {
-        // Конвертируем конфигурацию в YAML
-        const yamlConfig = yaml.dump(response.data || {});
-        setConfig(yamlConfig);
-      })
-      .catch((error) => {
-        console.error("Ошибка при получении конфигурации:", error);
-        showAlert("Ошибка при получении конфигурации задания.", "error");
-        setConfig("");
-      })
-      .finally(() => {
-        setConfigLoading(false);
+  const fetchConfig = async () => {
+    if (initialConfigLoadRef.current) {
+      setConfigLoading(true);
+    }
+    try {
+      const response = await axiosInstance.get("/jobs/get-config", {
+        params: { job_id: job.job_id },
       });
+      // Конвертируем конфигурацию в YAML
+      const yamlConfig = yaml.dump(response.data || {});
+      setConfig(yamlConfig);
+    } catch (error) {
+      console.error("Ошибка при получении конфигурации:", error);
+      showAlert("Ошибка при получении конфигурации задания.", "error");
+      setConfig("");
+    } finally {
+      if (initialConfigLoadRef.current) {
+        setConfigLoading(false);
+        initialConfigLoadRef.current = false;
+      }
+    }
   };
 
   useEffect(() => {
     if (job && open) {
-      // При открытии диалога получаем данные из API
+      // Сбрасываем флаги первого рендера
+      initialExecutionsLoadRef.current = true;
+      initialSchedulesLoadRef.current = true;
+      initialConfigLoadRef.current = true;
+
+      // Фетчим данные сразу при открытии диалога
       fetchExecutions();
       fetchSchedules();
       fetchConfig();
+
+      // Устанавливаем интервал для периодического фетчинга
+      intervalRef.current = setInterval(() => {
+        fetchExecutions();
+        fetchSchedules();
+        fetchConfig();
+      }, 5000); // Интервал в 5 секунд
+
+      // Очищаем интервал при размонтировании компонента или закрытии диалога
+      return () => {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      };
+    } else {
+      // Очищаем интервал, если диалог закрыт
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
   }, [job, open]);
 
@@ -344,14 +391,18 @@ function JobDetailsDialog({
     return (
       <Box>
         <Typography variant="subtitle1">
-          Тип расписания: {schedule_type}
+          <strong>Тип расписания:</strong> {schedule_type}
         </Typography>
-        <Typography variant="body1">Время начала: {start_time}</Typography>
         <Typography variant="body1">
-          Время окончания: {end_time || "run"}
+          <strong>Время начала:</strong> {start_time}
         </Typography>
-        {day_of_week !== null && (
-          <Typography variant="body1">День недели: {day_of_week}</Typography>
+        <Typography variant="body1">
+          <strong>Время окончания:</strong> {end_time || "run"}
+        </Typography>
+        {day_of_week && (
+          <Typography variant="body1">
+            <strong>День недели:</strong> {day_of_week}
+          </Typography>
         )}
       </Box>
     );
@@ -360,6 +411,7 @@ function JobDetailsDialog({
   // Функция для добавления расписания
   const handleAddSchedule = () => {
     setIsEditingSchedule(false);
+    setEditedSchedule(null);
     setNewSchedule({
       workdays: [],
       weekends: [],
@@ -368,9 +420,16 @@ function JobDetailsDialog({
     setScheduleFormOpen(true);
   };
 
+  const handleStartClick = () => {
+    alert("запуск");
+  };
+
   // Функция для закрытия формы расписания
   const handleScheduleFormClose = () => {
     setScheduleFormOpen(false);
+    setIsEditingSchedule(false);
+    setCurrentSchedule(null);
+    setEditedSchedule(null);
   };
 
   // Добавить новое временное окно для рабочих дней
@@ -491,55 +550,91 @@ function JobDetailsDialog({
 
   // Отправка формы расписания на сервер
   const handleScheduleFormSubmit = () => {
-    if (!validateSchedule()) {
-      return;
-    }
+    if (isEditingSchedule) {
+      // Обновление расписания
+      const updateData = {
+        schedule_type: editedSchedule.schedule_type,
+        start_time: editedSchedule.start_time,
+        end_time: editedSchedule.end_time,
+        day_of_week: editedSchedule.day_of_week,
+      };
+      console.log(
+        "Данные, отправляемые на сервер для обновления расписания:",
+        updateData
+      );
+      const requestConfig = {
+        params: {
+          job_id: job.job_id,
+          schedule_id: currentSchedule.schedule_id,
+        },
+        headers: { "Content-Type": "application/json" },
+      };
 
-    // Логика для создания расписания
-    const scheduleData = {};
+      axiosInstance
+        .put("/jobs/update-schedules", updateData, requestConfig)
+        .then(() => {
+          showAlert("Расписание успешно обновлено.");
+          fetchSchedules();
+          setScheduleFormOpen(false);
+          setIsEditingSchedule(false);
+          setCurrentSchedule(null);
+          setEditedSchedule(null);
+        })
+        .catch((error) => {
+          handleApiError(error, "Ошибка при обновлении расписания.");
+        });
+    } else {
+      // Добавление нового расписания
+      if (!validateSchedule()) {
+        return;
+      }
 
-    if (newSchedule.workdays && newSchedule.workdays.length > 0) {
-      scheduleData.workdays = newSchedule.workdays.map((window) => ({
-        start: window.start,
-        end: window.end,
-      }));
-    }
+      // Логика для создания расписания
+      const scheduleData = {};
 
-    if (newSchedule.weekends && newSchedule.weekends.length > 0) {
-      scheduleData.weekends = newSchedule.weekends.map((window) => ({
-        start: window.start,
-        end: window.end,
-      }));
-    }
-
-    if (newSchedule.specific_days && newSchedule.specific_days.length > 0) {
-      scheduleData.specific_days = newSchedule.specific_days.map((day) => ({
-        day: day.day,
-        windows: day.windows.map((window) => ({
+      if (newSchedule.workdays && newSchedule.workdays.length > 0) {
+        scheduleData.workdays = newSchedule.workdays.map((window) => ({
           start: window.start,
           end: window.end,
-        })),
-      }));
+        }));
+      }
+
+      if (newSchedule.weekends && newSchedule.weekends.length > 0) {
+        scheduleData.weekends = newSchedule.weekends.map((window) => ({
+          start: window.start,
+          end: window.end,
+        }));
+      }
+
+      if (newSchedule.specific_days && newSchedule.specific_days.length > 0) {
+        scheduleData.specific_days = newSchedule.specific_days.map((day) => ({
+          day: day.day,
+          windows: day.windows.map((window) => ({
+            start: window.start,
+            end: window.end,
+          })),
+        }));
+      }
+
+      console.log("Отправка scheduleData при создании:", scheduleData);
+
+      // Отправляем данные на сервер
+      const requestConfig = {
+        params: { job_id: job.job_id },
+        headers: { "Content-Type": "application/json" },
+      };
+
+      axiosInstance
+        .post("/jobs/create-schedules", scheduleData, requestConfig)
+        .then(() => {
+          showAlert("Расписание успешно добавлено.");
+          fetchSchedules();
+          setScheduleFormOpen(false);
+        })
+        .catch((error) => {
+          handleApiError(error, "Ошибка при добавлении расписания.");
+        });
     }
-
-    console.log("Отправка scheduleData при создании:", scheduleData);
-
-    // Отправляем данные на сервер
-    const requestConfig = {
-      params: { job_id: job.job_id },
-      headers: { "Content-Type": "application/json" },
-    };
-
-    axiosInstance
-      .post("/jobs/create-schedules", scheduleData, requestConfig)
-      .then(() => {
-        showAlert("Расписание успешно добавлено.");
-        fetchSchedules();
-        setScheduleFormOpen(false);
-      })
-      .catch((error) => {
-        handleApiError(error, "Ошибка при добавлении расписания.");
-      });
   };
 
   // Обработка удаления расписания
@@ -561,6 +656,14 @@ function JobDetailsDialog({
     } catch (error) {
       handleApiError(error, `Ошибка при удалении расписания ${scheduleId}.`);
     }
+  };
+
+  // Обработка редактирования расписания
+  const handleEditSchedule = (schedule) => {
+    setIsEditingSchedule(true);
+    setCurrentSchedule(schedule);
+    setEditedSchedule({ ...schedule });
+    setScheduleFormOpen(true);
   };
 
   // Обработка редактирования конфигурации
@@ -610,6 +713,16 @@ function JobDetailsDialog({
         PaperProps={{
           style: {
             height: "90vh",
+            borderRadius: "15px",
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            zIndex: 0,
+            cursor: "pointer",
+            "&:hover": {
+              background: "rgba(0, 0, 0, 0.48)", // Сделать фон светлее при наведении
+            },
           },
         }}
       >
@@ -641,7 +754,13 @@ function JobDetailsDialog({
             <Box sx={{ height: "1px", width: "80px", bgcolor: "black" }} />
             {/* Тип задачи */}
             <Box>
-              <Typography variant="body1">
+              <Typography
+                variant="body1"
+                sx={{
+                  textTransform: "uppercase",
+                  color: job.job_type === "run" ? "#10a37f" : "secondary.main",
+                }}
+              >
                 <strong>{job.job_type}</strong>
               </Typography>
             </Box>
@@ -654,7 +773,12 @@ function JobDetailsDialog({
             </Box>
             <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
             <Box>
-              <Typography variant="body1">
+              <Typography
+                variant="body1"
+                sx={{
+                  color: statusColors[job.build_status] || "black",
+                }}
+              >
                 <strong>{job.build_status}</strong>
               </Typography>
               {job.build_status === "building" && (
@@ -707,13 +831,14 @@ function JobDetailsDialog({
 
           {/* Кнопки */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TasksActions
-              job={job}
-              onLogsClick={() => handleLogsClick()}
-              onDownloadArtifacts={() => handleDownloadArtifacts(job)}
-              onStopClick={() => handleStopClick()}
-              showLogsArtButton={false}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <TasksActions
+                job={job}
+                onStopClick={(job) => handleStopClick(job)}
+                onStartClick={(job) => handleStartClick(job)}
+                displayMode="buttons" // Указываем режим "buttons"
+              />
+            </Box>
           </Box>
         </Box>
 
@@ -744,11 +869,19 @@ function JobDetailsDialog({
                 </Box>
               ) : executionsError ? (
                 <Typography color="error">{executionsError}</Typography>
-              ) : executions.length > 0 ? (
+              ) : (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     {/* Заголовки столбцов */}
-                    <Grid container spacing={1}>
+                    <Grid
+                      container
+                      spacing={1}
+                      sx={{
+                        p: 1,
+                        borderBottom: "1px solid #ccc",
+                        textAlign: "center",
+                      }}
+                    >
                       <Grid item xs>
                         <Typography variant="subtitle2" fontWeight="bold">
                           Job Exec id
@@ -793,91 +926,114 @@ function JobDetailsDialog({
                       </Grid>
                     </Grid>
                   </Grid>
-                  {/* Данные */}
-                  {executions.map((execution) => (
-                    <Grid item xs={12} key={execution.job_execution_id}>
-                      <Paper variant="outlined" sx={{ p: 1 }}>
-                        <Grid
-                          container
-                          spacing={1}
-                          alignItems="center"
-                          sx={{ textAlign: "center" }}
-                        >
-                          <Grid item xs>
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <Typography variant="body2">
-                                {formatJobExecutionId(
-                                  execution.job_execution_id
-                                )}
-                              </Typography>
-                              <Tooltip title="Скопировать ID выполнения">
-                                <IconButton
-                                  onClick={() =>
-                                    handleCopy(execution.job_execution_id)
-                                  }
-                                  size="small"
-                                >
-                                  <ContentCopyIcon
-                                    fontSize="small"
-                                    sx={{ fontSize: "1rem" }}
-                                  />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {formatDateTime(execution.created_at)}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {execution.status}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {formatDateTime(execution.start_time)}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {formatDateTime(execution.end_time)}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="body2">
-                              {execution.gpu_info?.type || "N/A"}
-                            </Typography>
-                          </Grid>
-                          {job.job_type !== "run" && (
+                  {executions.length > 0 ? (
+                    executions.map((execution) => (
+                      <Grid
+                        item
+                        xs={12}
+                        key={execution.job_execution_id}
+                        style={{ paddingTop: "8px" }}
+                      >
+                        <Paper variant="outlined" sx={{ border: "none" }}>
+                          <Grid
+                            container
+                            spacing={1}
+                            alignItems="center"
+                            sx={{
+                              p: 0.5,
+                              textAlign: "center",
+                              borderBottom: "1px solid #ccc",
+                              "& > .MuiGrid-item": {
+                                paddingTop: 0,
+                              },
+                            }}
+                          >
+                            <Grid item xs>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Typography variant="body2">
+                                  {formatJobExecutionId(
+                                    execution.job_execution_id
+                                  )}
+                                </Typography>
+                                <Tooltip title="Скопировать ID выполнения">
+                                  <IconButton
+                                    onClick={() =>
+                                      handleCopy(execution.job_execution_id)
+                                    }
+                                    size="small"
+                                  >
+                                    <ContentCopyIcon
+                                      fontSize="small"
+                                      sx={{ fontSize: "1rem" }}
+                                    />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </Grid>
                             <Grid item xs>
                               <Typography variant="body2">
-                                {execution.health_status || "N/A"}
+                                {formatDateTime(execution.created_at)}
                               </Typography>
                             </Grid>
-                          )}
-                          <Grid item xs>
-                            {/* Кнопки действий */}
-                            <TasksActions
-                              job={job}
-                              onLogsClick={() => handleLogsClick(execution)}
-                              onDownloadArtifacts={() =>
-                                handleDownloadArtifacts(job, execution)
-                              }
-                              onStopClick={() =>
-                                handleStopClick(execution.job_execution_id)
-                              }
-                              showStartButton={false}
-                            />
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {execution.status}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {formatDateTime(execution.start_time)}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {formatDateTime(execution.end_time)}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {execution.gpu_info?.type || "N/A"}
+                              </Typography>
+                            </Grid>
+                            {job.job_type !== "run" && (
+                              <Grid item xs>
+                                <Typography variant="body2">
+                                  {execution.health_status || "N/A"}
+                                </Typography>
+                              </Grid>
+                            )}
+                            <Grid item xs>
+                              {/* Кнопки действий */}
+                              <TasksActions
+                                job={job}
+                                onLogsClick={() => handleLogsClick(execution)}
+                                onDownloadArtifacts={() =>
+                                  handleDownloadArtifacts(job, execution)
+                                }
+                                onStopClick={() =>
+                                  handleStopClick(execution.job_execution_id)
+                                }
+                                showStartButton={false}
+                              />
+                            </Grid>
                           </Grid>
-                        </Grid>
-                      </Paper>
+                        </Paper>
+                      </Grid>
+                    ))
+                  ) : (
+                    <Grid item xs={12}>
+                      <Typography align="center" sx={{ mt: 2 }}>
+                        Нет выполнений для этой задачи.
+                      </Typography>
                     </Grid>
-                  ))}
+                  )}
                 </Grid>
-              ) : (
-                <Typography>Нет выполнений для этой задачи.</Typography>
               )}
             </Box>
 
@@ -936,18 +1092,13 @@ function JobDetailsDialog({
                       {schedules.map((schedule) => (
                         <ListItem key={schedule.schedule_id}>
                           <ListItemText
-                            primary={`ID: ${schedule.schedule_id}`}
                             secondary={renderScheduleDetails(schedule)}
                             secondaryTypographyProps={{ component: "div" }}
                           />
                           {/* Кнопки действий */}
                           <Tooltip title="Редактировать расписание">
                             <IconButton
-                              onClick={() => {
-                                showAlert(
-                                  `Функция редактирования расписания ${schedule.schedule_id} недоступна.`
-                                );
-                              }}
+                              onClick={() => handleEditSchedule(schedule)}
                               size="small"
                             >
                               <EditIcon fontSize="small" />
@@ -1011,34 +1162,6 @@ function JobDetailsDialog({
                   )}
                 </Box>
               )}
-
-              {/* <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          mt: 2,
-                        }}
-                      >
-                        {configEditing ? (
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSaveConfig}
-                          >
-                            Сохранить
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            startIcon={<EditIcon />}
-                            onClick={() => setConfigEditing(true)}
-                          >
-                            Редактировать
-                          </Button>
-                        )}
-                      </Box> */}
             </Box>
           </Box>
         </DialogContent>
@@ -1047,6 +1170,7 @@ function JobDetailsDialog({
         </DialogActions>
       </Dialog>
 
+      {/* Диалоговое окно с формой расписания */}
       {/* Диалоговое окно с формой расписания */}
       <Dialog
         open={scheduleFormOpen}
@@ -1061,179 +1185,129 @@ function JobDetailsDialog({
         </DialogTitle>
         <DialogContent>
           {/* Форма расписания */}
-          {/* Рабочие дни */}
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Рабочие дни:
-          </Typography>
-          <Button onClick={addWorkdayWindow} sx={{ mt: 1 }}>
-            Добавить временное окно
-          </Button>
-          {newSchedule.workdays.map((window, index) => (
-            <Box
-              key={index}
-              sx={{ display: "flex", alignItems: "center", mt: 1 }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDateFns} locale={ru}>
-                <TimePicker
-                  label="Начало"
-                  value={
-                    window.start ? new Date(`1970-01-01T${window.start}`) : null
-                  }
-                  onChange={(time) => {
-                    if (time && isValid(time)) {
-                      const formattedTime = format(time, "HH:mm:ss");
-                      const updatedWorkdays = [...newSchedule.workdays];
-                      updatedWorkdays[index].start = formattedTime;
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        workdays: updatedWorkdays,
-                      }));
-                    } else {
-                      const updatedWorkdays = [...newSchedule.workdays];
-                      updatedWorkdays[index].start = "";
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        workdays: updatedWorkdays,
-                      }));
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} sx={{ mr: 1 }} fullWidth />
-                  )}
-                />
-                <TimePicker
-                  label="Конец"
-                  value={
-                    window.end ? new Date(`1970-01-01T${window.end}`) : null
-                  }
-                  onChange={(time) => {
-                    if (time && isValid(time)) {
-                      const formattedTime = format(time, "HH:mm:ss");
-                      const updatedWorkdays = [...newSchedule.workdays];
-                      updatedWorkdays[index].end = formattedTime;
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        workdays: updatedWorkdays,
-                      }));
-                    } else {
-                      const updatedWorkdays = [...newSchedule.workdays];
-                      updatedWorkdays[index].end = "";
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        workdays: updatedWorkdays,
-                      }));
-                    }
-                  }}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-              <IconButton onClick={() => removeWorkdayWindow(index)}>
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-          ))}
-
-          {/* Выходные дни */}
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Выходные дни:
-          </Typography>
-          <Button onClick={addWeekendWindow} sx={{ mt: 1 }}>
-            Добавить временное окно
-          </Button>
-          {newSchedule.weekends.map((window, index) => (
-            <Box
-              key={index}
-              sx={{ display: "flex", alignItems: "center", mt: 1 }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDateFns} locale={ru}>
-                <TimePicker
-                  label="Начало"
-                  value={
-                    window.start ? new Date(`1970-01-01T${window.start}`) : null
-                  }
-                  onChange={(time) => {
-                    if (time && isValid(time)) {
-                      const formattedTime = format(time, "HH:mm:ss");
-                      const updatedWeekends = [...newSchedule.weekends];
-                      updatedWeekends[index].start = formattedTime;
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        weekends: updatedWeekends,
-                      }));
-                    } else {
-                      const updatedWeekends = [...newSchedule.weekends];
-                      updatedWeekends[index].start = "";
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        weekends: updatedWeekends,
-                      }));
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} sx={{ mr: 1 }} fullWidth />
-                  )}
-                />
-                <TimePicker
-                  label="Конец"
-                  value={
-                    window.end ? new Date(`1970-01-01T${window.end}`) : null
-                  }
-                  onChange={(time) => {
-                    if (time && isValid(time)) {
-                      const formattedTime = format(time, "HH:mm:ss");
-                      const updatedWeekends = [...newSchedule.weekends];
-                      updatedWeekends[index].end = formattedTime;
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        weekends: updatedWeekends,
-                      }));
-                    } else {
-                      const updatedWeekends = [...newSchedule.weekends];
-                      updatedWeekends[index].end = "";
-                      setNewSchedule((prev) => ({
-                        ...prev,
-                        weekends: updatedWeekends,
-                      }));
-                    }
-                  }}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-              <IconButton onClick={() => removeWeekendWindow(index)}>
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-          ))}
-
-          {/* Конкретные даты */}
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Конкретные даты:
-          </Typography>
-          <Button onClick={handleAddSpecificDay} sx={{ mt: 1 }}>
-            Добавить дату
-          </Button>
-          {newSchedule.specific_days.map((day, index) => (
-            <Box key={index} sx={{ mt: 1, border: "1px solid #ccc", p: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <TextField
-                  label="День (например, 'friday' или '2023-12-31')"
-                  value={day.day}
+          {isEditingSchedule ? (
+            // Форма редактирования расписания
+            <>
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel id="schedule-type-label">Тип расписания</InputLabel>
+                <Select
+                  labelId="schedule-type-label"
+                  label="Тип расписания"
+                  value={editedSchedule.schedule_type || ""}
                   onChange={(e) =>
-                    handleSpecificDayChange(index, "day", e.target.value)
+                    setEditedSchedule((prev) => ({
+                      ...prev,
+                      schedule_type: e.target.value,
+                    }))
                   }
-                  fullWidth
-                  sx={{ mr: 1 }}
+                >
+                  <MenuItem value="DAILY">Ежедневно</MenuItem>
+                  <MenuItem value="WEEKLY">Еженедельно</MenuItem>
+                  <MenuItem value="ONCE">Однократно</MenuItem>
+                </Select>
+              </FormControl>
+
+              <LocalizationProvider dateAdapter={AdapterDateFns} locale={ru}>
+                <TimePicker
+                  label="Время начала"
+                  value={
+                    editedSchedule.start_time
+                      ? new Date(`1970-01-01T${editedSchedule.start_time}`)
+                      : null
+                  }
+                  onChange={(time) => {
+                    if (time && isValid(time)) {
+                      const hours = time.getHours().toString().padStart(2, "0");
+                      const minutes = time
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0");
+                      const formattedTime = `${hours}:${minutes}:00`;
+                      setEditedSchedule((prev) => ({
+                        ...prev,
+                        start_time: formattedTime,
+                      }));
+                    } else {
+                      setEditedSchedule((prev) => ({
+                        ...prev,
+                        start_time: "",
+                      }));
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth sx={{ mt: 2 }} />
+                  )}
                 />
-                <IconButton onClick={() => handleRemoveSpecificDay(index)}>
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-              <Typography variant="subtitle1" sx={{ mt: 1 }}>
-                Временные окна:
+                <TimePicker
+                  label="Время окончания"
+                  value={
+                    editedSchedule.end_time
+                      ? new Date(`1970-01-01T${editedSchedule.end_time}`)
+                      : null
+                  }
+                  onChange={(time) => {
+                    if (time && isValid(time)) {
+                      const hours = time.getHours().toString().padStart(2, "0");
+                      const minutes = time
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0");
+                      const formattedTime = `${hours}:${minutes}:00`;
+                      setEditedSchedule((prev) => ({
+                        ...prev,
+                        end_time: formattedTime,
+                      }));
+                    } else {
+                      setEditedSchedule((prev) => ({
+                        ...prev,
+                        end_time: "",
+                      }));
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth sx={{ mt: 2 }} />
+                  )}
+                />
+              </LocalizationProvider>
+
+              {editedSchedule.schedule_type === "WEEKLY" && (
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="day-of-week-label">День недели</InputLabel>
+                  <Select
+                    labelId="day-of-week-label"
+                    label="День недели"
+                    value={editedSchedule.day_of_week || ""}
+                    onChange={(e) =>
+                      setEditedSchedule((prev) => ({
+                        ...prev,
+                        day_of_week: e.target.value,
+                      }))
+                    }
+                  >
+                    <MenuItem value="MONDAY">Понедельник</MenuItem>
+                    <MenuItem value="TUESDAY">Вторник</MenuItem>
+                    <MenuItem value="WEDNESDAY">Среда</MenuItem>
+                    <MenuItem value="THURSDAY">Четверг</MenuItem>
+                    <MenuItem value="FRIDAY">Пятница</MenuItem>
+                    <MenuItem value="SATURDAY">Суббота</MenuItem>
+                    <MenuItem value="SUNDAY">Воскресенье</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
+            </>
+          ) : (
+            // Форма добавления нового расписания
+            <>
+              {/* Рабочие дни */}
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Рабочие дни:
               </Typography>
-              {day.windows.map((window, wIndex) => (
+              <Button onClick={addWorkdayWindow} sx={{ mt: 1 }}>
+                Добавить временное окно
+              </Button>
+              {newSchedule.workdays.map((window, index) => (
                 <Box
-                  key={wIndex}
+                  key={index}
                   sx={{ display: "flex", alignItems: "center", mt: 1 }}
                 >
                   <LocalizationProvider
@@ -1249,14 +1323,28 @@ function JobDetailsDialog({
                       }
                       onChange={(time) => {
                         if (time && isValid(time)) {
-                          const formattedTime = format(time, "HH:mm:ss");
-                          const updatedWindows = [...day.windows];
-                          updatedWindows[wIndex].start = formattedTime;
-                          handleSpecificDayWindowsChange(index, updatedWindows);
+                          const hours = time
+                            .getHours()
+                            .toString()
+                            .padStart(2, "0");
+                          const minutes = time
+                            .getMinutes()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedTime = `${hours}:${minutes}:00`;
+                          const updatedWorkdays = [...newSchedule.workdays];
+                          updatedWorkdays[index].start = formattedTime;
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            workdays: updatedWorkdays,
+                          }));
                         } else {
-                          const updatedWindows = [...day.windows];
-                          updatedWindows[wIndex].start = "";
-                          handleSpecificDayWindowsChange(index, updatedWindows);
+                          const updatedWorkdays = [...newSchedule.workdays];
+                          updatedWorkdays[index].start = "";
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            workdays: updatedWorkdays,
+                          }));
                         }
                       }}
                       renderInput={(params) => (
@@ -1270,14 +1358,28 @@ function JobDetailsDialog({
                       }
                       onChange={(time) => {
                         if (time && isValid(time)) {
-                          const formattedTime = format(time, "HH:mm:ss");
-                          const updatedWindows = [...day.windows];
-                          updatedWindows[wIndex].end = formattedTime;
-                          handleSpecificDayWindowsChange(index, updatedWindows);
+                          const hours = time
+                            .getHours()
+                            .toString()
+                            .padStart(2, "0");
+                          const minutes = time
+                            .getMinutes()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedTime = `${hours}:${minutes}:00`;
+                          const updatedWorkdays = [...newSchedule.workdays];
+                          updatedWorkdays[index].end = formattedTime;
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            workdays: updatedWorkdays,
+                          }));
                         } else {
-                          const updatedWindows = [...day.windows];
-                          updatedWindows[wIndex].end = "";
-                          handleSpecificDayWindowsChange(index, updatedWindows);
+                          const updatedWorkdays = [...newSchedule.workdays];
+                          updatedWorkdays[index].end = "";
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            workdays: updatedWorkdays,
+                          }));
                         }
                       }}
                       renderInput={(params) => (
@@ -1285,38 +1387,252 @@ function JobDetailsDialog({
                       )}
                     />
                   </LocalizationProvider>
-                  <IconButton
-                    onClick={() => {
-                      const updatedWindows = [...day.windows];
-                      updatedWindows.splice(wIndex, 1);
-                      handleSpecificDayWindowsChange(index, updatedWindows);
-                    }}
-                  >
+                  <IconButton onClick={() => removeWorkdayWindow(index)}>
                     <DeleteIcon />
                   </IconButton>
                 </Box>
               ))}
-              <Button
-                onClick={() => {
-                  const updatedWindows = [
-                    ...day.windows,
-                    { start: "", end: "" },
-                  ];
-                  handleSpecificDayWindowsChange(index, updatedWindows);
-                }}
-                sx={{ mt: 1 }}
-              >
+
+              {/* Выходные дни */}
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Выходные дни:
+              </Typography>
+              <Button onClick={addWeekendWindow} sx={{ mt: 1 }}>
                 Добавить временное окно
               </Button>
-            </Box>
-          ))}
+              {newSchedule.weekends.map((window, index) => (
+                <Box
+                  key={index}
+                  sx={{ display: "flex", alignItems: "center", mt: 1 }}
+                >
+                  <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    locale={ru}
+                  >
+                    <TimePicker
+                      label="Начало"
+                      value={
+                        window.start
+                          ? new Date(`1970-01-01T${window.start}`)
+                          : null
+                      }
+                      onChange={(time) => {
+                        if (time && isValid(time)) {
+                          const hours = time
+                            .getHours()
+                            .toString()
+                            .padStart(2, "0");
+                          const minutes = time
+                            .getMinutes()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedTime = `${hours}:${minutes}:00`;
+                          const updatedWeekends = [...newSchedule.weekends];
+                          updatedWeekends[index].start = formattedTime;
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            weekends: updatedWeekends,
+                          }));
+                        } else {
+                          const updatedWeekends = [...newSchedule.weekends];
+                          updatedWeekends[index].start = "";
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            weekends: updatedWeekends,
+                          }));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} sx={{ mr: 1 }} fullWidth />
+                      )}
+                    />
+                    <TimePicker
+                      label="Конец"
+                      value={
+                        window.end ? new Date(`1970-01-01T${window.end}`) : null
+                      }
+                      onChange={(time) => {
+                        if (time && isValid(time)) {
+                          const hours = time
+                            .getHours()
+                            .toString()
+                            .padStart(2, "0");
+                          const minutes = time
+                            .getMinutes()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedTime = `${hours}:${minutes}:00`;
+                          const updatedWeekends = [...newSchedule.weekends];
+                          updatedWeekends[index].end = formattedTime;
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            weekends: updatedWeekends,
+                          }));
+                        } else {
+                          const updatedWeekends = [...newSchedule.weekends];
+                          updatedWeekends[index].end = "";
+                          setNewSchedule((prev) => ({
+                            ...prev,
+                            weekends: updatedWeekends,
+                          }));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
+                  <IconButton onClick={() => removeWeekendWindow(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              ))}
+
+              {/* Конкретные даты */}
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Конкретные даты:
+              </Typography>
+              <Button onClick={handleAddSpecificDay} sx={{ mt: 1 }}>
+                Добавить дату
+              </Button>
+              {newSchedule.specific_days.map((day, index) => (
+                <Box key={index} sx={{ mt: 1, border: "1px solid #ccc", p: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <TextField
+                      label="День (например, 'friday' или '2023-12-31')"
+                      value={day.day}
+                      onChange={(e) =>
+                        handleSpecificDayChange(index, "day", e.target.value)
+                      }
+                      fullWidth
+                      sx={{ mr: 1 }}
+                    />
+                    <IconButton onClick={() => handleRemoveSpecificDay(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ mt: 1 }}>
+                    Временные окна:
+                  </Typography>
+                  {day.windows.map((window, wIndex) => (
+                    <Box
+                      key={wIndex}
+                      sx={{ display: "flex", alignItems: "center", mt: 1 }}
+                    >
+                      <LocalizationProvider
+                        dateAdapter={AdapterDateFns}
+                        locale={ru}
+                      >
+                        <TimePicker
+                          label="Начало"
+                          value={
+                            window.start
+                              ? new Date(`1970-01-01T${window.start}`)
+                              : null
+                          }
+                          onChange={(time) => {
+                            if (time && isValid(time)) {
+                              const hours = time
+                                .getHours()
+                                .toString()
+                                .padStart(2, "0");
+                              const minutes = time
+                                .getMinutes()
+                                .toString()
+                                .padStart(2, "0");
+                              const formattedTime = `${hours}:${minutes}:00`;
+                              const updatedWindows = [...day.windows];
+                              updatedWindows[wIndex].start = formattedTime;
+                              handleSpecificDayWindowsChange(
+                                index,
+                                updatedWindows
+                              );
+                            } else {
+                              const updatedWindows = [...day.windows];
+                              updatedWindows[wIndex].start = "";
+                              handleSpecificDayWindowsChange(
+                                index,
+                                updatedWindows
+                              );
+                            }
+                          }}
+                          renderInput={(params) => (
+                            <TextField {...params} sx={{ mr: 1 }} fullWidth />
+                          )}
+                        />
+                        <TimePicker
+                          label="Конец"
+                          value={
+                            window.end
+                              ? new Date(`1970-01-01T${window.end}`)
+                              : null
+                          }
+                          onChange={(time) => {
+                            if (time && isValid(time)) {
+                              const hours = time
+                                .getHours()
+                                .toString()
+                                .padStart(2, "0");
+                              const minutes = time
+                                .getMinutes()
+                                .toString()
+                                .padStart(2, "0");
+                              const formattedTime = `${hours}:${minutes}:00`;
+                              const updatedWindows = [...day.windows];
+                              updatedWindows[wIndex].end = formattedTime;
+                              handleSpecificDayWindowsChange(
+                                index,
+                                updatedWindows
+                              );
+                            } else {
+                              const updatedWindows = [...day.windows];
+                              updatedWindows[wIndex].end = "";
+                              handleSpecificDayWindowsChange(
+                                index,
+                                updatedWindows
+                              );
+                            }
+                          }}
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth />
+                          )}
+                        />
+                      </LocalizationProvider>
+                      <IconButton
+                        onClick={() => {
+                          const updatedWindows = [...day.windows];
+                          updatedWindows.splice(wIndex, 1);
+                          handleSpecificDayWindowsChange(index, updatedWindows);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  ))}
+                  <Button
+                    onClick={() => {
+                      const updatedWindows = [
+                        ...day.windows,
+                        { start: "", end: "" },
+                      ];
+                      handleSpecificDayWindowsChange(index, updatedWindows);
+                    }}
+                    sx={{ mt: 1 }}
+                  >
+                    Добавить временное окно
+                  </Button>
+                </Box>
+              ))}
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleScheduleFormClose}>Отмена</Button>
-          <Button onClick={handleScheduleFormSubmit}>Добавить</Button>
+          <Button onClick={handleScheduleFormSubmit}>
+            {isEditingSchedule ? "Сохранить" : "Добавить"}
+          </Button>
         </DialogActions>
       </Dialog>
-
       {/* Диалоговое окно с логами */}
       <Dialog
         open={logsModalOpen}
@@ -1398,11 +1714,10 @@ function JobDetailsDialog({
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Оповещения */}
       <Snackbar
         open={alertOpen}
-        autoHideDuration={6000}
+        autoHideDuration={10000}
         onClose={() => setAlertOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >

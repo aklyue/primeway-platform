@@ -1,4 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
+// src/components/Billing.js
+
+import React, { useState, useContext, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -28,106 +30,28 @@ function Billing() {
   const { currentOrganization, isCurrentOrgOwner } =
     useContext(OrganizationContext);
 
-  // Состояния для баланса кошелька
+  // Состояния для данных
   const [walletBalance, setWalletBalance] = useState(null);
-  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
-  const [errorBalance, setErrorBalance] = useState(null);
-
-  // Состояния для транзакций списания и покупки кредитов
   const [creditUsageTransactions, setCreditUsageTransactions] = useState([]);
   const [creditPurchaseTransactions, setCreditPurchaseTransactions] = useState([]);
-  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
-  const [errorTransactions, setErrorTransactions] = useState(null);
-
-  // Состояния для деталей биллингового аккаунта
   const [billingAccountDetails, setBillingAccountDetails] = useState(null);
-  const [isLoadingBillingAccount, setIsLoadingBillingAccount] = useState(true);
-  const [errorBillingAccount, setErrorBillingAccount] = useState(null);
+
+  // Состояния для загрузки и ошибок
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Объединенное состояние загрузки
-  const isLoading =
-    isLoadingBalance || isLoadingTransactions || isLoadingBillingAccount;
+  // Используем useRef для отслеживания первой загрузки и интервала
+  const initialLoadRef = useRef(true);
+  const intervalRef = useRef(null);
 
-  // Загрузка баланса, транзакций и деталей биллингового аккаунта при изменении текущей организации
-  useEffect(() => {
-    if (currentOrganization && isCurrentOrgOwner()) {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`, // Убедитесь, что токен доступа доступен в user.token
-        },
-      };
-
-      // Загрузка деталей биллингового аккаунта
-      setIsLoadingBillingAccount(true);
-      setErrorBillingAccount(null);
-
-      axiosInstance
-        .get(`/billing/${user.billing_account_id}`, config)
-        .then((response) => {
-          setBillingAccountDetails(response.data);
-        })
-        .catch((error) => {
-          setErrorBillingAccount(error?.response?.data?.detail || error.message);
-        })
-        .finally(() => {
-          setIsLoadingBillingAccount(false);
-        });
-
-      // Загрузка баланса кошелька
-      setIsLoadingBalance(true);
-      setErrorBalance(null);
-
-      axiosInstance
-        .get(`/billing/${user.billing_account_id}/balance`, config)
-        .then((response) => {
-          setWalletBalance(response.data.balance);
-        })
-        .catch((error) => {
-          setErrorBalance(error?.response?.data?.detail || error.message);
-        })
-        .finally(() => {
-          setIsLoadingBalance(false);
-        });
-
-      // Загрузка транзакций списания и покупки кредитов
-      setIsLoadingTransactions(true);
-      setErrorTransactions(null);
-
-      // Обещания для одновременной загрузки транзакций
-      Promise.all([
-        axiosInstance.get(
-          `/billing/${user.billing_account_id}/transactions/credit_usage`,
-          config
-        ),
-        axiosInstance.get(
-          `/billing/${user.billing_account_id}/transactions/credit_purchase`,
-          config
-        ),
-      ])
-        .then(([usageResponse, purchaseResponse]) => {
-          setCreditUsageTransactions(usageResponse.data.transactions || []);
-          setCreditPurchaseTransactions(purchaseResponse.data.transactions || []);
-        })
-        .catch((error) => {
-          setErrorTransactions(
-            error?.response?.data?.detail || error.message
-          );
-        })
-        .finally(() => {
-          setIsLoadingTransactions(false);
-        });
+  // Функция для загрузки всех данных
+  const fetchAllData = () => {
+    if (initialLoadRef.current) {
+      setIsLoading(true);
     }
-  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id, user.token]);
-
-  // Обработка успешной оплаты
-  const handlePaymentSuccess = () => {
-    // Перезагрузить данные после успешной оплаты
-    setIsLoadingBalance(true);
-    setIsLoadingTransactions(true);
-    setIsLoadingBillingAccount(true);
 
     const config = {
       headers: {
@@ -135,55 +59,83 @@ function Billing() {
       },
     };
 
-    // Загрузка деталей биллингового аккаунта
-    axiosInstance
-      .get(`/billing/${user.billing_account_id}`, config)
-      .then((response) => {
-        setBillingAccountDetails(response.data);
-      })
-      .catch((error) => {
-        setErrorBillingAccount(error?.response?.data?.detail || error.message);
-      })
-      .finally(() => {
-        setIsLoadingBillingAccount(false);
-      });
-
-    // Загрузка баланса кошелька
-    axiosInstance
-      .get(`/billing/${user.billing_account_id}/balance`, config)
-      .then((response) => {
-        setWalletBalance(response.data.balance);
-      })
-      .catch((error) => {
-        setErrorBalance(error?.response?.data?.detail || error.message);
-      })
-      .finally(() => {
-        setIsLoadingBalance(false);
-      });
-
-    // Загрузка транзакций списания и покупки кредитов
+    // Обещания для загрузки всех данных
     Promise.all([
+      // Загрузка деталей биллингового аккаунта
+      axiosInstance.get(`/billing/${user.billing_account_id}`, config),
+      // Загрузка баланса кошелька
+      axiosInstance.get(`/billing/${user.billing_account_id}/balance`, config),
+      // Загрузка транзакций списания кредитов
       axiosInstance.get(
         `/billing/${user.billing_account_id}/transactions/credit_usage`,
         config
       ),
+      // Загрузка транзакций покупки кредитов
       axiosInstance.get(
         `/billing/${user.billing_account_id}/transactions/credit_purchase`,
         config
       ),
     ])
-      .then(([usageResponse, purchaseResponse]) => {
-        setCreditUsageTransactions(usageResponse.data.transactions || []);
-        setCreditPurchaseTransactions(purchaseResponse.data.transactions || []);
-      })
+      .then(
+        ([
+          billingAccountResponse,
+          balanceResponse,
+          usageTransactionsResponse,
+          purchaseTransactionsResponse,
+        ]) => {
+          setBillingAccountDetails(billingAccountResponse.data);
+          setWalletBalance(balanceResponse.data.balance);
+          setCreditUsageTransactions(usageTransactionsResponse.data.transactions || []);
+          setCreditPurchaseTransactions(purchaseTransactionsResponse.data.transactions || []);
+        }
+      )
       .catch((error) => {
-        setErrorTransactions(
-          error?.response?.data?.detail || error.message
-        );
+        // Обработка ошибок
+        console.error("Ошибка при загрузке данных биллинга:", error);
+        const errorMessage =
+          error?.response?.data?.detail || error.message || "Ошибка при загрузке данных.";
+        setError(errorMessage);
       })
       .finally(() => {
-        setIsLoadingTransactions(false);
+        if (initialLoadRef.current) {
+          setIsLoading(false);
+          initialLoadRef.current = false;
+        }
       });
+  };
+
+  // useEffect для начальной загрузки и установки интервала
+  useEffect(() => {
+    if (currentOrganization && isCurrentOrgOwner()) {
+      // Сбрасываем флаг первой загрузки
+      initialLoadRef.current = true;
+
+      // Загружаем данные сразу при монтировании или изменении зависимостей
+      fetchAllData();
+
+      // Устанавливаем интервал для периодического фетчинга
+      intervalRef.current = setInterval(() => {
+        fetchAllData();
+      }, 5000); // Интервал в 5 секунд
+
+      // Чистим интервал при размонтировании компонента или изменении зависимостей
+      return () => {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      };
+    } else {
+      // Очищаем интервал, если условия не выполнены
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id, user.token]);
+
+  // Обработка успешной оплаты
+  const handlePaymentSuccess = () => {
+    // Перезагружаем данные после успешной оплаты
+    fetchAllData();
   };
 
   const handlePaymentError = (error) => {
@@ -243,9 +195,9 @@ function Billing() {
       </Typography>
 
       {/* Отображение деталей биллингового аккаунта */}
-      {errorBillingAccount ? (
+      {error ? (
         <Alert severity="error" sx={{ marginBottom: 2 }}>
-          {errorBillingAccount}
+          {error}
         </Alert>
       ) : billingAccountDetails ? (
         <Card sx={{ marginBottom: 2 }}>
@@ -266,9 +218,9 @@ function Billing() {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1">Баланс кошелька:</Typography>
-                {errorBalance ? (
+                {error ? (
                   <Typography variant="body1" color="error">
-                    {errorBalance}
+                    {error}
                   </Typography>
                 ) : (
                   <Typography variant="body1" sx={{ color: "secondary.main" }}>
@@ -309,9 +261,9 @@ function Billing() {
         <Typography variant="h6" gutterBottom>
           История операций
         </Typography>
-        {errorTransactions ? (
+        {error ? (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
-            {errorTransactions}
+            {error}
           </Alert>
         ) : (
           <Box

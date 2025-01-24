@@ -22,3 +22,7 @@ a {
   text-decoration: none;
 }
 
+/* В вашем CSS-файле или в глобальных стилях */
+.backdropPointer {
+  cursor: pointer !important;
+}

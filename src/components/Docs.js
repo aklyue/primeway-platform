@@ -6,8 +6,8 @@ import { useTheme } from "@mui/material/styles";
 
 // Структура вашей документации
 const docsStructure = [
-  { path: "welcome", title: "Welcome" },
-  { path: "quickstart", title: "Quickstart" },
+  { path: "welcome", title: "Добро Пожаловать" },
+  { path: "quickstart", title: "Начало Работы" },
   { path: "jobs", title: "Jobs" },
   { path: "configuration", title: "Configuration" },
   { path: "pipelines", title: "Pipelines" },

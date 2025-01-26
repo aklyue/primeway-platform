@@ -277,7 +277,7 @@ export function Layout() {
                 <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
                   <HomeIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Welcome" />
+                <ListItemText primary="Добро Пожаловать" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -290,7 +290,7 @@ export function Layout() {
                 <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
                   <FlashOnIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary="Quickstart" />
+                <ListItemText primary="Начало работы" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>

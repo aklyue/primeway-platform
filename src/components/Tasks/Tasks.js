@@ -26,6 +26,7 @@ import { OrganizationContext } from "../Organization/OrganizationContext";
 import { format, parseISO } from "date-fns";
 import TasksDetailsDialog from "./TasksDetailsDialog";
 import TasksActions from "./TasksActions";
+import { AuthContext } from "../../AuthContext";
 
 const statusOptions = [
   "running",

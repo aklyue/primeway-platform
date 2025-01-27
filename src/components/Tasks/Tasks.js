@@ -162,7 +162,7 @@ function Tasks() {
     return () => {
       clearInterval(intervalRef.current);
     };
-  }, [currentOrganization, isScheduledFilter, selectedStatus, selectedJobTyp, authToken]);
+  }, [currentOrganization, isScheduledFilter, selectedStatus, selectedJobType, authToken]);
 
   useEffect(() => {
     applyFilters();

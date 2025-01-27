@@ -108,12 +108,13 @@ const YandexAuth = () => {
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({ token: data.access_token }),
-                  credentials: "include",  // Include cookies in the request
                 })
                   .then((response) => response.json())
                   .then((userData) => {
-                    console.log("User data received:", userData);
-                    login(userData.user);  // Call login with user data
+                    console.log("Полученные данные пользователя:", userData);
+                    const token = userData.jwt_token;
+                    const user = userData.user;
+                    login(token, user);
                     navigate("/tasks");
                   })
                   .catch((error) => {

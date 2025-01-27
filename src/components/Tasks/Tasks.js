@@ -55,6 +55,7 @@ const buildStatusColors = {
 };
 
 function Tasks() {
+  const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
   const [allJobs, setAllJobs] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -104,7 +105,7 @@ function Tasks() {
     if (initialLoadRef.current) {
       setLoading(true);
     }
-    if (currentOrganization) {
+    if (currentOrganization && authToken) {
       const endpoint = `/jobs/get-organization-jobs`;
       const params = {
         organization_id: currentOrganization.id,
@@ -160,7 +161,7 @@ function Tasks() {
     return () => {
       clearInterval(intervalRef.current);
     };
-  }, [currentOrganization, isScheduledFilter, selectedStatus, selectedJobType]);
+  }, [currentOrganization, isScheduledFilter, selectedStatus, selectedJobTyp, authToken]);
 
   useEffect(() => {
     applyFilters();

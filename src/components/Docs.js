@@ -54,6 +54,7 @@ function Docs() {
         maxWidth: "980px",
         margin: "0 auto",
         padding: "20px 50px",
+        
         "& h1": {
           color: theme.palette.primary.main,
         },
@@ -98,17 +99,23 @@ function Docs() {
             <Button
               component={Link}
               to={`/docs/${prevDoc.path}`}
-              variant="outlined"
+              style={{color:'rgb(244, 244, 244)',}}
               sx={{
-                // Применяем стиль к стрелке при наведении на кнопку
+                
+                background:'#060606',
                 "&:hover .arrow": {
                   transform: "translateX(-3px)",
+                  
                 },
+                "&:hover": {
+                  background:'#060606'
+                }
               }}
             >
               <Box
                 className="arrow"
                 sx={{
+                  
                   marginRight: "5px",
                   display: "inline-block",
                   transition: "transform 0.16s ease-in-out",
@@ -126,11 +133,15 @@ function Docs() {
             <Button
               component={Link}
               to={`/docs/${nextDoc.path}`}
-              variant="outlined"
+              style={{color:'rgb(244, 244, 244)',}}
               sx={{
+                background:'#060606',
                 "&:hover .arrow": {
                   transform: "translateX(3px)",
                 },
+                "&:hover": {
+                  background:'#060606'
+                }
               }}
             >
               {nextDoc.title}

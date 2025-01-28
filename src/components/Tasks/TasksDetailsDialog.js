@@ -742,7 +742,7 @@ function JobDetailsDialog({
               left: 9,
             }}
           >
-            {getStatusIndicator(job.last_execution_status)}
+            {getStatusIndicator(job)}
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
             {/* Название задачи */}
@@ -781,9 +781,7 @@ function JobDetailsDialog({
               >
                 <strong>{job.build_status}</strong>
               </Typography>
-              {job.build_status === "building" && (
-                <CircularProgress size={16} />
-              )}
+             
             </Box>
             <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
             <Button
@@ -1047,7 +1045,7 @@ function JobDetailsDialog({
                 <Button
                   variant={"outlined"}
                   onClick={() => setActiveTab("schedule")}
-                  disabled={schedules.length === 0}
+                  
                   sx={{
                     mr: 1,
                     backgroundColor:

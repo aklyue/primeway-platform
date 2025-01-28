@@ -162,7 +162,13 @@ function Tasks() {
     return () => {
       clearInterval(intervalRef.current);
     };
-  }, [currentOrganization, isScheduledFilter, selectedStatus, selectedJobType, authToken]);
+  }, [
+    currentOrganization,
+    isScheduledFilter,
+    selectedStatus,
+    selectedJobType,
+    authToken,
+  ]);
 
   useEffect(() => {
     applyFilters();
@@ -511,7 +517,15 @@ function Tasks() {
       });
   };
 
-  const getStatusIndicator = (status) => {
+  const getStatusIndicator = (job) => {
+    const status = job.last_execution_status;
+    const buildStatus = job.build_status;
+
+    if (buildStatus === "building") {
+      const color = buildStatusColors[buildStatus] || "grey";
+      return <CircularProgress size={15} thickness={5} sx={{ color: color }} />;
+    }
+
     const color = statusColors[status] || "grey";
 
     if (["creating", "pending", "provisioning"].includes(status)) {
@@ -580,7 +594,7 @@ function Tasks() {
         </Box>
       </Box>
       {/* Кнопки фильтров статусов */}
-      <Box sx={{ ml: 2, mb: 1, display:'flex' }}>
+      <Box sx={{ ml: 2, mb: 1, display: "flex" }}>
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
@@ -741,7 +755,7 @@ function Tasks() {
                             right: 5,
                           }}
                         >
-                          {getStatusIndicator(job.last_execution_status)}
+                          {getStatusIndicator(job)}
                         </Box>
 
                         <Paper variant="outlined" sx={{ border: "none" }}>
@@ -827,9 +841,6 @@ function Tasks() {
                                 }}
                               >
                                 {job.build_status}
-                                {job.build_status === "building" && (
-                                  <CircularProgress size={16} sx={{ ml: 1 }} />
-                                )}
                               </Typography>
                             </Grid>
                             {/* Начало */}

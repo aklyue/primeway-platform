@@ -653,7 +653,7 @@ export function Layout() {
                   mr: { xs: 0, sm: "15px" },
                   ml: { xs: 0, sm: "5px" },
                   minHeight: "90vh",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: isDocsPage ?'#f9faff' : "#FFFFFF",
                   padding: { xs: "25px", sm: "35px" },
                   marginTop: { xs: "56px", sm: "64px" },
                   borderRadius: { xs: "0px", sm: "20px" },

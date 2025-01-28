@@ -127,10 +127,10 @@ const GpuCard = ({ gpu, onCopy }) => {
         onClick={() => onCopy(gpu.name)}
         sx={{
           position: "relative",
-          backgroundColor: "#FFFFFF",
           borderRadius: "15px",
-          boxShadow: "0 6px 18px rgba(0, 0, 0, 0.12)",
-          transition: "transform 0.3s, box-shadow 0.3s",
+          transition: "transform 0.3s",
+          backgroundColor: "#060606",
+          color: "#fff",
           height: "100%",
           display: "flex",
           flexDirection: "column",
@@ -152,9 +152,9 @@ const GpuCard = ({ gpu, onCopy }) => {
                 top: 8,
                 right: 8,
                 zIndex: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                color:'#fff',
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 1)",
+                  backgroundColor: "rgba(255, 255, 255, 0.3)",
                 },
               }}
             >
@@ -177,14 +177,14 @@ const GpuCard = ({ gpu, onCopy }) => {
           <NvidiaIcon />
 
           <Typography
-            sx={{ fontSize: "15px", fontWeight: "bold" }}
+            sx={{ fontSize: "15px", fontWeight: "bold", color: "#fff", }}
             component="div"
             gutterBottom
           >
             {gpu.name}
           </Typography>
 
-          <Typography sx={{ fontSize: "14px" }} color="textSecondary">
+          <Typography sx={{ fontSize: "14px", color: "#fff", }} color="textSecondary">
             <strong>Память:</strong> {gpu.memoryInGb} GB
           </Typography>
 
@@ -196,9 +196,8 @@ const GpuCard = ({ gpu, onCopy }) => {
             <Box
               component="span"
               sx={{
-                color: "rgb(81, 126, 24)",
+                color: '#0bff04',
                 padding: "5px 20px",
-                backgroundColor: "rgba(0, 0, 0, 0.1)",
                 borderRadius: "5px",
                 fontSize: "15px",
               }}

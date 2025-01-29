@@ -24,6 +24,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useMediaQuery,
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
@@ -42,6 +43,8 @@ import { ru } from "date-fns/locale";
 import yaml from "js-yaml";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
+import JobDetailsDialogMobile from "./JobDetailsDialogMobile";
+import { useTheme } from "@mui/material/styles";
 
 const statusColors = {
   success: "#28a745", // зеленый
@@ -79,6 +82,11 @@ function JobDetailsDialog({
   const [currentJobName, setCurrentJobName] = useState("");
   const [logsModalOpen, setLogsModalOpen] = useState(false);
 
+  // Добавлены новые состояния для событий
+  const [events, setEvents] = useState({});
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState(null);
+
   // Состояния для расписания
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false);
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
@@ -99,6 +107,9 @@ function JobDetailsDialog({
   const initialSchedulesLoadRef = useRef(true);
   const initialConfigLoadRef = useRef(true);
   const intervalRef = useRef(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const formatJobExecutionId = (id) => {
     if (!id) return "N/A";
@@ -247,6 +258,24 @@ function JobDetailsDialog({
       });
   };
 
+  // Функция для получения событий
+  const fetchEvents = async () => {
+    setEventsLoading(true);
+    setEventsError(null);
+    try {
+      // Здесь будет запрос на сервер за событиями
+      // const response = await axiosInstance.get("/jobs/get-events", { params: { job_id: job.job_id } });
+      // setEvents(response.data);
+      // Пока устанавливаем пустой объект
+      setEvents({});
+    } catch (error) {
+      console.error("Ошибка при получении событий:", error);
+      setEventsError("Ошибка при загрузке событий");
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
   // Функция для получения списка выполнений задачи
   const fetchExecutions = async () => {
     if (initialExecutionsLoadRef.current) {
@@ -338,12 +367,11 @@ function JobDetailsDialog({
       fetchExecutions();
       fetchSchedules();
       fetchConfig();
+      fetchEvents();
 
       // Устанавливаем интервал для периодического фетчинга
       intervalRef.current = setInterval(() => {
         fetchExecutions();
-        fetchSchedules();
-        fetchConfig();
       }, 5000); // Интервал в 5 секунд
 
       // Очищаем интервал при размонтировании компонента или закрытии диалога
@@ -702,6 +730,19 @@ function JobDetailsDialog({
     return null;
   }
 
+  if (isMobile) {
+    // Если устройство мобильное, отображаем JobDetailsDialogMobile
+    return (
+      <JobDetailsDialogMobile
+        open={open}
+        onClose={onClose}
+        job={job}
+        getStatusIndicator={getStatusIndicator}
+        useMockData={useMockData}
+      />
+    );
+  }
+
   return (
     <>
       <Dialog
@@ -781,7 +822,6 @@ function JobDetailsDialog({
               >
                 <strong>{job.build_status}</strong>
               </Typography>
-             
             </Box>
             <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
             <Button
@@ -1045,7 +1085,6 @@ function JobDetailsDialog({
                 <Button
                   variant={"outlined"}
                   onClick={() => setActiveTab("schedule")}
-                  
                   sx={{
                     mr: 1,
                     backgroundColor:
@@ -1058,11 +1097,22 @@ function JobDetailsDialog({
                   variant={"outlined"}
                   onClick={() => setActiveTab("config")}
                   sx={{
+                    mr: 1,
                     backgroundColor:
                       activeTab === "config" ? "#c0c0c5" : "#ececf1",
                   }}
                 >
                   Конфигурация
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setActiveTab("events")}
+                  sx={{
+                    backgroundColor:
+                      activeTab === "events" ? "#c0c0c5" : "#ececf1",
+                  }}
+                >
+                  События
                 </Button>
               </Box>
 
@@ -1160,6 +1210,51 @@ function JobDetailsDialog({
                   )}
                 </Box>
               )}
+              {activeTab === "events" && (
+                <Box sx={{ height: "100%", overflow: "auto" }}>
+                  {eventsLoading ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "200px",
+                      }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : eventsError ? (
+                    <Typography color="error">{eventsError}</Typography>
+                  ) : (
+                    <>
+                      {/* Проверяем, есть ли события */}
+                      {Object.keys(events).length > 0 ? (
+                        <List>
+                          {Object.entries(events).map(
+                            ([dateTime, log], index) => (
+                              <Paper
+                                variant="outlined"
+                                sx={{ p: 2, mb: 2 }}
+                                key={index}
+                              >
+                                <Typography
+                                  variant="subtitle1"
+                                  sx={{ fontWeight: "bold" }}
+                                >
+                                  {formatDateTime(dateTime)}
+                                </Typography>
+                                <Typography variant="body2">{log}</Typography>
+                              </Paper>
+                            )
+                          )}
+                        </List>
+                      ) : (
+                        <Typography>Событий нет.</Typography>
+                      )}
+                    </>
+                  )}
+                </Box>
+              )}
             </Box>
           </Box>
         </DialogContent>
@@ -1168,7 +1263,6 @@ function JobDetailsDialog({
         </DialogActions>
       </Dialog>
 
-      {/* Диалоговое окно с формой расписания */}
       {/* Диалоговое окно с формой расписания */}
       <Dialog
         open={scheduleFormOpen}

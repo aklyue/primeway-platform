@@ -11,7 +11,7 @@ export const OrganizationProvider = ({ children }) => {
   const [organizations, setOrganizations] = useState([]);
   const [currentOrganization, setCurrentOrganization] = useState(null);
 
-  // Новые состояния для баланса кошелька и состояния загрузки
+  // Состояния для баланса кошелька и состояния загрузки
   const [walletBalance, setWalletBalance] = useState(null);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletError, setWalletError] = useState(null);
@@ -31,9 +31,9 @@ export const OrganizationProvider = ({ children }) => {
   }, [user]);
 
   // Функция для загрузки баланса кошелька
-  const fetchWalletBalance = () => {
+  const fetchWalletBalance = (isInitial = false) => {
     if (user && user.billing_account_id) {
-      setWalletLoading(true);
+      if (isInitial) setWalletLoading(true);
       setWalletError(null);
 
       axiosInstance
@@ -47,24 +47,40 @@ export const OrganizationProvider = ({ children }) => {
           setWalletBalance(null);
         })
         .finally(() => {
-          setWalletLoading(false);
+          if (isInitial) setWalletLoading(false);
         });
     }
   };
 
   // Загружаем баланс кошелька при изменении текущей организации
   useEffect(() => {
-    fetchWalletBalance();
+    fetchWalletBalance(true); // Передаем true, чтобы показать загрузку только при инициализации
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrganization]);
+
+  // Устанавливаем интервал для периодического обновления баланса каждые 5 секунд
+  useEffect(() => {
+    let intervalId;
+    if (user && user.billing_account_id) {
+      intervalId = setInterval(() => {
+        fetchWalletBalance(); // Обновление без показа индикатора загрузки
+      }, 5000); // Интервал в 5 секунд
+    }
+
+    // Очищаем интервал при размонтировании компонента или изменении зависимостей
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [user, user?.billing_account_id]);
 
   const switchOrganization = async (organizationId) => {
     const org = organizations.find(org => org.id === organizationId);
     if (org) {
       setCurrentOrganization(org);
       // Вызываем обновление баланса кошелька при смене организации
-      fetchWalletBalance();
-      // You might want to update some API headers or perform other actions here
+      fetchWalletBalance(true); // Передаем true, чтобы показать загрузку при смене организации
       return org;
     }
     return null;
@@ -89,10 +105,10 @@ export const OrganizationProvider = ({ children }) => {
         switchOrganization,
         getCurrentUserRole,
         isCurrentOrgOwner,
-        walletBalance,       
-        walletLoading,       
-        walletError,        
-        fetchWalletBalance,  
+        walletBalance,
+        walletLoading,
+        walletError,
+        fetchWalletBalance,
       }}
     >
       {children}

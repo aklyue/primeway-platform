@@ -196,6 +196,30 @@ export function Layout() {
     <div>
       <Toolbar />
       <List>
+      {isMobile && (
+        <List sx={{display:'flex', }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/gpu-list"
+              selected={!location.pathname.startsWith("/docs")}
+              onClick={handleDrawerToggle}
+            >
+              <ListItemText primary="Дашборд" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/docs"
+              selected={location.pathname.startsWith("/docs")}
+              onClick={handleDrawerToggle}
+            >
+              <ListItemText primary="Доки" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      )}
         {!isDocsPage ? (
           <>
             {/* Список элементов меню для дашборда */}
@@ -227,7 +251,7 @@ export function Layout() {
                 selected={location.pathname === "/billing"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Платежи" />
+                <ListItemText primary="Биллинг" />
               </ListItemButton>
             </ListItem>
 
@@ -260,7 +284,7 @@ export function Layout() {
                 selected={location.pathname === "/organization-settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
               >
-                <ListItemText primary="Участники" />
+                <ListItemText primary="Организация" />
               </ListItemButton>
             </ListItem>
           </>
@@ -447,7 +471,7 @@ export function Layout() {
                         }}
                       >
                         <Typography
-                          variant="h5"
+                          variant={isMobile ? 'h6' : 'h5'}
                           noWrap
                           component={Link}
                           to="/"
@@ -474,7 +498,7 @@ export function Layout() {
                             }}
                           >
                             {isDocsPage ? (
-                              "Documentation"
+                              "Документация"
                             ) : (
                               <OrganizationSwitcher />
                             )}
@@ -486,66 +510,68 @@ export function Layout() {
                       <Box sx={{ flexGrow: 1 }} />
 
                       {/* Кнопки переключения между дашбордом и документацией */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          marginRight: 2,
-                        }}
-                      >
-                        <Button
-                          component={Link}
-                          to="/gpu-list"
-                          color="inherit"
+                      {!isMobile && (
+                        <Box
                           sx={{
-                            textTransform: "none",
-                            backgroundColor: !isDocsPage
-                              ? "primary.main"
-                              : "transparent",
-                            color: !isDocsPage ? "#FFFFFF" : "#acacbe",
-                            borderRadius: "8px",
-                            marginRight: "8px",
-                            "&:hover": {
+                            display: "flex",
+                            alignItems: "center",
+                            marginRight: 2,
+                          }}
+                        >
+                          <Button
+                            component={Link}
+                            to="/gpu-list"
+                            color="inherit"
+                            sx={{
+                              textTransform: "none",
                               backgroundColor: !isDocsPage
-                                ? "primary.dark"
+                                ? "primary.main"
                                 : "transparent",
-                            },
-                          }}
-                        >
-                          Dashboard
-                        </Button>
-                        <Button
-                          component={Link}
-                          to="/docs"
-                          color="inherit"
-                          sx={{
-                            textTransform: "none",
-                            backgroundColor: isDocsPage
-                              ? "primary.main"
-                              : "transparent",
-                            color: isDocsPage ? "#FFFFFF" : "#acacbe",
-                            borderRadius: "8px",
-                            marginRight: "8px",
-                            "&:hover": {
+                              color: !isDocsPage ? "#FFFFFF" : "#acacbe",
+                              borderRadius: "8px",
+                              marginRight: "8px",
+                              "&:hover": {
+                                backgroundColor: !isDocsPage
+                                  ? "primary.dark"
+                                  : "transparent",
+                              },
+                            }}
+                          >
+                            Дашборд
+                          </Button>
+                          <Button
+                            component={Link}
+                            to="/docs"
+                            color="inherit"
+                            sx={{
+                              textTransform: "none",
                               backgroundColor: isDocsPage
-                                ? "primary.dark"
+                                ? "primary.main"
                                 : "transparent",
-                            },
-                          }}
-                        >
-                          Docs
-                        </Button>
+                              color: isDocsPage ? "#FFFFFF" : "#acacbe",
+                              borderRadius: "8px",
+                              marginRight: "8px",
+                              "&:hover": {
+                                backgroundColor: isDocsPage
+                                  ? "primary.dark"
+                                  : "transparent",
+                              },
+                            }}
+                          >
+                            Доки
+                          </Button>
 
-                        {/* Добавляем иконку событий */}
-                        <IconButton
-                          onClick={handleEventsClick}
-                          sx={{
-                            color: isEventsOpen ? "secondary.main" : "#202123",
-                          }}
-                        >
-                          <NotificationsNoneIcon />
-                        </IconButton>
-                      </Box>
+                          {/* Добавляем иконку событий */}
+                          <IconButton
+                            onClick={handleEventsClick}
+                            sx={{
+                              color: isEventsOpen ? "secondary.main" : "#202123",
+                            }}
+                          >
+                            <NotificationsNoneIcon />
+                          </IconButton>
+                        </Box>
+                      )}
 
                       {isLoggedIn && (
                         <>
@@ -608,7 +634,7 @@ export function Layout() {
                         sx={{
                           "& .MuiDrawer-paper": {
                             width: drawerWidth,
-                            backgroundColor: isDocsPage ? "#F5F5F5" : "#03031c",
+                            ackgroundColor: isDocsPage ? "#e8eaf6" : "#F5F5F5",
                           },
                         }}
                       >
@@ -653,7 +679,7 @@ export function Layout() {
                   mr: { xs: 0, sm: "15px" },
                   ml: { xs: 0, sm: "5px" },
                   minHeight: "90vh",
-                  backgroundColor: isDocsPage ?'#f9faff' : "#FFFFFF",
+                  backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",
                   padding: { xs: "25px", sm: "35px" },
                   marginTop: { xs: "56px", sm: "64px" },
                   borderRadius: { xs: "0px", sm: "20px" },

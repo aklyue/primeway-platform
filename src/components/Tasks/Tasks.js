@@ -16,6 +16,10 @@ import {
   Paper,
   Snackbar,
   Alert,
+  useMediaQuery,
+  Card,
+  CardContent,
+  CardActions,
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
@@ -27,6 +31,9 @@ import { format, parseISO } from "date-fns";
 import TasksDetailsDialog from "./TasksDetailsDialog";
 import TasksActions from "./TasksActions";
 import { AuthContext } from "../../AuthContext";
+import { useTheme } from "@mui/material/styles";
+import { wrap } from "framer-motion";
+
 
 const statusOptions = [
   "running",
@@ -101,6 +108,11 @@ function Tasks() {
 
   const intervalRef = useRef(null);
   const initialLoadRef = useRef(true);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery('(max-width:900px)');
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
 
   const fetchJobs = () => {
     if (initialLoadRef.current) {
@@ -594,7 +606,7 @@ function Tasks() {
         </Box>
       </Box>
       {/* Кнопки фильтров статусов */}
-      <Box sx={{ ml: 2, mb: 1, display: "flex" }}>
+      <Box sx={{ ml: 2, mb: 1, display: "flex", flexWrap:'wrap', gap:'5px' }}>
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
@@ -620,6 +632,7 @@ function Tasks() {
               borderRadius: "12px",
               fontSize: "12px",
               mr: 1,
+
               backgroundColor:
                 selectedStatus === status ? statusColors[status] : "inherit",
               color: selectedStatus === status ? "white" : statusColors[status],
@@ -645,71 +658,75 @@ function Tasks() {
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              {/* Заголовки столбцов */}
-              <Grid
-                container
-                spacing={1}
-                alignItems="center"
-                sx={{
-                  p: 1,
-                  borderBottom: "1px solid #ccc",
-                  textAlign: "center",
-                }}
-              >
-                <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Имя
-                  </Typography>
-                </Grid>
-                <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    ID
-                  </Typography>
-                </Grid>
-                <Grid item xs={1.6}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Создана
-                  </Typography>
-                </Grid>
-                <Grid item xs={1.6}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Статус образа
-                  </Typography>
-                </Grid>
-                <Grid item xs={selectedJobType === "run" ? 1.6 : 1.4}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Начало
-                  </Typography>
-                </Grid>
-                <Grid item xs={selectedJobType === "run" ? 1.6 : 1.4}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Статус
-                  </Typography>
-                </Grid>
-                {/* Дополнительные колонки для "deploy" */}
-                {selectedJobType === "deploy" && (
-                  <>
-                    <Grid item xs={1}>
-                      <Typography variant="subtitle2" fontWeight="bold">
-                        URL
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={1}>
-                      <Typography variant="subtitle2" fontWeight="bold">
-                        Health
-                      </Typography>
-                    </Grid>
-                  </>
-                )}
-                <Grid item xs={1}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Действия
-                  </Typography>
+          <Grid container spacing={isMobile ? 1 : 2}>
+            {/* Заголовки столбцов */}
+            {!isMobile && (
+              <Grid item xs={12}>
+                <Grid
+                  container
+                  spacing={1}
+                  alignItems="center"
+                  sx={{
+                    p: 1,
+                    borderBottom: "1px solid #ccc",
+                    textAlign: "center",
+                    display: isMobile ? "none" : "flex",
+                  }}
+                >
+                  {/* Ваши заголовки */}
+                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Имя
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      ID
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={1.6}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Создана
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={1.6}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Статус образа
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.4}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Начало
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.4}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Статус
+                    </Typography>
+                  </Grid>
+                  {/* Дополнительные колонки для "deploy" */}
+                  {selectedJobType === "deploy" && (
+                    <>
+                      <Grid item xs={1}>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          URL
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={1}>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Health
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  <Grid item xs={1}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      Действия
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
+            )}
 
             {/* Если идет загрузка данных, показываем спиннер под заголовками */}
             {loading ? (
@@ -735,173 +752,271 @@ function Tasks() {
                       key={job.job_id || job.id}
                       style={{ paddingTop: "8px" }}
                     >
-                      <Box
-                        onClick={() => handleTaskClick(job)}
-                        sx={{
-                          //   cursor: "pointer",
-                          position: "relative",
-
-                          //   borderRadius: "15px",
-                          //   transition: "transform 0.2s",
-                          //   "&:hover": {
-                          //     transform: "scale(1.02)",
-                          //   },
-                        }}
-                      >
-                        <Box
+                      {isMobile || isTablet ? (
+                        // Отображение в виде карточек на мобильных устройствах
+                        <Card
+                          onClick={() => handleTaskClick(job)}
                           sx={{
-                            position: "absolute",
-                            top: 13,
-                            right: 5,
+                            position: "relative",
+                            cursor: "pointer",
+                            backgroundColor: "background.paper",
+                            borderRadius: "12px",
+                            "&:hover": {
+                              backgroundColor: "action.hover",
+                            },
                           }}
                         >
-                          {getStatusIndicator(job)}
-                        </Box>
-
-                        <Paper variant="outlined" sx={{ border: "none" }}>
-                          <Grid
-                            container
-                            spacing={1}
-                            alignItems="center"
-                            sx={{
-                              textAlign: "center",
-                              borderBottom: "1px solid #ccc",
-                              p: 1,
-                              cursor: "pointer",
-                              position: "relative",
-                              // borderRadius: "15px",
-                              background: "rgba(0,0,0,0)",
-                              transition: "background 0.2s",
-                              "&:hover": {
-                                background: "rgba(0,0,0,0.08)",
-                              },
-
-                              "& > .MuiGrid-item": {
-                                paddingTop: 0,
-                              },
-                            }}
-                          >
-                            {/* Имя */}
-                            <Grid
-                              item
-                              xs={selectedJobType === "run" ? 1.6 : 1.3}
+                          <CardContent sx={{ position: "relative" }}>
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                              }}
                             >
-                              <Typography variant="body2">
-                                {job.job_name}
-                              </Typography>
-                            </Grid>
-                            {/* ID */}
-                            <Grid
-                              item
-                              xs={selectedJobType === "run" ? 1.6 : 1.3}
-                            >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
+                              {getStatusIndicator(job)}
+                            </Box>
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                              {job.job_name}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>ID:</strong> {formatJobId(job.job_id)}
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(job.job_id);
                                 }}
                               >
-                                <Typography variant="body2">
-                                  {formatJobId(job.job_id)}
-                                </Typography>
-                                <Tooltip title="Скопировать ID задачи">
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCopy(job.job_id);
-                                    }}
-                                  >
-                                    <ContentCopyIcon
-                                      fontSize="small"
-                                      sx={{ fontSize: "1.1rem" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </Grid>
-                            {/* Создана */}
-                            <Grid item xs={1.6}>
-                              <Typography variant="body2">
-                                {formatDateTime(job.created_at)}
-                              </Typography>
-                            </Grid>
-                            {/* Статус образа */}
-                            <Grid item xs={1.6}>
-                              <Typography
-                                variant="body2"
-                                sx={{
+                                <ContentCopyIcon
+                                  fontSize="small"
+                                  sx={{ fontSize: "1.1rem" }}
+                                />
+                              </IconButton>
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Создана:</strong>{" "}
+                              {formatDateTime(job.created_at)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Статус образа:</strong>{" "}
+                              <span
+                                style={{
                                   color:
                                     buildStatusColors[job.build_status] ||
                                     "black",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
                                 }}
                               >
                                 {job.build_status}
-                              </Typography>
-                            </Grid>
-                            {/* Начало */}
-                            <Grid
-                              item
-                              xs={selectedJobType === "run" ? 1.6 : 1.4}
-                            >
-                              <Typography variant="body2">
-                                {job.last_execution_start_time
-                                  ? formatDateTime(
-                                      job.last_execution_start_time
-                                    )
-                                  : "N/A"}
-                              </Typography>
-                            </Grid>
-                            {/* Статус */}
-                            <Grid
-                              item
-                              xs={selectedJobType === "run" ? 1.6 : 1.4}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{
+                              </span>
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Начало:</strong>{" "}
+                              {job.last_execution_start_time
+                                ? formatDateTime(job.last_execution_start_time)
+                                : "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Статус:</strong>{" "}
+                              <span
+                                style={{
                                   color:
-                                    statusColors[job.last_execution_status] ||
-                                    "black",
+                                    statusColors[
+                                      job.last_execution_status
+                                    ] || "black",
                                 }}
                               >
                                 {job.last_execution_status || "N/A"}
-                              </Typography>
-                            </Grid>
-                            {/* Дополнительные колонки для "deploy" */}
+                              </span>
+                            </Typography>
+                            {/* Дополнительные поля для "deploy" */}
                             {selectedJobType === "deploy" && (
                               <>
-                                <Grid item xs={1}>
-                                  <Typography variant="body2">
-                                    {job.job_url || "N/A"}
-                                  </Typography>
-                                </Grid>
-                                <Grid item xs={1}>
-                                  <Typography variant="body2">
-                                    {job.health_status || "N/A"}
-                                  </Typography>
-                                </Grid>
+                                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                  <strong>URL:</strong> {job.job_url || "N/A"}
+                                </Typography>
+                                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                  <strong>Health:</strong>{" "}
+                                  {job.health_status || "N/A"}
+                                </Typography>
                               </>
                             )}
-                            {/* Действия */}
-                            <Grid item xs={1}>
-                              <TasksActions
-                                job={job}
-                                onLogsClick={handleLogsClick}
-                                onExecutionsClick={handleExecutionsClick}
-                                onScheduleClick={handleScheduleClick}
-                                onBuildLogsClick={handleBuildLogsClick}
-                                onDownloadArtifacts={handleDownloadArtifacts}
-                                onStopClick={handleStopClick}
-                              />
+                          </CardContent>
+                          <CardActions>
+                            <TasksActions
+                              job={job}
+                              onLogsClick={handleLogsClick}
+                              onExecutionsClick={handleExecutionsClick}
+                              onScheduleClick={handleScheduleClick}
+                              onBuildLogsClick={handleBuildLogsClick}
+                              onDownloadArtifacts={handleDownloadArtifacts}
+                              onStopClick={handleStopClick}
+                            />
+                          </CardActions>
+                        </Card>
+                      ) : (
+                        // Отображение в виде таблицы на больших экранах
+                        <Box
+                          onClick={() => handleTaskClick(job)}
+                          sx={{
+                            position: "relative",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: "50%",
+                              right: 5,
+                              transform: "translateY(-50%)",
+                            }}
+                          >
+                            {getStatusIndicator(job)}
+                          </Box>
+
+                          <Paper variant="outlined" sx={{ border: "none" }}>
+                            <Grid
+                              container
+                              spacing={1}
+                              alignItems="center"
+                              sx={{
+                                textAlign: "center",
+                                borderBottom: "1px solid #ccc",
+                                p: 1,
+                                cursor: "pointer",
+                                position: "relative",
+                                background: "rgba(0,0,0,0)",
+                                transition: "background 0.2s",
+                                "&:hover": {
+                                  background: "rgba(0,0,0,0.08)",
+                                },
+                                "& > .MuiGrid-item": {
+                                  paddingTop: 0,
+                                },
+                              }}
+                            >
+                              {/* Имя */}
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.6 : 1.3}
+                              >
+                                <Typography variant="body2">
+                                  {job.job_name}
+                                </Typography>
+                              </Grid>
+                              {/* ID */}
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.6 : 1.3}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <Typography variant="body2">
+                                    {formatJobId(job.job_id)}
+                                  </Typography>
+                                  <Tooltip title="Скопировать ID задачи">
+                                    <IconButton
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCopy(job.job_id);
+                                      }}
+                                    >
+                                      <ContentCopyIcon
+                                        fontSize="small"
+                                        sx={{ fontSize: "1.1rem" }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                              </Grid>
+                              {/* Создана */}
+                              <Grid item xs={1.6}>
+                                <Typography variant="body2">
+                                  {formatDateTime(job.created_at)}
+                                </Typography>
+                              </Grid>
+                              {/* Статус образа */}
+                              <Grid item xs={1.6}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color:
+                                      buildStatusColors[job.build_status] ||
+                                      "black",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {job.build_status}
+                                </Typography>
+                              </Grid>
+                              {/* Начало */}
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.6 : 1.4}
+                              >
+                                <Typography variant="body2">
+                                  {job.last_execution_start_time
+                                    ? formatDateTime(
+                                        job.last_execution_start_time
+                                      )
+                                    : "N/A"}
+                                </Typography>
+                              </Grid>
+                              {/* Статус */}
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.6 : 1.4}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color:
+                                      statusColors[
+                                        job.last_execution_status
+                                      ] || "black",
+                                  }}
+                                >
+                                  {job.last_execution_status || "N/A"}
+                                </Typography>
+                              </Grid>
+                              {/* Дополнительные колонки для "deploy" */}
+                              {selectedJobType === "deploy" && (
+                                <>
+                                  <Grid item xs={1}>
+                                    <Typography variant="body2">
+                                      {job.job_url || "N/A"}
+                                    </Typography>
+                                  </Grid>
+                                  <Grid item xs={1}>
+                                    <Typography variant="body2">
+                                      {job.health_status || "N/A"}
+                                    </Typography>
+                                  </Grid>
+                                </>
+                              )}
+                              {/* Действия */}
+                              <Grid item xs={1}>
+                                <TasksActions
+                                  job={job}
+                                  onLogsClick={handleLogsClick}
+                                  onExecutionsClick={handleExecutionsClick}
+                                  onScheduleClick={handleScheduleClick}
+                                  onBuildLogsClick={handleBuildLogsClick}
+                                  onDownloadArtifacts={handleDownloadArtifacts}
+                                  onStopClick={handleStopClick}
+                                />
+                              </Grid>
                             </Grid>
-                          </Grid>
-                        </Paper>
-                      </Box>
+                          </Paper>
+                        </Box>
+                      )}
                     </Grid>
                   ))
                 ) : (

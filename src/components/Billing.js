@@ -1,23 +1,7 @@
 // src/components/Billing.js
 
 import React, { useState, useContext, useEffect, useRef } from "react";
-import {
-  Box,
-  Typography,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-} from "@mui/material";
+import { Box, Typography, Alert, CircularProgress } from "@mui/material";
 import TPaymentWidget from "./TPaymentWidget";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
@@ -25,16 +9,51 @@ import axiosInstance from "../api";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
+// Импортируем необходимые компоненты из react-chartjs-2 и chart.js
+import { Bar, Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  BarElement,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip as ChartTooltip,
+  Legend,
+  Filler, // Добавляем Filler для градиентной заливки
+  TimeScale,
+} from "chart.js";
+
+// Импортируем адаптер для работы с временем
+import 'chartjs-adapter-date-fns';
+import { ru } from 'date-fns/locale';
+
+// Регистрируем компоненты Chart.js
+ChartJS.register(
+  BarElement,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  ChartTooltip,
+  Legend,
+  Filler, // Регистрируем Filler
+  TimeScale,
+);
+
 function Billing() {
   const { user } = useContext(AuthContext);
-  const { currentOrganization, isCurrentOrgOwner } =
-    useContext(OrganizationContext);
+  const {
+    currentOrganization,
+    isCurrentOrgOwner,
+    walletBalance,
+    walletLoading,
+    walletError,
+  } = useContext(OrganizationContext);
 
   // Состояния для данных
-  const [walletBalance, setWalletBalance] = useState(null);
-  const [creditUsageTransactions, setCreditUsageTransactions] = useState([]);
-  const [creditPurchaseTransactions, setCreditPurchaseTransactions] = useState([]);
-  const [billingAccountDetails, setBillingAccountDetails] = useState(null);
+  const [creditUsagePerDay, setCreditUsagePerDay] = useState([]); // Данные для графика расходов
+  const [creditPurchasesData, setCreditPurchasesData] = useState([]); // Данные для графика покупок
 
   // Состояния для загрузки и ошибок
   const [isLoading, setIsLoading] = useState(true);
@@ -42,10 +61,10 @@ function Billing() {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  // Используем useRef для отслеживания первой загрузки и интервала
+  // Используем useRef для отслеживания первой загрузки
   const initialLoadRef = useRef(true);
-  const intervalRef = useRef(null);
 
   // Функция для загрузки всех данных
   const fetchAllData = () => {
@@ -59,12 +78,7 @@ function Billing() {
       },
     };
 
-    // Обещания для загрузки всех данных
     Promise.all([
-      // Загрузка деталей биллингового аккаунта
-      axiosInstance.get(`/billing/${user.billing_account_id}`, config),
-      // Загрузка баланса кошелька
-      axiosInstance.get(`/billing/${user.billing_account_id}/balance`, config),
       // Загрузка транзакций списания кредитов
       axiosInstance.get(
         `/billing/${user.billing_account_id}/transactions/credit_usage`,
@@ -75,25 +89,67 @@ function Billing() {
         `/billing/${user.billing_account_id}/transactions/credit_purchase`,
         config
       ),
+      // Загрузка использования кредитов по дням
+      axiosInstance.get(
+        `/billing/${user.billing_account_id}/credits_usage`,
+        config
+      ),
     ])
       .then(
         ([
-          billingAccountResponse,
-          balanceResponse,
           usageTransactionsResponse,
           purchaseTransactionsResponse,
+          usagePerDayResponse,
         ]) => {
-          setBillingAccountDetails(billingAccountResponse.data);
-          setWalletBalance(balanceResponse.data.balance);
-          setCreditUsageTransactions(usageTransactionsResponse.data.transactions || []);
-          setCreditPurchaseTransactions(purchaseTransactionsResponse.data.transactions || []);
+          // Обработка данных для графика расходов
+          const usageData = usagePerDayResponse.data.usage_per_day;
+          const usageArray = Object.keys(usageData).map((date) => ({
+            date,
+            credits: usageData[date],
+          }));
+
+          // Сортировка дат по возрастанию
+          usageArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+          setCreditUsagePerDay(usageArray);
+
+          // Обработка данных для графика покупок кредитов
+          const purchasesData = (
+            purchaseTransactionsResponse.data.transactions || []
+          ).map((tx) => {
+            const date = tx.created_at.split("T")[0]; // Получаем только дату без времени
+            return {
+              date,
+              credits: parseFloat(tx.credits),
+            };
+          });
+
+          // Группируем покупки по дате
+          const purchasesByDate = {};
+          purchasesData.forEach((purchase) => {
+            if (purchasesByDate[purchase.date]) {
+              purchasesByDate[purchase.date] += purchase.credits;
+            } else {
+              purchasesByDate[purchase.date] = purchase.credits;
+            }
+          });
+
+          // Преобразуем в массив и сортируем по дате
+          const purchasesArray = Object.keys(purchasesByDate).map((date) => ({
+            date,
+            credits: purchasesByDate[date],
+          }));
+          purchasesArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+          setCreditPurchasesData(purchasesArray);
         }
       )
       .catch((error) => {
-        // Обработка ошибок
         console.error("Ошибка при загрузке данных биллинга:", error);
         const errorMessage =
-          error?.response?.data?.detail || error.message || "Ошибка при загрузке данных.";
+          error?.response?.data?.detail ||
+          error.message ||
+          "Ошибка при загрузке данных.";
         setError(errorMessage);
       })
       .finally(() => {
@@ -104,37 +160,21 @@ function Billing() {
       });
   };
 
-  // useEffect для начальной загрузки и установки интервала
+  // useEffect для начальной загрузки данных
   useEffect(() => {
     if (currentOrganization && isCurrentOrgOwner()) {
-      // Сбрасываем флаг первой загрузки
       initialLoadRef.current = true;
-
-      // Загружаем данные сразу при монтировании или изменении зависимостей
       fetchAllData();
-
-      // Устанавливаем интервал для периодического фетчинга
-      intervalRef.current = setInterval(() => {
-        fetchAllData();
-      }, 5000); // Интервал в 5 секунд
-
-      // Чистим интервал при размонтировании компонента или изменении зависимостей
-      return () => {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      };
-    } else {
-      // Очищаем интервал, если условия не выполнены
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
     }
-  }, [currentOrganization, isCurrentOrgOwner, user.billing_account_id, user.token]);
+  }, [
+    currentOrganization,
+    isCurrentOrgOwner,
+    user.billing_account_id,
+    user.token,
+  ]);
 
   // Обработка успешной оплаты
   const handlePaymentSuccess = () => {
-    // Перезагружаем данные после успешной оплаты
     fetchAllData();
   };
 
@@ -170,8 +210,8 @@ function Billing() {
     );
   }
 
-  // Если данные загружаются, отображаем плейсхолдер загрузки на всю страницу
-  if (isLoading) {
+  // Если данные загружаются, отображаем индикатор загрузки
+  if (isLoading || walletLoading) {
     return (
       <Box
         sx={{
@@ -187,6 +227,138 @@ function Billing() {
     );
   }
 
+  // Формирование данных для графика покупок кредитов (Bar Chart)
+  const purchasesChartData = {
+    labels: creditPurchasesData.map((item) =>
+      new Date(item.date).toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "short",
+      })
+    ),
+    datasets: [
+      {
+        label: "Сумма покупки (₽)",
+        data: creditPurchasesData.map((item) => item.credits),
+        backgroundColor: "#82ca9d",
+        borderColor: "#82ca9d",
+        borderWidth: 1,
+        barThickness: 20, // Устанавливаем толщину столбцов
+      },
+    ],
+  };
+
+  // Опции для графика покупок кредитов
+  const purchasesChartOptions = {
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: {
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 45,
+        },
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            return `Сумма покупки: ${context.parsed.y} ₽`;
+          },
+          title: function (context) {
+            return `Дата: ${
+              creditPurchasesData[context[0].dataIndex].date
+            }`;
+          },
+        },
+      },
+      legend: {
+        display: false,
+      },
+    },
+  };
+
+  // Формирование данных для графика расходов (Line Chart)
+  const expensesChartData = {
+    labels: creditUsagePerDay.map((item) => item.date),
+    datasets: [
+      {
+        label: "Расходы (₽)",
+        data: creditUsagePerDay.map((item) => item.credits),
+        backgroundColor: "rgba(136, 132, 216, 0.2)", // Полупрозрачный фон для градиента
+        borderColor: "#8884d8",
+        borderWidth: 2,
+        fill: true, // Включаем заливку под линией
+        tension: 0.4, // Более сглаженная линия
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#fff",
+        pointBorderColor: "#8884d8",
+        pointHoverBackgroundColor: "#8884d8",
+        pointHoverBorderColor: "#fff",
+      },
+    ],
+  };
+
+  // Опции для графика расходов
+  const expensesChartOptions = {
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        type: 'time', // Используем временную шкалу
+        time: {
+          unit: 'day',
+          tooltipFormat: 'dd MMMM yyyy',
+          displayFormats: {
+            day: 'dd MMM',
+          },
+        },
+        ticks: {
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: {
+          display: false, // Отключаем сетку по оси X
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "#e0e0e0", // Цвет горизонтальной сетки
+        },
+      },
+    },
+    plugins: {
+      tooltip: {
+        backgroundColor: "#fff",
+        titleColor: "#8884d8",
+        bodyColor: "#000",
+        borderColor: "#8884d8",
+        borderWidth: 1,
+        callbacks: {
+          label: function (context) {
+            return ` Расход: ${context.parsed.y} ₽`;
+          },
+          title: function (context) {
+            const date = new Date(context[0].parsed.x);
+            return `Дата: ${date.toLocaleDateString("ru-RU", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}`;
+          },
+        },
+      },
+      legend: {
+        display: false,
+      },
+    },
+  };
+
   // Основной контент после загрузки данных
   return (
     <Box>
@@ -194,61 +366,35 @@ function Billing() {
         Биллинг и Кошелек
       </Typography>
 
-      {/* Отображение деталей биллингового аккаунта */}
-      {error ? (
-        <Alert severity="error" sx={{ marginBottom: 2 }}>
-          {error}
-        </Alert>
-      ) : billingAccountDetails ? (
-        <Card sx={{ marginBottom: 2 }}>
-          <CardHeader title="Детали биллингового аккаунта" />
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">Название:</Typography>
-                <Typography variant="body1">{billingAccountDetails.name}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">Кредитный лимит:</Typography>
-                <Typography variant="body1">
-                  {billingAccountDetails.credit_limit !== null
-                    ? `${billingAccountDetails.credit_limit} ₽`
-                    : "Не установлен"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">Баланс кошелька:</Typography>
-                {error ? (
-                  <Typography variant="body1" color="error">
-                    {error}
-                  </Typography>
-                ) : (
-                  <Typography variant="body1" sx={{ color: "secondary.main" }}>
-                    {walletBalance} ₽
-                  </Typography>
-                )}
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">Создан:</Typography>
-                <Typography variant="body1">
-                  {new Date(billingAccountDetails.created_at).toLocaleDateString()}
-                </Typography>
-              </Grid>
-              {/* Добавьте любые другие поля, если они есть */}
-            </Grid>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {/* Кнопка оплаты */}
+      {/* Кнопка оплаты и баланс кошелька */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           alignItems: "center",
+          mt: isMobile ? 2 : 0,
+          flexDirection: isMobile || isTablet ? "column" : "row",
           marginBottom: "10px",
+          whiteSpace: "nowrap",
+          gap: "8px",
         }}
       >
+        {/* Отображение баланса кошелька */}
+        {walletError ? (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            {walletError}
+          </Alert>
+        ) : (
+          <Typography variant="h6">
+            Баланс кошелька:{" "}
+            <Typography
+              component="span"
+              sx={{ color: "secondary.main", fontWeight: "bold" }}
+            >
+              {walletBalance} ₽
+            </Typography>
+          </Typography>
+        )}
         <TPaymentWidget
           user={user}
           onSuccess={handlePaymentSuccess}
@@ -256,7 +402,7 @@ function Billing() {
         />
       </Box>
 
-      {/* Секция истории транзакций */}
+      {/* Секция истории операций и графиков */}
       <Box sx={{ marginTop: "40px" }}>
         <Typography variant="h6" gutterBottom>
           История операций
@@ -269,79 +415,57 @@ function Billing() {
           <Box
             sx={{
               display: "flex",
-              flexDirection: isMobile ? "column" : "row",
+              flexDirection: isMobile || isTablet ? "column" : "row",
               justifyContent: "space-between",
-              alignItems: "flex-start",
+              alignItems: isMobile || isTablet ? "center" : "flex-start",
               marginTop: "20px",
+              gap:'15px',
+              pr:2
             }}
           >
-            {/* Левая таблица: Покупка кредитов */}
+            {/* Левая секция: График покупок кредитов (Bar Chart) */}
             <Box
               sx={{
-                flex: 1,
+                flex: 0.6,
                 marginRight: isMobile ? 0 : "20px",
                 marginBottom: isMobile ? "20px" : 0,
+                width: "100%",
+                maxHeight: "300px", // Устанавливаем фиксированную высоту для графика
               }}
             >
               <Typography variant="h6" gutterBottom>
-                Покупка кредитов
+                Покупки кредитов
               </Typography>
-              {creditPurchaseTransactions.length > 0 ? (
-                <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
-                  <Table stickyHeader>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Дата</TableCell>
-                        <TableCell>Количество (₽)</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {creditPurchaseTransactions.map((tx, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            {new Date(tx.created_at).toLocaleString()}
-                          </TableCell>
-                          <TableCell>+{tx.credits}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              {creditPurchasesData.length > 0 ? (
+                <Bar
+                  data={purchasesChartData}
+                  options={purchasesChartOptions}
+                  height={300}
+                />
               ) : (
-                <Typography>Нет транзакций покупки кредитов.</Typography>
+                <Typography>Нет данных о покупках кредитов</Typography>
               )}
             </Box>
 
-            {/* Правая таблица: Использование кредитов */}
-            <Box sx={{ flex: 1 }}>
+            {/* Правая секция: График расходов (Line Chart) */}
+            <Box
+              sx={{
+                flex: 0.7,
+                width: "100%",
+                maxHeight: "300px", // Устанавливаем фиксированную высоту для графика
+              }}
+            >
               <Typography variant="h6" gutterBottom>
-                Использование кредитов
+                Расходы за последние 7 дней
               </Typography>
-              {creditUsageTransactions.length > 0 ? (
-                <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
-                  <Table stickyHeader>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Дата</TableCell>
-                        <TableCell>Описание</TableCell>
-                        <TableCell>Количество (₽)</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {creditUsageTransactions.map((tx, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            {new Date(tx.created_at).toLocaleString()}
-                          </TableCell>
-                          <TableCell>{tx.job_execution_id || "Списание кредитов"}</TableCell>
-                          <TableCell>-{tx.credits}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              {creditUsagePerDay.length > 0 ? (
+                <Line
+                  data={expensesChartData}
+                  options={expensesChartOptions}
+                  height={300}
+                />
               ) : (
-                <Typography>Нет транзакций использования кредитов.</Typography>
+                <Typography>Нет данных для отображения графика.</Typography>
               )}
             </Box>
           </Box>

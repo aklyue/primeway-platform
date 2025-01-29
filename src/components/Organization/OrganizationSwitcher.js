@@ -5,13 +5,13 @@ import {
   Button,
   Typography,
   Box,
-  ListItemIcon,
   ListItemText,
   CircularProgress,
 } from "@mui/material";
 import Popover from "@mui/material/Popover";
-import BusinessIcon from "@mui/icons-material/Business";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const OrganizationSwitcher = () => {
   const {
@@ -24,6 +24,9 @@ const OrganizationSwitcher = () => {
   } = useContext(OrganizationContext);
 
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -44,6 +47,7 @@ const OrganizationSwitcher = () => {
         sx={{
           width: "100%",
           display: "flex",
+          alignItems:'center'
         }}
       >
         <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight: 600 }}>
@@ -108,9 +112,9 @@ const OrganizationSwitcher = () => {
                   <Box
                     component="span"
                     sx={{
-                      marginLeft: 1,
+                      marginLeft: isMobile ? 0 : 1,
                       color: "text.secondary",
-                      fontSize: "0.9rem",
+                      fontSize: isMobile ? '0.7rem' : "0.9rem",
                     }}
                   >
                    {walletBalance} ₽

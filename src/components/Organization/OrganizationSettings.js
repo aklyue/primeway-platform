@@ -6,7 +6,6 @@ import {
   Button,
   CircularProgress,
   Alert,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -15,9 +14,8 @@ import {
   TableRow,
   Paper,
   Avatar,
-  Tooltip,
+  Divider, // Импортируем Divider
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { useOrganization } from "./OrganizationContext";
 import { AuthContext } from "../../AuthContext";
 import { getOrgMembers, addOrgMember, removeOrgMember } from "../../api.js";
@@ -36,7 +34,8 @@ const OrganizationSettings = () => {
   const [newMemberEmail, setNewMemberEmail] = useState("");
 
   // Объединенное состояние загрузки
-  const isLoading = isLoadingMembers || isAddingMember || isRemovingMember;
+  const isLoading =
+    isLoadingMembers || isAddingMember || isRemovingMember;
 
   // Загрузка участников при изменении текущей организации
   useEffect(() => {
@@ -51,7 +50,7 @@ const OrganizationSettings = () => {
     setError(null);
     try {
       const response = await getOrgMembers(currentOrganization.id);
-      setMembers(response.data); // Убедитесь, что ваш API возвращает массив участников
+      setMembers(response.data);
     } catch (error) {
       console.error("Error fetching members:", error);
       setError("Ошибка при получении членов организации.");
@@ -130,95 +129,94 @@ const OrganizationSettings = () => {
   }
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Участники
-      </Typography>
+    <Box sx={{ display: "flex", height: "100%" }}>
+      {/* Левая сторона - Участники */}
+      <Box sx={{ flex: 1, pr: 2 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Участники
+        </Typography>
 
-      {/* Сообщение об ошибке */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+        {/* Сообщение об ошибке */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Форма добавления участника только для владельца организации */}
-      {isCurrentOrgOwner() && (
-        <Box sx={{ display: "flex", mb: 2, alignItems: "center" }}>
-          <TextField
-            label="Email нового участника"
-            variant="outlined"
-            size="small"
-            value={newMemberEmail}
-            onChange={(e) => setNewMemberEmail(e.target.value)}
-            sx={{ mr: 2 }}
-            disabled={isLoading} // Отключаем ввод, если идет загрузка
-          />
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleAddMember}
-            disabled={isLoading} // Отключаем кнопку, если идет загрузка
-            sx={{ maxHeight: "40px" }}
+        {/* Форма добавления участника только для владельца организации */}
+        {isCurrentOrgOwner() && (
+          <Box sx={{ display: "flex", mb: 2, alignItems: "center" }}>
+            <TextField
+              label="Email нового участника"
+              variant="outlined"
+              size="small"
+              value={newMemberEmail}
+              onChange={(e) => setNewMemberEmail(e.target.value)}
+              sx={{ mr: 2 }}
+              disabled={isLoading}
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleAddMember}
+              disabled={isLoading}
+              sx={{ maxHeight: "40px" }}
+            >
+              Добавить участника
+            </Button>
+          </Box>
+        )}
+
+        {/* Таблица участников */}
+        {members.length === 0 ? (
+          <Typography>В организации нет участников.</Typography>
+        ) : (
+          <TableContainer
+            component={Paper}
+            sx={{ maxWidth: 650, boxShadow: "none" }}
           >
-            Добавить участника
-          </Button>
-        </Box>
-      )}
-
-      {/* Таблица участников */}
-      {members.length === 0 ? (
-        <Typography>В организации нет участников.</Typography>
-      ) : (
-        <TableContainer
-          component={Paper}
-          sx={{ maxWidth: 650, boxShadow: "none" }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Аватар</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Роль</TableCell>
-                {/* {isCurrentOrgOwner() && <TableCell>Действия</TableCell>} */}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {members.map((member) => (
-                <TableRow key={member.user_id}>
-                  <TableCell>
-                    <Avatar
-                      alt={member.email}
-                      src={member.avatar_url} // Убедитесь, что ваш API предоставляет avatar_url
-                    />
-                  </TableCell>
-                  <TableCell>{member.email}</TableCell>
-                  <TableCell>
-                    {member.role === "owner" ? "Владелец" : "Участник"}
-                  </TableCell>
-                  {/* {isCurrentOrgOwner() && (
-                    <TableCell>
-
-                      {member.user_id !== user.id && member.role !== "owner" && (
-                        <Tooltip title="Удалить участника">
-                          <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={() => handleRemoveMember(member.email)}
-                            disabled={isLoading} // Отключаем кнопку, если идет загрузка
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                  )} */}
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Аватар</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Роль</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+              <TableBody>
+                {members.map((member) => (
+                  <TableRow key={member.user_id}>
+                    <TableCell>
+                      <Avatar
+                        alt={member.email}
+                        src={member.avatar_url}
+                      />
+                    </TableCell>
+                    <TableCell>{member.email}</TableCell>
+                    <TableCell>
+                      {member.role === "owner" ? "Владелец" : "Участник"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
+
+      {/* Разделительная черта */}
+      <Divider orientation="vertical" sx={{height:'85vh'}} flexItem />
+
+      {/* Правая сторона - События */}
+      <Box sx={{ flex: 1, pl: 2 }}>
+        <Typography variant="h4" sx={{ mb: 4 }}>
+          События
+        </Typography>
+
+        {/* Поскольку данных нет, отображаем сообщение */}
+        <Typography sx={{mb:1, color:'rgb(22 163 74)', fontWeight:'600'}}>01.02.2025 14.05.55</Typography>
+        <Typography sx={{fontSize:'16px'}}>Лог по задаче который был создан для какого-то должен был быть показан в конфиге в событии №1</Typography>
+      </Box>
     </Box>
   );
 };

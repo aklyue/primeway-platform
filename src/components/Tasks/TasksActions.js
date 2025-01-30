@@ -1,5 +1,3 @@
-// src/components/Tasks/TasksActions.js
-
 import React, { useState } from "react";
 import {
   Box,
@@ -9,30 +7,63 @@ import {
   MenuItem,
   ListItemIcon,
   Typography,
-  Button,
   Stack,
+  styled,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
-  ContentPasteSearch as ContentPasteSearchIcon,
+  Assignment as AssignmentIcon ,
   BugReport as BugReportIcon,
   Download as DownloadIcon,
   Stop as StopIcon,
   PlayCircleFilled as PlayCircleFilledIcon,
 } from "@mui/icons-material";
 
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  "& .MuiPaper-root": {
+    borderRadius: "8px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    minWidth: "200px",
+    marginTop: theme.spacing(1),
+    "& .MuiMenuItem-root": {
+      
+      transition: "all 0.2s ease",
+      "&:hover": {
+        backgroundColor: theme.palette.action.hover,
+        transform: "translateX(4px)",
+      },
+      "& .MuiListItemIcon-root": {
+        minWidth: "36px",
+      },
+    },
+  },
+}));
+
+const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
+  transition: "all 0.2s ease",
+  "&:hover": {
+    transform: "scale(1.1)",
+    backgroundColor:
+      colorvariant === "error"
+        ? theme.palette.error.light
+        : theme.palette.success.light,
+  },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    transform: "none",
+  },
+}));
+
 function TasksActions({
   job,
   onLogsClick,
-  onExecutionsClick,
-  onScheduleClick,
   onBuildLogsClick,
   onDownloadArtifacts,
   onStopClick,
   onStartClick,
   showStartButton = true,
   showLogsArtButton = true,
-  displayMode = "menu", // Новый проп
+  displayMode = "menu",
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -42,23 +73,102 @@ function TasksActions({
   };
 
   const handleMenuClose = (event) => {
-    event.stopPropagation();
+    event?.stopPropagation();
     setAnchorEl(null);
   };
 
   const handleMenuItemClick = (action) => (event) => {
     event.stopPropagation();
     action(job);
-    setAnchorEl(null);
+    handleMenuClose();
   };
 
-  // Проверка условий отображения кнопок
-  const showStopButton =
+  const canStopJob =
     job.last_execution_status === "creating" ||
     job.last_execution_status === "running";
 
-  // Определяем, какие действия отображать
-  const actionsMenu = (
+  // Список допустимых статусов последнего выполнения
+  const allowedLastExecutionStatuses = [
+    "stopped",
+    "terminated",
+    "completed",
+    "failed",
+  ];
+
+  // Определяем, может ли задача быть запущена
+  const canStartJob =
+    job.build_status === "success" &&
+    (!job.last_execution_status || // Если последнего выполнения нет
+      allowedLastExecutionStatuses.includes(job.last_execution_status)); // Или оно имеет допустимый статус
+
+  const canViewLogs =
+    job.build_status === "success" &&
+    !["pending", "provisioning", "creating"].includes(
+      job.last_execution_status
+    );
+
+  const stopButtonDisabledReason = canStopJob
+    ? ""
+    : "Задача не запущена и не может быть остановлена.";
+
+  const startButtonDisabledReason = canStartJob
+    ? ""
+    : "Задачу можно запустить только если статус образа 'success' и последнее выполнение отсутствует или завершилось.";
+
+  const logsButtonDisabledReason = canViewLogs
+    ? ""
+    : "Логи недоступны, так как задача завершена и не находится в процессе выполнения.";
+
+  const menuIconStyle = {
+    color: "inherit",
+    fontSize: "1.1rem",
+  };
+
+  return displayMode === "buttons" ? (
+    <Stack direction="row" spacing={1} alignItems="center">
+
+      {/* Кнопка "Остановить задачу" */}
+      <Tooltip title={stopButtonDisabledReason}>
+        <span>
+          <ActionIconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onStopClick(job);
+            }}
+            colorvariant="error"
+            size="small"
+            disabled={!canStopJob}
+            aria-label="Остановить задачу"
+          >
+            <StopIcon
+              sx={{ color: canStopJob ? "error.main" : "text.disabled" }}
+            />
+          </ActionIconButton>
+        </span>
+      </Tooltip>
+
+      {showStartButton && (
+        <Tooltip title={startButtonDisabledReason}>
+          <span>
+            <ActionIconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartClick(job);
+              }}
+              colorvariant="success"
+              size="small"
+              disabled={!canStartJob}
+              aria-label="Запустить задачу"
+            >
+              <PlayCircleFilledIcon
+                sx={{ color: canStartJob ? "success.main" : "text.disabled" }}
+              />
+            </ActionIconButton>
+          </span>
+        </Tooltip>
+      )}
+    </Stack>
+  ) : (
     <Box>
       <Tooltip title="Действия">
         <IconButton
@@ -66,111 +176,128 @@ function TasksActions({
           size="small"
           aria-controls={`actions-menu-${job.job_id}`}
           aria-haspopup="true"
+          sx={{
+            "&:hover": { backgroundColor: "action.hover" },
+          }}
         >
-          <MoreVertIcon />
+          <MoreVertIcon sx={{ color: "text.secondary" }} />
         </IconButton>
       </Tooltip>
-      <Menu
+      <StyledMenu
         id={`actions-menu-${job.job_id}`}
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
+        MenuListProps={{
+          "aria-labelledby": `actions-button-${job.job_id}`,
+        }}
       >
-        {/* Кнопка "Build Logs" */}
-        {(job.build_status === "failed" ||
-          job.build_status === "building") && (
+        {(job.build_status === "failed" || job.build_status === "building") && (
           <MenuItem onClick={handleMenuItemClick(onBuildLogsClick)}>
             <ListItemIcon>
-              <BugReportIcon fontSize="small" />
+              <BugReportIcon sx={{ ...menuIconStyle, color: "warning.main" }} />
             </ListItemIcon>
-            <Typography variant="inherit">Логи сборки</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              Логи сборки
+            </Typography>
           </MenuItem>
         )}
 
         {showLogsArtButton && (
           <>
-            {/* Кнопка "Логи" */}
-            <MenuItem onClick={handleMenuItemClick(onLogsClick)}>
-              <ListItemIcon>
-                <ContentPasteSearchIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">Логи</Typography>
-            </MenuItem>
+            {/* Кнопка "Логи" с учетом доступности */}
+            <Tooltip title={logsButtonDisabledReason} placement="left" arrow>
+              <span>
+                <MenuItem
+                  onClick={
+                    canViewLogs ? handleMenuItemClick(onLogsClick) : undefined
+                  }
+                  disabled={!canViewLogs}
+                  sx={{
+                    "&.Mui-disabled": { opacity: 0.5 },
+                  }}
+                >
+                  <ListItemIcon>
+                    <AssignmentIcon
+                      sx={{ ...menuIconStyle, color: "info.main" }}
+                    />
+                  </ListItemIcon>
+                  <Typography variant="body2" fontWeight={600}>
+                    Логи
+                  </Typography>
+                </MenuItem>
+              </span>
+            </Tooltip>
 
-            {/* Кнопка "Скачать артефакты" */}
             {job.job_type === "run" &&
               job.last_execution_status === "completed" && (
                 <MenuItem onClick={handleMenuItemClick(onDownloadArtifacts)}>
                   <ListItemIcon>
-                    <DownloadIcon fontSize="small" />
+                    <DownloadIcon
+                      sx={{ ...menuIconStyle, color: "primary.main" }}
+                    />
                   </ListItemIcon>
-                  <Typography variant="inherit">Скачать артефакты</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    Скачать артефакты
+                  </Typography>
                 </MenuItem>
               )}
           </>
         )}
 
-        {/* Кнопка "Остановить задачу" */}
-        {showStopButton && (
-          <MenuItem onClick={handleMenuItemClick(onStopClick)}>
-            <ListItemIcon>
-              <StopIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">Остановить задачу</Typography>
-          </MenuItem>
+        {showStartButton && (
+          <Tooltip title={startButtonDisabledReason} placement="left" arrow>
+            <span>
+              <MenuItem
+                onClick={
+                  canStartJob ? handleMenuItemClick(onStartClick) : undefined
+                }
+                disabled={!canStartJob}
+                sx={{
+                  "&.Mui-disabled": { opacity: 0.5 },
+                }}
+              >
+                <ListItemIcon>
+                  <PlayCircleFilledIcon
+                    sx={{ ...menuIconStyle, color: "success.main" }}
+                  />
+                </ListItemIcon>
+                <Typography variant="body2" fontWeight={600} sx={{color:'rgb(22 163 74)'}}>
+                  Запустить задачу
+                </Typography>
+              </MenuItem>
+            </span>
+          </Tooltip>
         )}
 
-        {/* Кнопка "Запустить задачу" */}
-        {showStartButton && (
-          <MenuItem onClick={handleMenuItemClick(onStartClick)}>
-            <ListItemIcon>
-              <PlayCircleFilledIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">Запустить задачу</Typography>
-          </MenuItem>
-        )}
-      </Menu>
+        {/* Кнопка "Остановить задачу" */}
+        <Tooltip title={stopButtonDisabledReason} placement="left" arrow>
+          <span>
+            <MenuItem
+            
+              onClick={
+                canStopJob ? handleMenuItemClick(onStopClick) : undefined
+              }
+              
+              disabled={!canStopJob}
+              sx={{
+                
+                "&.Mui-disabled": { opacity: 0.5 },
+              }}
+            >
+              <ListItemIcon>
+                <StopIcon sx={{ ...menuIconStyle, color: "error.main",  }} />
+              </ListItemIcon>
+              <Typography variant="body2" fontWeight={500} sx={{color:'red'}} >
+                Остановить задачу
+              </Typography>
+            </MenuItem>
+          </span>
+        </Tooltip>
+      </StyledMenu>
     </Box>
   );
-
-  const actionsButtons = (
-    <Stack direction="row" spacing={1} alignItems="center">
-      {/* Кнопка "Остановить задачу" */}
-      {showStopButton && (
-        <Tooltip title="Остановить задачу">
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              onStopClick(job);
-            }}
-            color="error"
-            size="small"
-          >
-            <StopIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-
-      {/* Кнопка "Запустить задачу" */}
-      {showStartButton && (
-        <Tooltip title="Запустить задачу">
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              onStartClick(job);
-            }}
-            color="success"
-            size="small"
-          >
-            <PlayCircleFilledIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Stack>
-  );
-
-  return displayMode === "buttons" ? actionsButtons : actionsMenu;
 }
 
 export default TasksActions;

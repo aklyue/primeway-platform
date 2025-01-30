@@ -1,10 +1,14 @@
+// src/docs/Jobs.js
+
 import React from "react";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { coldarkCold } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import "./docs.css"; 
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import "./docs.css";
 
 const Jobs = () => {
   // Компонент для отображения блока кода с подсветкой синтаксиса и кнопкой копирования
@@ -14,7 +18,7 @@ const Jobs = () => {
     };
 
     return (
-      <div style={{ position: 'relative', marginBottom: '20px' }}>
+      <div className="code-block-container" style={{ position: 'relative', marginBottom: '20px' }}>
         <SyntaxHighlighter
           language={language}
           style={coldarkCold}
@@ -23,10 +27,11 @@ const Jobs = () => {
         >
           {code}
         </SyntaxHighlighter>
-        <Tooltip title="Copy">
+        <Tooltip title="Копировать">
           <IconButton
             size="small"
             onClick={handleCopy}
+            className="copy-button"
             style={{ position: 'absolute', top: '5px', right: '5px' }}
           >
             <ContentCopyIcon fontSize="small" />
@@ -38,113 +43,116 @@ const Jobs = () => {
 
   // Определение секций для навигации
   const sections = [
-    { id: "introduction", label: "Introduction" },
-    { id: "job-types", label: "Job Types" },
-    { id: "job-configuration", label: "Job Configuration" },
-    { id: "validation-rules", label: "Validation Rules" },
-    { id: "example-configuration", label: "Example Configuration" },
+    { id: "introduction", label: "Введение" },
+    { id: "job-types", label: "Типы задач" },
+    { id: "job-configuration", label: "Конфигурация задач" },
+    { id: "validation-rules", label: "Правила валидации" },
+    { id: "example-configuration", label: "Пример конфигурации" },
   ];
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery('(max-width:1200px)');
+
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       {/* Левая колонка - основной контент */}
-      <Box sx={{ flexGrow: 1, paddingRight: "20px" }}>
+      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "20px" }}>
         {/* Заголовок */}
-        <Typography variant="h1" style={{ marginBottom: "25px" }}>
-          Jobs
-        </Typography>
+        <h1 style={{ marginBottom: "25px", fontSize: isMobile ? "1.7rem" : "2rem", lineHeight: 1.2 }}>
+          Задачи
+        </h1>
 
         {/* Введение */}
         <section id="introduction">
-          <Typography variant="h2">Introduction</Typography>
+          <h2>Введение</h2>
           <p>
-            A Job in Primeway represents a task that you want to execute on the cloud. Jobs can be used for various purposes, such as data processing, model training, web service deployment, etc.
+            Задача в PrimeWay представляет собой задание, которое вы хотите выполнить в облаке. Задачи могут использоваться для различных целей, таких как обработка данных, обучение моделей, развертывание веб-сервисов и т.д.
           </p>
           <p>
-            Jobs can be configured to run independently or as part of a pipeline, and they can be executed using a prepared Docker image or built from your project code.
+            Задачи могут быть настроены для независимого выполнения или как часть конвейера, и они могут выполняться с использованием подготовленного Docker-образа или быть собраны из вашего кода проекта.
           </p>
         </section>
 
         {/* Типы задач */}
         <section id="job-types">
-          <Typography variant="h2">Job Types</Typography>
-          <p>There are two types of jobs in Primeway:</p>
+          <h2>Типы задач</h2>
+          <p>В PrimeWay существуют два типа задач:</p>
           <ul>
             <li>
-              <strong>Run Jobs</strong>: Executed once and terminated after completion. Ideal for tasks like data processing, batch jobs, or model training.
+              <strong>Run-задачи</strong>: Выполняются один раз и завершаются после завершения. Идеально подходят для задач, таких как обработка данных, пакетные задания или обучение моделей.
             </li>
             <li>
-              <strong>Deploy Jobs</strong>: Deployed as persistent services accessible over a network. Suitable for APIs, web applications, or any service requiring continuous uptime.
+              <strong>Deploy-задачи</strong>: Развёртываются как постоянные сервисы, доступные по сети. Подходят для API, веб-приложений или любых сервисов, требующих непрерывной работы.
             </li>
           </ul>
         </section>
 
         {/* Конфигурация задач */}
         <section id="job-configuration">
-          <Typography variant="h2">Job Configuration</Typography>
+          <h2>Конфигурация задач</h2>
           <p>
-            Jobs are defined using configuration files (typically YAML). The configuration specifies how the job should be executed, what resources it requires, and any dependencies or inputs it needs.
+            Задачи определяются с помощью конфигурационных файлов (обычно YAML). Конфигурация указывает, как должна выполняться задача, какие ресурсы ей необходимы и какие зависимости или входные данные требуются.
           </p>
 
           {/* Общие поля */}
-          <Typography variant="h3">Common Fields</Typography>
+          <h3>Общие поля</h3>
           <ul>
-            <li><code>docker_image</code> (string): The base Docker image to use for the job.</li>
-            <li><code>job_name</code> (string): A unique name for your job.</li>
-            <li><code>job_type</code> (string): Either <code>run</code> or <code>deploy</code>.</li>
-            <li><code>primeway_api_token</code> (string): Your Primeway API token.</li>
-            <li><code>entry_script</code> (string): The script to execute within your project directory.</li>
-            <li><code>project_dir</code> (string): The directory containing your project files.</li>
-            <li><code>args</code> (string): Arguments to pass to your script.</li>
-            <li><code>command</code> (string): Custom command to run (overrides <code>entry_script</code> and <code>args</code>).</li>
-            <li><code>memory</code> (integer): Memory allocation in GB.</li>
-            <li><code>disk_space</code> (integer): Disk space allocation in GB.</li>
-            <li><code>gpu_types</code> (list): List of GPU resources required.</li>
-            <li><code>cpu_count</code> (integer): Number of CPU cores required.</li>
-            <li><code>timeout</code> (integer): Maximum execution time in seconds.</li>
-            <li><code>env</code> (list): Environment variables to set.</li>
-            <li><code>requirements</code> (list): Python packages to install.</li>
-            <li><code>apt_packages</code> (list): System packages to install.</li>
-            <li><code>port</code> (integer): (For deploy jobs) The port on which your service will run.</li>
-            <li><code>health_endpoint</code> (string): (For deploy jobs) Endpoint to check service health.</li>
-            <li><code>schedule_start</code> (string): Schedule to start the job.</li>
-            <li><code>schedule_end</code> (string): Schedule to end the job.</li>
-            <li><code>idle_timeout</code> (integer): (For deploy jobs) Time in seconds when deploy job should be stopped after last request.</li>
+            <li><code>docker_image</code> (строка): Базовый Docker-образ для использования в задаче.</li>
+            <li><code>job_name</code> (строка): Уникальное имя вашей задачи.</li>
+            <li><code>job_type</code> (строка): Либо <code>run</code>, либо <code>deploy</code>.</li>
+            <li><code>primeway_api_token</code> (строка): Ваш API-токен PrimeWay.</li>
+            <li><code>entry_script</code> (строка): Скрипт для выполнения внутри каталога вашего проекта.</li>
+            <li><code>project_dir</code> (строка): Каталог, содержащий файлы вашего проекта.</li>
+            <li><code>args</code> (строка): Аргументы для передачи вашему скрипту.</li>
+            <li><code>command</code> (строка): Пользовательская команда для выполнения (переопределяет <code>entry_script</code> и <code>args</code>).</li>
+            <li><code>memory</code> (целое число): Выделение памяти в ГБ.</li>
+            <li><code>disk_space</code> (целое число): Выделение дискового пространства в ГБ.</li>
+            <li><code>gpu_types</code> (список): Список требуемых GPU-ресурсов.</li>
+            <li><code>cpu_count</code> (целое число): Количество требуемых ядер CPU.</li>
+            <li><code>timeout</code> (целое число): Максимальное время выполнения в секундах.</li>
+            <li><code>env</code> (список): Переменные окружения для установки.</li>
+            <li><code>requirements</code> (список): Python-пакеты для установки.</li>
+            <li><code>apt_packages</code> (список): Системные пакеты для установки.</li>
+            <li><code>port</code> (целое число): (для deploy-задач) Порт, на котором будет работать ваш сервис.</li>
+            <li><code>health_endpoint</code> (строка): (для deploy-задач) Endpoint для проверки здоровья сервиса.</li>
+            <li><code>schedule_start</code> (строка): Расписание для запуска задачи.</li>
+            <li><code>schedule_end</code> (строка): Расписание для остановки задачи.</li>
+            <li><code>idle_timeout</code> (целое число): (для deploy-задач) Время в секундах, после которого deploy-задача должна быть остановлена после последнего запроса.</li>
           </ul>
         </section>
 
         {/* Правила валидации */}
         <section id="validation-rules">
-          <Typography variant="h2">Validation Rules</Typography>
+          <h2>Правила валидации</h2>
           <p>
-            When defining a job configuration, certain validation rules apply to ensure correctness:
+            При определении конфигурации задачи применяются определённые правила валидации для обеспечения корректности:
           </p>
           <ul>
             <li>
-              <strong>Job Type</strong>: <code>job_type</code> must be either <code>run</code> or <code>deploy</code>.
+              <strong>Тип задачи</strong>: Параметр <code>job_type</code> должен быть либо <code>run</code>, либо <code>deploy</code>.
             </li>
             <li>
-              <strong>Script Execution</strong>: If <code>project_dir</code> is provided, you must specify at least one of <code>entry_script</code>, <code>args</code>, or <code>command</code>.
+              <strong>Выполнение скрипта</strong>: Если указан <code>project_dir</code>, вы должны указать хотя бы один из <code>entry_script</code>, <code>args</code> или <code>command</code>.
             </li>
             <li>
-              <strong>Deploy Jobs</strong>: For deploy jobs, <code>port</code> and <code>health_endpoint</code> are required.
+              <strong>Deploy-задачи</strong>: Для deploy-задач параметры <code>port</code> и <code>health_endpoint</code> являются обязательными.
             </li>
             <li>
-              <strong>GPU Configuration</strong>: Ensure the correct name and count are provided.
+              <strong>Конфигурация GPU</strong>: Убедитесь, что указаны правильное название и количество GPU.
             </li>
             <li>
-              <strong>Warning on Conflicts</strong>: If both <code>entry_script</code> and <code>args</code> are provided, the system will use <code>args</code> when executing the script and issue a warning.
+              <strong>Предупреждение о конфликтах</strong>: Если указаны и <code>entry_script</code>, и <code>args</code>, система будет использовать <code>args</code> при выполнении скрипта и выдаст предупреждение.
             </li>
             <li>
-              <strong>Requirements Without Project</strong>: If <code>project_dir</code> is not specified but <code>requirements</code> are provided, a warning will be issued because the requirements may conflict with those already in the Docker image.
+              <strong>Требования без проекта</strong>: Если <code>project_dir</code> не указан, но указаны <code>requirements</code>, будет выдано предупреждение, так как требования могут конфликтовать с теми, что уже есть в Docker-образе.
             </li>
           </ul>
         </section>
 
         {/* Пример конфигурационного файла */}
-        <section id="example-configuration" style={{marginTop:'50px'}}>
-          <Typography variant="h2">Example Configuration</Typography>
-          <p>Here's an example of a job configuration file:</p>
+        <section id="example-configuration" style={{ marginTop: '50px' }}>
+          <h2>Пример конфигурации</h2>
+          <p>Вот пример файла конфигурации задачи:</p>
           <CodeBlock
             code={`job_name: my-data-processing-job
 job_type: run
@@ -163,43 +171,45 @@ cpu_count: 2`}
       </Box>
 
       {/* Правая колонка - навигация Scrollspy */}
-      <Box
-        sx={{
-          width: "200px",
-          flexShrink: 0,
-          position: "sticky",
-          top: "60px",
-          alignSelf: "flex-start",
-          marginLeft: '25px',
-        }}
-      >
-        <Scrollspy
-          items={sections.map((section) => section.id)}
-          currentClassName="is-current"
-          componentTag="div"
-          offset={-30}
-          rootEl="#main-content"
-          className="nav-scrollspy"
+      {!isMobile && (
+        <Box
+          sx={{
+            width: "200px",
+            flexShrink: 0,
+            position: "sticky",
+            top: "40px",
+            alignSelf: "flex-start",
+            marginLeft: '25px',
+          }}
         >
-          {sections.map((section) => (
-            <li
-              key={section.id}
-              className="nav-item"
-              style={{ marginBottom: "15px" }}
-            >
-              <a
-                href={`#${section.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
+          <Scrollspy
+            items={sections.map((section) => section.id)}
+            currentClassName="is-current"
+            componentTag="div"
+            offset={-30}
+            rootEl="#main-content"
+            className="nav-scrollspy"
+          >
+            {sections.map((section) => (
+              <li
+                key={section.id}
+                className="nav-item"
+                style={{ marginBottom: "15px" }}
               >
-                {section.label}
-              </a>
-            </li>
-          ))}
-        </Scrollspy>
-      </Box>
+                <a
+                  href={`#${section.id}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  {section.label}
+                </a>
+              </li>
+            ))}
+          </Scrollspy>
+        </Box>
+      )}
     </Box>
   );
 };

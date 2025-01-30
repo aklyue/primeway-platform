@@ -109,7 +109,7 @@ function JobDetailsDialog({
   const intervalRef = useRef(null);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+      const isMobile = useMediaQuery('(max-width:1200px)');
 
   const formatJobExecutionId = (id) => {
     if (!id) return "N/A";
@@ -872,6 +872,7 @@ function JobDetailsDialog({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TasksActions
                 job={job}
+                
                 onStopClick={(job) => handleStopClick(job)}
                 onStartClick={(job) => handleStartClick(job)}
                 displayMode="buttons" // Указываем режим "buttons"
@@ -1203,7 +1204,7 @@ function JobDetailsDialog({
                       language="yaml"
                       style={coy}
                       showLineNumbers
-                      customStyle={{ borderRadius: "10px" }}
+                      customStyle={{ borderRadius: "10px",  }}
                     >
                       {config}
                     </SyntaxHighlighter>

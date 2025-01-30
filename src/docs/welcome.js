@@ -25,14 +25,14 @@ const Welcome = () => {
   ];
 
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:900px)');
+  const isMobile = useMediaQuery('(max-width:1200px)');
  
 
 
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px" }}>
-        <h1 style={{ marginBottom: "25px" }}>Добро пожаловать в PrimeWay!</h1>
+        <h1 style={{ marginBottom: "25px", fontSize: isMobile ? "1.7rem" : "2rem", lineHeight:1.2 }}>Добро пожаловать в PrimeWay!</h1>
         <div style={{ marginTop: "20px", marginBottom: "20px" }}>
           <section id="introduction">
             <p>
@@ -105,7 +105,7 @@ const Welcome = () => {
             >
               <Box
                 sx={{
-                  padding: "15px",
+                  padding: "10px 15px",
                   backgroundColor: "#e8eaf6",
                   borderRadius: "10px",
                   cursor: "pointer",
@@ -133,7 +133,7 @@ const Welcome = () => {
             >
               <Box
                 sx={{
-                  padding: "15px",
+                  padding: "10px 15px",
                   backgroundColor: "#e8eaf6",
                   borderRadius: "10px",
                   cursor: "pointer",
@@ -161,7 +161,7 @@ const Welcome = () => {
             >
               <Box
                 sx={{
-                  padding: "15px",
+                  padding: "10px 15px",
                   backgroundColor: "#e8eaf6",
                   borderRadius: "10px",
                   cursor: "pointer",

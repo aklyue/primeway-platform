@@ -1,10 +1,13 @@
-// CLI.js
+// src/docs/CLI.js
+
 import React from "react";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import "./docs.css"; 
 
 const CLI = () => {
@@ -14,7 +17,7 @@ const CLI = () => {
     };
 
     return (
-      <div style={{ position: "relative", marginBottom: "20px" }}>
+      <div className="code-block-container" style={{ position: "relative", marginBottom: "20px" }}>
         <SyntaxHighlighter
           language={language}
           style={coldarkCold}
@@ -23,10 +26,11 @@ const CLI = () => {
         >
           {code}
         </SyntaxHighlighter>
-        <Tooltip title="Copy">
+        <Tooltip title="Копировать">
           <IconButton
             size="small"
             onClick={handleCopy}
+            className="copy-button"
             style={{ position: "absolute", top: "5px", right: "5px" }}
           >
             <ContentCopyIcon fontSize="small" />
@@ -38,160 +42,165 @@ const CLI = () => {
 
   // Определение секций для навигации
   const sections = [
-    { id: "overview", label: "Overview" },
-    { id: "installation-and-setup", label: "Installation and Setup" },
-    { id: "authentication", label: "Authentication" },
-    { id: "command-structure", label: "Command Structure" },
-    { id: "command-reference", label: "Command Reference" },
-    { id: "job-commands", label: "Job Commands" },
-    { id: "pipeline-commands", label: "Pipeline Commands" },
-    { id: "using-the-cli-interactively", label: "Using the CLI Interactively" },
+    { id: "overview", label: "Обзор" },
+    { id: "installation-and-setup", label: "Установка и настройка" },
+    { id: "authentication", label: "Аутентификация" },
+    { id: "command-structure", label: "Структура команд" },
+    { id: "command-reference", label: "Справочник команд" },
+    { id: "job-commands", label: "Команды задач" },
+    { id: "pipeline-commands", label: "Команды конвейеров" },
+    { id: "using-the-cli-interactively", label: "Интерактивное использование CLI" },
   ];
 
-  return (
-    <Box sx={{ display: "flex" }}>
-      <Box sx={{ flexGrow: 1, paddingRight: "20px" }}>
-        <Typography variant="h1" style={{ marginBottom: "25px" }}>
-          CLI
-        </Typography>
+  const theme = useTheme();
+  const isMobile = useMediaQuery('(max-width:1200px)');
 
-        {/* Overview */}
+  return (
+    <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
+      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "20px" }}>
+        <h1 style={{ marginBottom: "25px", fontSize: isMobile ? "1.7rem" : "2rem", lineHeight: 1.2 }}>
+          CLI
+        </h1>
+
+        {/* Обзор */}
         <section id="overview">
-          <Typography variant="h2">Overview</Typography>
+          <h2>Обзор</h2>
           <p>
-            The primeway CLI provides a comprehensive set of commands to manage jobs and pipelines, allowing you to interact with the platform directly from your terminal.
+            CLI PrimeWay предоставляет полный набор команд для управления задачами и конвейерами, позволяя вам взаимодействовать с платформой прямо из вашего терминала.
           </p>
         </section>
 
-        {/* Installation and Setup */}
+        {/* Установка и настройка */}
         <section id="installation-and-setup">
-          <Typography variant="h2">Installation and Setup</Typography>
+          <h2>Установка и настройка</h2>
           <p>
-            Install the primeway CLI:
+            Установите CLI PrimeWay:
           </p>
           <CodeBlock code={`pip install primeway-cli`} language="bash" />
           <p>
-            Verify Installation:
+            Проверьте установку:
           </p>
           <CodeBlock code={`primeway --version`} language="bash" />
         </section>
 
-        {/* Authentication */}
+        {/* Аутентификация */}
         <section id="authentication">
-          <Typography variant="h2">Authentication</Typography>
+          <h2>Аутентификация</h2>
           <p>
-            Set your primeway API token as an environment variable:
+            Установите ваш API-токен PrimeWay в качестве переменной окружения:
           </p>
           <CodeBlock code={`export PRIMEWAY_API_TOKEN=your_api_token_here`} language="bash" />
           <p>
-            Alternatively, you can pass the token as an option in config:
+            Альтернативно, вы можете передать токен в конфигурации:
           </p>
           <CodeBlock code={`primeway_api_token: primeway-nlOm2e3vwv_rjakw286mzg`} language="yaml" />
         </section>
 
-        {/* Command Structure */}
+        {/* Структура команд */}
         <section id="command-structure">
-          <Typography variant="h2">Command Structure</Typography>
+          <h2>Структура команд</h2>
           <p>
-            The CLI commands are organized into groups based on functionality:
+            Команды CLI организованы в группы на основе функциональности:
           </p>
           <ul>
-            <li><code>primeway create</code>: Create new jobs or pipelines.</li>
-            <li><code>primeway run</code>: Execute jobs or pipelines.</li>
-            <li><code>primeway job</code>: Manage individual jobs.</li>
-            <li><code>primeway pipeline</code>: Manage pipelines.</li>
-            <li><code>primeway stop</code>: Stop running jobs.</li>
+            <li><code>primeway create</code>: Создание новых задач или конвейеров.</li>
+            <li><code>primeway run</code>: Выполнение задач или конвейеров.</li>
+            <li><code>primeway job</code>: Управление отдельными задачами.</li>
+            <li><code>primeway pipeline</code>: Управление конвейерами.</li>
+            <li><code>primeway stop</code>: Остановка выполняющихся задач.</li>
           </ul>
         </section>
 
-        {/* Command Reference */}
+        {/* Справочник команд */}
         <section id="command-reference">
-          <Typography variant="h2">Command Reference</Typography>
+          <h2>Справочник команд</h2>
 
-          {/* Job Commands */}
+          {/* Команды задач */}
           <section id="job-commands">
-            <Typography variant="h3">Job Commands</Typography>
-            <p><strong>Create a Job:</strong></p>
+            <h3>Команды задач</h3>
+            <p><strong>Создать задачу:</strong></p>
             <CodeBlock code={`primeway create job --config job_config.yaml`} language="bash" />
-            <p><strong>Run a Job:</strong></p>
+            <p><strong>Запустить задачу:</strong></p>
             <CodeBlock code={`primeway run job JOB_ID`} language="bash" />
-            <p><strong>List Jobs:</strong></p>
+            <p><strong>Список задач:</strong></p>
             <CodeBlock code={`primeway job list`} language="bash" />
-            <p><strong>Get Job Details:</strong></p>
+            <p><strong>Получить детали задачи:</strong></p>
             <CodeBlock code={`primeway job info JOB_ID`} language="bash" />
-            <p><strong>Get Job Logs:</strong></p>
+            <p><strong>Получить логи задачи:</strong></p>
             <CodeBlock code={`primeway job logs JOB_ID`} language="bash" />
-            <p><strong>Get Job Artifacts:</strong></p>
+            <p><strong>Получить артефакты задачи:</strong></p>
             <CodeBlock code={`primeway job artifacts JOB_ID --output-dir ./artifacts`} language="bash" />
-            <p><strong>Stop a Job:</strong></p>
+            <p><strong>Остановить задачу:</strong></p>
             <CodeBlock code={`primeway stop job --job-id JOB_ID`} language="bash" />
           </section>
 
-          {/* Pipeline Commands */}
+          {/* Команды конвейеров */}
           <section id="pipeline-commands">
-            <Typography variant="h3">Pipeline Commands</Typography>
-            <p><strong>Create a Pipeline:</strong></p>
+            <h3>Команды конвейеров</h3>
+            <p><strong>Создать конвейер:</strong></p>
             <CodeBlock code={`primeway create pipeline --config pipeline_config.yaml`} language="bash" />
-            <p><strong>Run a Pipeline:</strong></p>
+            <p><strong>Запустить конвейер:</strong></p>
             <CodeBlock code={`primeway run pipeline PIPELINE_ID`} language="bash" />
-            <p><strong>List Pipelines:</strong></p>
+            <p><strong>Список конвейеров:</strong></p>
             <CodeBlock code={`primeway pipeline list`} language="bash" />
-            <p><strong>List Pipeline Executions:</strong></p>
+            <p><strong>Список выполнений конвейера:</strong></p>
             <CodeBlock code={`primeway pipeline executions PIPELINE_ID`} language="bash" />
-            <p><strong>Get Pipeline Execution Details:</strong></p>
+            <p><strong>Получить детали выполнения конвейера:</strong></p>
             <CodeBlock code={`primeway pipeline execution-info EXECUTION_ID`} language="bash" />
           </section>
         </section>
 
-        {/* Using the CLI Interactively */}
+        {/* Интерактивное использование CLI */}
         <section id="using-the-cli-interactively">
-          <Typography variant="h2">Using the CLI Interactively</Typography>
+          <h2>Интерактивное использование CLI</h2>
           <p>
-            Some commands may prompt for additional input if information is missing. Use the <code>--help</code> flag with any command to get detailed usage information.
+            Некоторые команды могут запрашивать дополнительный ввод, если информации недостаточно. Используйте флаг <code>--help</code> с любой командой, чтобы получить подробную информацию о использовании.
           </p>
-          <p><strong>Example:</strong></p>
+          <p><strong>Пример:</strong></p>
           <CodeBlock code={`primeway run job --help`} language="bash" />
         </section>
       </Box>
 
       {/* Правая колонка - навигация Scrollspy */}
-      <Box
-        sx={{
-          width: "200px",
-          flexShrink: 0,
-          position: "sticky",
-          top: "55px",
-          alignSelf: "flex-start",
-          marginLeft: '25px',
-        }}
-      >
-        <Scrollspy
-          items={sections.map((section) => section.id)}
-          currentClassName="is-current"
-          componentTag="div"
-          offset={-30}
-          rootEl="#main-content"
-          className="nav-scrollspy"
+      {!isMobile && (
+        <Box
+          sx={{
+            width: "200px",
+            flexShrink: 0,
+            position: "sticky",
+            top: "40px",
+            alignSelf: "flex-start",
+            marginLeft: '25px',
+          }}
         >
-          {sections.map((section) => (
-            <li
-              key={section.id}
-              className="nav-item"
-              style={{ marginBottom: "15px" }}
-            >
-              <a
-                href={`#${section.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
+          <Scrollspy
+            items={sections.map((section) => section.id)}
+            currentClassName="is-current"
+            componentTag="div"
+            offset={-30}
+            rootEl="#main-content"
+            className="nav-scrollspy"
+          >
+            {sections.map((section) => (
+              <li
+                key={section.id}
+                className="nav-item"
+                style={{ marginBottom: "15px" }}
               >
-                {section.label}
-              </a>
-            </li>
-          ))}
-        </Scrollspy>
-      </Box>
+                <a
+                  href={`#${section.id}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  {section.label}
+                </a>
+              </li>
+            ))}
+          </Scrollspy>
+        </Box>
+      )}
     </Box>
   );
 };

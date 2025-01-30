@@ -1,15 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Kurale&display=swap');
+
+main {
+  font-family: "Kurale", serif;
+  line-height: 1.3;
+}
 pre {
   padding: 0;
 }
 .nav-scrollspy {
   list-style-type: none;
-  padding-left: 15px; 
-  border-left: 1px solid rgba(0, 0, 0, 0.2); 
-  position: relative; 
+  padding-left: 15px;
+  border-left: 1px solid rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .nav-item {
-  position: relative; 
+  position: relative;
   margin-bottom: 15px;
   opacity: 0.9;
 }
@@ -22,18 +28,18 @@ pre {
   text-decoration: none;
 }
 
-.nav-item.is-current  {
+.nav-item.is-current {
   color: #5282ff;
 }
 
 .nav-item.is-current::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
-  left: -17.5px; 
+  left: -17.5px;
   width: 15px;
   height: 100%;
-  border-left: 3px solid #5282ff; 
+  border-left: 3px solid #5282ff;
 }
 
 .code-block-container {
@@ -47,4 +53,144 @@ pre {
 
 .code-block-container:hover .copy-button {
   opacity: 1;
+}
+code {
+  font-weight: bold;
+  color: #5282ff;
+}
+
+/* Размеры шрифтов по умолчанию (для десктопов) */
+h1 {
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+h4 {
+  font-size: 20px;
+}
+
+h5 {
+  font-size: 18px;
+}
+
+h6 {
+  font-size: 16px;
+}
+
+p {
+  font-size: 16px;
+}
+
+li {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+/* Адаптивные стили для планшетов (до 1024px) */
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  h3 {
+    font-size: 21px;
+  }
+
+  h4 {
+    font-size: 18px;
+  }
+
+  h5 {
+    font-size: 16px;
+  }
+
+  h6 {
+    font-size: 15px;
+  }
+
+  p {
+    font-size: 15px;
+  }
+  li {
+    font-size: 15px;
+  }
+}
+
+/* Адаптивные стили для мобильных устройств (до 768px) */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 21px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  h4 {
+    font-size: 16px;
+  }
+
+  h5 {
+    font-size: 15px;
+  }
+
+  h6 {
+    font-size: 14px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+  li {
+    font-size: 14px;
+  }
+}
+
+/* Дополнительные стили для очень маленьких экранов (до 480px) */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+
+  h4 {
+    font-size: 14px;
+  }
+
+  h5 {
+    font-size: 13px;
+  }
+
+  h6 {
+    font-size: 12px;
+  }
+
+  p {
+    font-size: 13px;
+  }
+  li {
+    font-size: 13px;
+  }
 }

@@ -9,7 +9,6 @@ const docsStructure = [
   { path: "quickstart", title: "Начало Работы" },
   { path: "jobs", title: "Jobs" },
   { path: "configuration", title: "Configuration" },
-  { path: "pipelines", title: "Pipelines" },
   { path: "cli", title: "CLI" },
   // Добавьте другие разделы по мере необходимости
 ];
@@ -21,8 +20,8 @@ function Docs() {
   const theme = useTheme();
 
   // Используем useMediaQuery для определения устройства
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+   const isMobile = useMediaQuery('(max-width:1000px)');
+
 
   // Определяем индекс текущего документа
   const currentDocIndex = docsStructure.findIndex(
@@ -54,9 +53,9 @@ function Docs() {
   return (
     <Box
       sx={{
-        maxWidth: "1080px",
+        maxWidth: "1090px",
         margin: "0 auto",
-        padding: "20px 50px",
+        padding: "20px 10px",
         [theme.breakpoints.down("md")]: {
           padding: "15px 30px",
         },

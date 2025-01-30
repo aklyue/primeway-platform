@@ -48,6 +48,7 @@ const OrganizationSwitcher = () => {
           width: "100%",
           display: "flex",
           alignItems:'center'
+          
         }}
       >
         <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight: 600 }}>

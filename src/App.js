@@ -77,7 +77,7 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery('(max-width:1000px)');
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -343,7 +343,7 @@ export function Layout() {
                 <ListItemText primary="Configuration" />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
+            {/* <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/docs/pipelines"
@@ -355,7 +355,7 @@ export function Layout() {
                 </ListItemIcon>
                 <ListItemText primary="Pipelines" />
               </ListItemButton>
-            </ListItem>
+            </ListItem> */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
@@ -468,10 +468,11 @@ export function Layout() {
                           display: "flex",
                           alignItems: "center",
                           color: "#202123",
+                          
                         }}
                       >
                         <Typography
-                          variant={isMobile ? 'h6' : 'h5'}
+                          variant={'h5'}
                           noWrap
                           component={Link}
                           to="/"
@@ -620,7 +621,7 @@ export function Layout() {
                   {/* Drawer */}
                   <Box
                     component="nav"
-                    sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+                    sx={{  flexShrink: { sm: 0 } }}
                   >
                     {/* Мобильный Drawer */}
                     {isMobile && (
@@ -677,7 +678,7 @@ export function Layout() {
                   flexGrow: 1,
                   width: "100%",
                   mr: { xs: 0, sm: "15px" },
-                  ml: { xs: 0, sm: "5px" },
+                  ml: { xs: 0, sm: "6px" },
                   minHeight: "90vh",
                   backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",
                   padding: { xs: "25px", sm: "35px" },

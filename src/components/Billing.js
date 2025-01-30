@@ -249,6 +249,7 @@ function Billing() {
 
   // Опции для графика покупок кредитов
   const purchasesChartOptions = {
+    responsive: true,
     maintainAspectRatio: false,
     scales: {
       x: {
@@ -305,6 +306,7 @@ function Billing() {
 
   // Опции для графика расходов
   const expensesChartOptions = {
+    responsive: true,
     maintainAspectRatio: false,
     scales: {
       x: {
@@ -440,7 +442,7 @@ function Billing() {
                 <Bar
                   data={purchasesChartData}
                   options={purchasesChartOptions}
-                  height={300}
+                  
                 />
               ) : (
                 <Typography>Нет данных о покупках кредитов</Typography>
@@ -462,7 +464,7 @@ function Billing() {
                 <Line
                   data={expensesChartData}
                   options={expensesChartOptions}
-                  height={300}
+                  
                 />
               ) : (
                 <Typography>Нет данных для отображения графика.</Typography>

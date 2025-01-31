@@ -52,8 +52,12 @@ import Docs from "./components/Docs"; // Компонент для докуме�
 import HomeIcon from "@mui/icons-material/Home";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import WorkIcon from "@mui/icons-material/Work";
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import KeyIcon from '@mui/icons-material/Key';
 import SettingsIcon from "@mui/icons-material/Settings";
-import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import MemoryIcon from '@mui/icons-material/Memory';
+import RecentActorsIcon from '@mui/icons-material/RecentActors';
 import CodeIcon from "@mui/icons-material/Code";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,7 +65,7 @@ import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
 
-const drawerWidth = 240;
+
 
 export function Layout() {
   const {
@@ -77,7 +81,16 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:1000px)');
+
+  // Телефоны: до 600px
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // Планшеты: от 600px до 960px
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
+  // Ноутбуки/Компьютеры: от 960px и выше
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const drawerWidth = isTablet ? '9%' : "14%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -196,30 +209,30 @@ export function Layout() {
     <div>
       <Toolbar />
       <List>
-      {isMobile && (
-        <List sx={{display:'flex', }}>
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/gpu-list"
-              selected={!location.pathname.startsWith("/docs")}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText primary="Дашборд" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/docs"
-              selected={location.pathname.startsWith("/docs")}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText primary="Доки" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      )}
+        {isMobile && (
+          <List sx={{ display: "flex" }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/gpu-list"
+                selected={!location.pathname.startsWith("/docs")}
+                onClick={handleDrawerToggle}
+              >
+                <ListItemText primary="Дашборд" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs"
+                selected={location.pathname.startsWith("/docs")}
+                onClick={handleDrawerToggle}
+              >
+                <ListItemText primary="Доки" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        )}
         {!isDocsPage ? (
           <>
             {/* Список элементов меню для дашборда */}
@@ -229,62 +242,123 @@ export function Layout() {
                 to="/gpu-list"
                 selected={location.pathname === "/gpu-list"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="GPU" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <MemoryIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="GPU" />
+                )}
               </ListItemButton>
             </ListItem>
+            {/* Задачи */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/tasks"
                 selected={location.pathname === "/tasks"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="Задачи" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <AssignmentIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="Задачи" />
+                )}
               </ListItemButton>
             </ListItem>
-
+            {/* Биллинг */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/billing"
                 selected={location.pathname === "/billing"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="Биллинг" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <PriceChangeIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="Биллинг" />
+                )}
               </ListItemButton>
             </ListItem>
-
+            {/* API Ключи */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/api-keys"
                 selected={location.pathname === "/api-keys"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="API Ключи" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <KeyIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="API Ключи" />
+                )}
               </ListItemButton>
             </ListItem>
-
+            {/* Настройки */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/settings"
                 selected={location.pathname === "/settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="Настройки" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <SettingsIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="Настройки" />
+                )}
               </ListItemButton>
             </ListItem>
-
+            {/* Организация */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/organization-settings"
                 selected={location.pathname === "/organization-settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemText primary="Организация" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <RecentActorsIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="Организация" />
+                )}
               </ListItemButton>
             </ListItem>
           </>
@@ -297,79 +371,130 @@ export function Layout() {
                 to="/docs/welcome"
                 selected={location.pathname === "/docs/welcome"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <HomeIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Добро Пожаловать" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <HomeIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <>
+                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
+                      <HomeIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Добро Пожаловать" />
+                  </>
+                )}
               </ListItemButton>
             </ListItem>
+            {/* Начало работы */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/docs/quickstart"
                 selected={location.pathname === "/docs/quickstart"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <FlashOnIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Начало работы" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <FlashOnIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <>
+                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
+                      <FlashOnIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Начало работы" />
+                  </>
+                )}
               </ListItemButton>
             </ListItem>
+            {/* Jobs */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/docs/jobs"
                 selected={location.pathname === "/docs/jobs"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <WorkIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Jobs" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <WorkIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <>
+                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
+                      <WorkIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Jobs" />
+                  </>
+                )}
               </ListItemButton>
             </ListItem>
+            {/* Configuration */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/docs/configuration"
                 selected={location.pathname === "/docs/configuration"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <SettingsIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Configuration" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <SettingsIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <>
+                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
+                      <SettingsIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Configuration" />
+                  </>
+                )}
               </ListItemButton>
             </ListItem>
-            {/* <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/pipelines"
-                selected={location.pathname === "/docs/pipelines"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-              >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <LinearScaleIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Pipelines" />
-              </ListItemButton>
-            </ListItem> */}
+            {/* Cli */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
                 to="/docs/cli"
                 selected={location.pathname === "/docs/cli"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isTablet ? "center" : "flex-start",
+                  padding: isTablet ? "10px 0" : "10px 16px",
+                }}
               >
-                <ListItemIcon sx={{ minWidth: "0", mr: "5px" }}>
-                  <CodeIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Cli" />
+                {isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <CodeIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <>
+                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
+                      <CodeIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Cli" />
+                  </>
+                )}
               </ListItemButton>
             </ListItem>
-            {/* Добавьте дополнительные разделы документации по необходимости */}
+            {/* Добавьте дополнительные разделы документации аналогичным образом */}
           </>
         )}
       </List>
@@ -468,11 +593,10 @@ export function Layout() {
                           display: "flex",
                           alignItems: "center",
                           color: "#202123",
-                          
                         }}
                       >
                         <Typography
-                          variant={'h5'}
+                          variant={"h5"}
                           noWrap
                           component={Link}
                           to="/"
@@ -566,7 +690,9 @@ export function Layout() {
                           <IconButton
                             onClick={handleEventsClick}
                             sx={{
-                              color: isEventsOpen ? "secondary.main" : "#202123",
+                              color: isEventsOpen
+                                ? "secondary.main"
+                                : "#202123",
                             }}
                           >
                             <NotificationsNoneIcon />
@@ -619,10 +745,7 @@ export function Layout() {
                   </AppBar>
 
                   {/* Drawer */}
-                  <Box
-                    component="nav"
-                    sx={{  flexShrink: { sm: 0 } }}
-                  >
+                  <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
                     {/* Мобильный Drawer */}
                     {isMobile && (
                       <Drawer
@@ -634,7 +757,7 @@ export function Layout() {
                         }}
                         sx={{
                           "& .MuiDrawer-paper": {
-                            width: drawerWidth,
+                            width: "200px",
                             ackgroundColor: isDocsPage ? "#e8eaf6" : "#F5F5F5",
                           },
                         }}
@@ -677,11 +800,11 @@ export function Layout() {
                 sx={{
                   flexGrow: 1,
                   width: "100%",
-                  mr: { xs: 0, sm: "15px" },
-                  ml: { xs: 0, sm: "6px" },
+                  marginLeft: isMobile ? "" : drawerWidth,
+
                   minHeight: "90vh",
                   backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",
-                  padding: { xs: "25px", sm: "35px" },
+                  padding: { lg: "25px", xl: "35px", xs: "20px" },
                   marginTop: { xs: "56px", sm: "64px" },
                   borderRadius: { xs: "0px", sm: "20px" },
                   border: "1px solid #ececf1",

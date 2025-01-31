@@ -80,6 +80,7 @@ const GPUList = () => {
     );
   }
 
+
   return (
     <Box sx={{ padding: { xs: "15px", sm: "25px" } }}>
       <Typography variant="h4" gutterBottom>
@@ -118,8 +119,10 @@ const GPUList = () => {
 const GpuCard = ({ gpu, onCopy }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+
+  
   return (
-    <Grid item xs={12} sm={6} md={5} lg={2.3}>
+    <Grid item xs={12} sm={6} md={4} lg={3}>
       <Card
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

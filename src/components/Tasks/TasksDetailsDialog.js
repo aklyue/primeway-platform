@@ -109,7 +109,13 @@ function JobDetailsDialog({
   const intervalRef = useRef(null);
 
   const theme = useTheme();
-      const isMobile = useMediaQuery('(max-width:1200px)');
+  const isMobile = useMediaQuery("(max-width:750px)");
+
+  // Планшеты: от 600px до 960px
+  const isTablet = useMediaQuery(theme.breakpoints.down("lg"));
+
+  // Ноутбуки/Компьютеры: от 960px и выше
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const formatJobExecutionId = (id) => {
     if (!id) return "N/A";
@@ -774,6 +780,8 @@ function JobDetailsDialog({
             display: "flex",
             justifyContent: "space-around",
             position: "relative",
+            flexWrap: "wrap",
+            textAlign: "center",
           }}
         >
           <Box
@@ -785,14 +793,33 @@ function JobDetailsDialog({
           >
             {getStatusIndicator(job)}
           </Box>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            sx={{ width: "100%" }}
+          >
             {/* Название задачи */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: "bold",
+                  whiteSpace: isTablet ? "normal" : "nowrap",
+                }}
+              >
                 {job.job_name}
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "80px", bgcolor: "black" }} />
+            <Box
+              sx={{
+                height: "2px",
+                flexGrow: 1,
+                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                borderRadius: "5px",
+                bgcolor: "black",
+              }}
+            />
             {/* Тип задачи */}
             <Box>
               <Typography
@@ -805,14 +832,30 @@ function JobDetailsDialog({
                 <strong>{job.job_type}</strong>
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "100px", bgcolor: "black" }} />
+            <Box
+              sx={{
+                height: "2px",
+                flexGrow: 1,
+                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                borderRadius: "5px",
+                bgcolor: "black",
+              }}
+            />
             {/* Дата создания */}
             <Box>
               <Typography variant="body1">
                 <strong>{formatDateTime(job.created_at)}</strong>
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
+            <Box
+              sx={{
+                height: "2px",
+                flexGrow: 1,
+                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                borderRadius: "5px",
+                bgcolor: "black",
+              }}
+            />
             <Box>
               <Typography
                 variant="body1"
@@ -823,21 +866,37 @@ function JobDetailsDialog({
                 <strong>{job.build_status}</strong>
               </Typography>
             </Box>
-            <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
+            <Box
+              sx={{
+                height: "2px",
+                flexGrow: 1,
+                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                borderRadius: "5px",
+                bgcolor: "black",
+              }}
+            />
             <Button
               sx={{
                 border: "1px solid rgba(0,0,0,0.3)",
                 borderRadius: "12px",
                 padding: "4px 7px",
               }}
-              startIcon={<BugReportIcon />}
+              startIcon={isTablet ? "" : <BugReportIcon />}
               onClick={handleBuildLogsClick}
             >
-              Build Логи
+              {isTablet ? <BugReportIcon /> : "Build Логи"}
             </Button>
             {job.job_type === "deploy" && job.job_url && (
               <>
-                <Box sx={{ height: "1px", width: "90px", bgcolor: "black" }} />
+                <Box
+              sx={{
+                height: "2px",
+                flexGrow: 1,
+                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                borderRadius: "5px",
+                bgcolor: "black",
+              }}
+            />
                 <Tooltip title="Скопировать URL">
                   <Typography
                     variant="body2"
@@ -849,7 +908,7 @@ function JobDetailsDialog({
                       backgroundColor: "none",
                       color: "secondary.main",
                       cursor: "pointer",
-                      wordBreak: "break-all",
+                      whiteSpace: "nowrap",
                       "&:hover": {
                         backgroundColor: "#8fa8ea",
                         color: "white",
@@ -860,7 +919,7 @@ function JobDetailsDialog({
                       handleCopy(job.job_url);
                     }}
                   >
-                    {job.job_url}
+                    {isTablet ? "URL" : job.job_url}
                   </Typography>
                 </Tooltip>
               </>
@@ -872,7 +931,6 @@ function JobDetailsDialog({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TasksActions
                 job={job}
-                
                 onStopClick={(job) => handleStopClick(job)}
                 onStartClick={(job) => handleStartClick(job)}
                 displayMode="buttons" // Указываем режим "buttons"
@@ -887,7 +945,7 @@ function JobDetailsDialog({
         <DialogContent dividers>
           <Box sx={{ display: "flex", height: "100%", mt: 1 }}>
             {/* Левая часть - Выполнения */}
-            <Box sx={{ flex: 1.2, mr: 2 }}>
+            <Box sx={{ flex: 1.4, mr: 2 }}>
               <Typography
                 variant="h6"
                 gutterBottom
@@ -908,65 +966,142 @@ function JobDetailsDialog({
                 </Box>
               ) : executionsError ? (
                 <Typography color="error">{executionsError}</Typography>
-              ) : (
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    {/* Заголовки столбцов */}
-                    <Grid
-                      container
-                      spacing={1}
-                      sx={{
-                        p: 1,
-                        borderBottom: "1px solid #ccc",
-                        textAlign: "center",
-                      }}
-                    >
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Job Exec id
-                        </Typography>
+              ) : executions.length > 0 ? (
+                isTablet ? (
+                  // Рендеринг карточек для планшетов
+                  <Grid container spacing={2}>
+                    {executions.map((execution) => (
+                      <Grid
+                        item
+                        xs={12}
+                        key={execution.job_execution_id}
+                        style={{ paddingTop: "8px" }}
+                      >
+                        <Paper variant="outlined" sx={{ p: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Typography variant="subtitle1">
+                              Job Exec ID:{" "}
+                              {formatJobExecutionId(execution.job_execution_id)}
+                            </Typography>
+                            <Tooltip title="Скопировать ID выполнения">
+                              <IconButton
+                                onClick={() =>
+                                  handleCopy(execution.job_execution_id)
+                                }
+                                size="small"
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                          <Typography variant="body2">
+                            <strong>Создано:</strong>{" "}
+                            {formatDateTime(execution.created_at)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Статус:</strong> {execution.status}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Начало:</strong>{" "}
+                            {formatDateTime(execution.start_time)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Конец:</strong>{" "}
+                            {formatDateTime(execution.end_time)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>GPU:</strong>{" "}
+                            {execution.gpu_info?.type || "N/A"}
+                          </Typography>
+                          {job.job_type !== "run" && (
+                            <Typography variant="body2">
+                              <strong>Health:</strong>{" "}
+                              {execution.health_status || "N/A"}
+                            </Typography>
+                          )}
+                          {/* Кнопки действий */}
+                          <Box sx={{ mt: 2 }}>
+                            <TasksActions
+                              job={job}
+                              onLogsClick={() => handleLogsClick(execution)}
+                              onDownloadArtifacts={() =>
+                                handleDownloadArtifacts(job, execution)
+                              }
+                              onStopClick={() =>
+                                handleStopClick(execution.job_execution_id)
+                              }
+                              showStartButton={false}
+                            />
+                          </Box>
+                        </Paper>
                       </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Создано
-                        </Typography>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Статус
-                        </Typography>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Начало
-                        </Typography>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Конец
-                        </Typography>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          GPU
-                        </Typography>
-                      </Grid>
-                      {job.job_type !== "run" && (
+                    ))}
+                  </Grid>
+                ) : (
+                  // Рендеринг таблицы для десктопа
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      {/* Заголовки столбцов */}
+                      <Grid
+                        container
+                        spacing={1}
+                        sx={{
+                          p: 1,
+                          borderBottom: "1px solid #ccc",
+                          textAlign: "center",
+                        }}
+                      >
                         <Grid item xs>
                           <Typography variant="subtitle2" fontWeight="bold">
-                            Health
+                            Job Exec ID
                           </Typography>
                         </Grid>
-                      )}
-                      <Grid item xs>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Действия
-                        </Typography>
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Создано
+                          </Typography>
+                        </Grid>
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Статус
+                          </Typography>
+                        </Grid>
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Начало
+                          </Typography>
+                        </Grid>
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Конец
+                          </Typography>
+                        </Grid>
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            GPU
+                          </Typography>
+                        </Grid>
+                        {job.job_type !== "run" && (
+                          <Grid item xs>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              Health
+                            </Typography>
+                          </Grid>
+                        )}
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Действия
+                          </Typography>
+                        </Grid>
                       </Grid>
                     </Grid>
-                  </Grid>
-                  {executions.length > 0 ? (
-                    executions.map((execution) => (
+                    {executions.map((execution) => (
                       <Grid
                         item
                         xs={12}
@@ -1064,15 +1199,13 @@ function JobDetailsDialog({
                           </Grid>
                         </Paper>
                       </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      <Typography align="center" sx={{ mt: 2 }}>
-                        Нет выполнений для этой задачи.
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
+                    ))}
+                  </Grid>
+                )
+              ) : (
+                <Typography align="center" sx={{ mt: 2 }}>
+                  Нет выполнений для этой задачи.
+                </Typography>
               )}
             </Box>
 
@@ -1080,7 +1213,7 @@ function JobDetailsDialog({
             <Divider orientation="vertical" flexItem />
 
             {/* Правая часть - Переключение между расписанием и конфигурацией */}
-            <Box sx={{ flex: 0.7, ml: 2 }}>
+            <Box sx={{ flex: isTablet ? 0.4 : 0.7, ml: 2 }}>
               {/* Переключатель вкладок */}
               <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                 <Button
@@ -1204,7 +1337,7 @@ function JobDetailsDialog({
                       language="yaml"
                       style={coy}
                       showLineNumbers
-                      customStyle={{ borderRadius: "10px",  }}
+                      customStyle={{ borderRadius: "10px" }}
                     >
                       {config}
                     </SyntaxHighlighter>

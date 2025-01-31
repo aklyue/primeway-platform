@@ -55,7 +55,7 @@ function Docs() {
       sx={{
         maxWidth: "1090px",
         margin: "0 auto",
-        padding: "20px 10px",
+        padding: "20px 15px",
         [theme.breakpoints.down("md")]: {
           padding: "15px 30px",
         },

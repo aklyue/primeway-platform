@@ -110,8 +110,10 @@ function Tasks() {
   const initialLoadRef = useRef(true);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:1200px)');
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const isMinDesktop = useMediaQuery(theme.breakpoints.down("lg"));
+  
 
 
   const fetchJobs = () => {
@@ -660,7 +662,7 @@ function Tasks() {
         ) : (
           <Grid container spacing={isMobile ? 1 : 2}>
             {/* Заголовки столбцов */}
-            {!isMobile && (
+            {!(isMobile || isTablet) && (
               <Grid item xs={12}>
                 <Grid
                   container
@@ -689,7 +691,7 @@ function Tasks() {
                       Создана
                     </Typography>
                   </Grid>
-                  <Grid item xs={1.3}>
+                  <Grid item xs={1.2}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Статус образа
                     </Typography>
@@ -699,7 +701,7 @@ function Tasks() {
                       Начало
                     </Typography>
                   </Grid>
-                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
+                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.2}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Статус
                     </Typography>
@@ -712,14 +714,14 @@ function Tasks() {
                           URL
                         </Typography>
                       </Grid>
-                      <Grid item xs={1}>
+                      <Grid item xs={1.2}>
                         <Typography variant="subtitle2" fontWeight="bold">
                           Health
                         </Typography>
                       </Grid>
                     </>
                   )}
-                  <Grid item xs={0.8}>
+                  <Grid item xs={0.7}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Действия
                     </Typography>
@@ -941,7 +943,7 @@ function Tasks() {
                                 </Typography>
                               </Grid>
                               {/* Статус образа */}
-                              <Grid item xs={1.3}>
+                              <Grid item xs={1.2}>
                                 <Typography
                                   variant="body2"
                                   sx={{
@@ -972,7 +974,7 @@ function Tasks() {
                               {/* Статус */}
                               <Grid
                                 item
-                                xs={selectedJobType === "run" ? 1.6 : 1.3}
+                                xs={selectedJobType === "run" ? 1.6 : 1.2}
                               >
                                 <Typography
                                   variant="body2"
@@ -990,11 +992,11 @@ function Tasks() {
                               {selectedJobType === "deploy" && (
                                 <>
                                   <Grid item xs={1.8}>
-                                    <Typography variant="body2" sx={{fontSize:"12px", whiteSpace:'nowrap'}}>
+                                    <Typography variant="body2" sx={{fontSize:"12px", whiteSpace: isMinDesktop ? 'normal' : 'nowrap'}}>
                                       {job.job_url || "N/A"}
                                     </Typography>
                                   </Grid>
-                                  <Grid item xs={1}>
+                                  <Grid item xs={1.2}>
                                     <Typography variant="body2">
                                       {job.health_status || "N/A"}
                                     </Typography>
@@ -1002,7 +1004,7 @@ function Tasks() {
                                 </>
                               )}
                               {/* Действия */}
-                              <Grid item xs={0.8}>
+                              <Grid item xs={0.7}>
                                 <TasksActions
                                   job={job}
                                   onLogsClick={handleLogsClick}

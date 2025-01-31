@@ -14,7 +14,9 @@ import {
   TableRow,
   Paper,
   Avatar,
-  Divider, // Импортируем Divider
+  Divider,
+  useTheme,
+  useMediaQuery, // Импортируем Divider
 } from "@mui/material";
 import { useOrganization } from "./OrganizationContext";
 import { AuthContext } from "../../AuthContext";
@@ -23,6 +25,11 @@ import { getOrgMembers, addOrgMember, removeOrgMember } from "../../api.js";
 const OrganizationSettings = () => {
   const { currentOrganization, isCurrentOrgOwner } = useOrganization();
   const { user } = useContext(AuthContext);
+
+  const theme = useTheme();
+  const isMediumScreen = useMediaQuery(
+    theme.breakpoints.between("sm", "md")
+  );
 
   // Состояния
   const [members, setMembers] = useState([]);
@@ -129,7 +136,7 @@ const OrganizationSettings = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100%" }}>
+    <Box sx={{ display: "flex", height: "100%", flexDirection: isMediumScreen ? 'column' : 'row', gap:'15px' }}>
       {/* Левая сторона - Участники */}
       <Box sx={{ flex: 1, pr: 2 }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
@@ -205,7 +212,7 @@ const OrganizationSettings = () => {
       </Box>
 
       {/* Разделительная черта */}
-      <Divider orientation="vertical" sx={{height:'85vh'}} flexItem />
+      <Divider orientation="vertical" sx={{height: isMediumScreen ? '0' : '85vh'}} flexItem />
 
       {/* Правая сторона - События */}
       <Box sx={{ flex: 1, pl: 2 }}>

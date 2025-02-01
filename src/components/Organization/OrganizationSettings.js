@@ -21,6 +21,7 @@ import {
 import { useOrganization } from "./OrganizationContext";
 import { AuthContext } from "../../AuthContext";
 import { getOrgMembers, addOrgMember, removeOrgMember } from "../../api.js";
+import OrganizationEvents from "./OrganizationEvents.js";
 
 const OrganizationSettings = () => {
   const { currentOrganization, isCurrentOrgOwner } = useOrganization();
@@ -212,17 +213,16 @@ const OrganizationSettings = () => {
       </Box>
 
       {/* Разделительная черта */}
-      {/* <Divider orientation="vertical" sx={{height: isMediumScreen ? '0' : '85vh'}} flexItem /> */}
+      <Divider orientation="horizontal"  flexItem />
 
       {/* Правая сторона - События */}
-      <Box sx={{ flex: 1, pl: 2 }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
           События
         </Typography>
 
-        {/* Поскольку данных нет, отображаем сообщение */}
-        <Typography sx={{mb:1, color:'rgb(22 163 74)', fontWeight:'600'}}>01.02.2025 14.05.55</Typography>
-        <Typography sx={{fontSize:'16px'}}>Лог по задаче который был создан для какого-то должен был быть показан в конфиге в событии №1</Typography>
+        
+        <OrganizationEvents organizationId={currentOrganization} />
       </Box>
     </Box>
   );

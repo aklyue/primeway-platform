@@ -52,20 +52,19 @@ import Docs from "./components/Docs"; // Компонент для докуме�
 import HomeIcon from "@mui/icons-material/Home";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import WorkIcon from "@mui/icons-material/Work";
-import PriceChangeIcon from '@mui/icons-material/PriceChange';
-import KeyIcon from '@mui/icons-material/Key';
+import PriceChangeIcon from "@mui/icons-material/PriceChange";
+import KeyIcon from "@mui/icons-material/Key";
 import SettingsIcon from "@mui/icons-material/Settings";
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import MemoryIcon from '@mui/icons-material/Memory';
-import RecentActorsIcon from '@mui/icons-material/RecentActors';
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import MemoryIcon from "@mui/icons-material/Memory";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import CodeIcon from "@mui/icons-material/Code";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
-
-
+import OrganizationEvents from "./components/Organization/OrganizationEvents";
 
 export function Layout() {
   const {
@@ -90,7 +89,7 @@ export function Layout() {
 
   // Ноутбуки/Компьютеры: от 960px и выше
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const drawerWidth = isTablet ? '9%' : "14%";
+  const drawerWidth = isTablet ? "9%" : "14%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -169,8 +168,6 @@ export function Layout() {
 
   // Состояния для иконки и списка событий
   const [eventsAnchorEl, setEventsAnchorEl] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
 
   const handleEventsClick = (event) => {
     setEventsAnchorEl(event.currentTarget);
@@ -181,28 +178,6 @@ export function Layout() {
   };
 
   const isEventsOpen = Boolean(eventsAnchorEl);
-
-  useEffect(() => {
-    if (isEventsOpen && currentOrganization) {
-      fetchEvents();
-    }
-  }, [isEventsOpen, currentOrganization]);
-
-  const fetchEvents = () => {
-    setEventsLoading(true);
-    // Замените этот URL на ваш реальный эндпоинт для получения событий организации
-    axiosInstance
-      .get(`/organizations/${currentOrganization.id}/events`)
-      .then((response) => {
-        setEvents(response.data || []);
-      })
-      .catch((error) => {
-        console.error("Ошибка при получении событий организации:", error);
-      })
-      .finally(() => {
-        setEventsLoading(false);
-      });
-  };
 
   // Содержимое Drawer
   const drawer = (
@@ -976,39 +951,18 @@ export function Layout() {
           horizontal: "right",
         }}
         PaperProps={{
-          style: { maxHeight: 500, width: "400px" },
+          style: { maxHeight: '500px', width: "570px", padding:'12px', borderRadius:'10px' },
         }}
       >
-        {eventsLoading ? (
-          <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
-            <CircularProgress />
-          </Box>
-        ) : events.length > 0 ? (
-          <List sx={{ maxHeight: 400, overflow: "auto" }}>
-            {events.map((event, index) => (
-              <ListItem key={index} alignItems="flex-start">
-                <ListItemText
-                  primary={event.title || "Событие"}
-                  secondary={
-                    <>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        color="textPrimary"
-                      >
-                        {new Date(event.timestamp).toLocaleString()}
-                      </Typography>
-                      {" — "}
-                      {event.description}
-                    </>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
+        <Typography variant="h5" textAlign={"center"}>События</Typography>
+        {currentOrganization ? (
+          <OrganizationEvents
+            organizationId={currentOrganization.id}
+            amount={5} // Передаем amount={5}
+          />
         ) : (
           <Box sx={{ p: 2 }}>
-            <Typography variant="body2">Событий пока нет.</Typography>
+            <Typography variant="body2">Организация не выбрана.</Typography>
           </Box>
         )}
       </Popover>

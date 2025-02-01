@@ -318,6 +318,11 @@ function Billing() {
             day: 'dd MMM',
           },
         },
+        adapters: {
+          date: {
+            locale: ru, // Устанавливаем локаль на русский
+          },
+        },
         ticks: {
           autoSkip: false,
           maxRotation: 45,

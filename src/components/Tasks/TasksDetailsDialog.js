@@ -45,6 +45,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 import JobDetailsDialogMobile from "./JobDetailsDialogMobile";
 import { useTheme } from "@mui/material/styles";
+import JobEvents from "./JobEvents";
 
 const statusColors = {
   success: "#28a745", // зеленый
@@ -81,11 +82,6 @@ function JobDetailsDialog({
   const [currentLogs, setCurrentLogs] = useState("");
   const [currentJobName, setCurrentJobName] = useState("");
   const [logsModalOpen, setLogsModalOpen] = useState(false);
-
-  // Добавлены новые состояния для событий
-  const [events, setEvents] = useState({});
-  const [eventsLoading, setEventsLoading] = useState(true);
-  const [eventsError, setEventsError] = useState(null);
 
   // Состояния для расписания
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false);
@@ -264,24 +260,6 @@ function JobDetailsDialog({
       });
   };
 
-  // Функция для получения событий
-  const fetchEvents = async () => {
-    setEventsLoading(true);
-    setEventsError(null);
-    try {
-      // Здесь будет запрос на сервер за событиями
-      // const response = await axiosInstance.get("/jobs/get-events", { params: { job_id: job.job_id } });
-      // setEvents(response.data);
-      // Пока устанавливаем пустой объект
-      setEvents({});
-    } catch (error) {
-      console.error("Ошибка при получении событий:", error);
-      setEventsError("Ошибка при загрузке событий");
-    } finally {
-      setEventsLoading(false);
-    }
-  };
-
   // Функция для получения списка выполнений задачи
   const fetchExecutions = async () => {
     if (initialExecutionsLoadRef.current) {
@@ -373,7 +351,6 @@ function JobDetailsDialog({
       fetchExecutions();
       fetchSchedules();
       fetchConfig();
-      fetchEvents();
 
       // Устанавливаем интервал для периодического фетчинга
       intervalRef.current = setInterval(() => {
@@ -780,7 +757,7 @@ function JobDetailsDialog({
             display: "flex",
             justifyContent: "space-around",
             position: "relative",
-            flexWrap: isTablet ? 'wrap' : 'nowrap',
+            flexWrap: isTablet ? "wrap" : "nowrap",
             textAlign: "center",
           }}
         >
@@ -805,7 +782,7 @@ function JobDetailsDialog({
                 variant="h6"
                 sx={{
                   fontWeight: "bold",
-                  whiteSpace:"nowrap",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {job.job_name}
@@ -889,14 +866,14 @@ function JobDetailsDialog({
             {job.job_type === "deploy" && job.job_url && (
               <>
                 <Box
-              sx={{
-                height: "2px",
-                flexGrow: 1,
-                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
-                borderRadius: "5px",
-                bgcolor: "black",
-              }}
-            />
+                  sx={{
+                    height: "2px",
+                    flexGrow: 1,
+                    minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                    borderRadius: "5px",
+                    bgcolor: "black",
+                  }}
+                />
                 <Tooltip title="Скопировать URL">
                   <Typography
                     variant="body2"
@@ -1344,51 +1321,7 @@ function JobDetailsDialog({
                   )}
                 </Box>
               )}
-              {activeTab === "events" && (
-                <Box sx={{ height: "100%", overflow: "auto" }}>
-                  {eventsLoading ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        height: "200px",
-                      }}
-                    >
-                      <CircularProgress />
-                    </Box>
-                  ) : eventsError ? (
-                    <Typography color="error">{eventsError}</Typography>
-                  ) : (
-                    <>
-                      {/* Проверяем, есть ли события */}
-                      {Object.keys(events).length > 0 ? (
-                        <List>
-                          {Object.entries(events).map(
-                            ([dateTime, log], index) => (
-                              <Paper
-                                variant="outlined"
-                                sx={{ p: 2, mb: 2 }}
-                                key={index}
-                              >
-                                <Typography
-                                  variant="subtitle1"
-                                  sx={{ fontWeight: "bold" }}
-                                >
-                                  {formatDateTime(dateTime)}
-                                </Typography>
-                                <Typography variant="body2">{log}</Typography>
-                              </Paper>
-                            )
-                          )}
-                        </List>
-                      ) : (
-                        <Typography>Событий нет.</Typography>
-                      )}
-                    </>
-                  )}
-                </Box>
-              )}
+              {activeTab === "events" && <JobEvents jobId={job.job_id} />}
             </Box>
           </Box>
         </DialogContent>

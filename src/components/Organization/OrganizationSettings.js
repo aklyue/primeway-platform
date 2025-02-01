@@ -136,9 +136,9 @@ const OrganizationSettings = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100%", flexDirection: isMediumScreen ? 'column' : 'row', gap:'15px' }}>
+    <Box sx={{ display: "flex", height: "100%", flexDirection: 'column', gap:'35px' }}>
       {/* Левая сторона - Участники */}
-      <Box sx={{ flex: 1, pr: 2 }}>
+      <Box sx={{ flex: 1, pr: 2, mb:2 }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Участники
         </Typography>
@@ -212,7 +212,7 @@ const OrganizationSettings = () => {
       </Box>
 
       {/* Разделительная черта */}
-      <Divider orientation="vertical" sx={{height: isMediumScreen ? '0' : '85vh'}} flexItem />
+      {/* <Divider orientation="vertical" sx={{height: isMediumScreen ? '0' : '85vh'}} flexItem /> */}
 
       {/* Правая сторона - События */}
       <Box sx={{ flex: 1, pl: 2 }}>

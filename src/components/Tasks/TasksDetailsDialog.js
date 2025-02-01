@@ -780,7 +780,7 @@ function JobDetailsDialog({
             display: "flex",
             justifyContent: "space-around",
             position: "relative",
-            flexWrap: "wrap",
+            flexWrap: isTablet ? 'wrap' : 'nowrap',
             textAlign: "center",
           }}
         >
@@ -805,7 +805,7 @@ function JobDetailsDialog({
                 variant="h6"
                 sx={{
                   fontWeight: "bold",
-                  whiteSpace: isTablet ? "normal" : "nowrap",
+                  whiteSpace:"nowrap",
                 }}
               >
                 {job.job_name}

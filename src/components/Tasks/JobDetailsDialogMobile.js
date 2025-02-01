@@ -24,6 +24,8 @@ import {
   MenuItem,
   TextField,
   DialogTitle,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
@@ -47,12 +49,7 @@ const statusColors = {
   building: "#007bff",
 };
 
-function JobDetailsDialogMobile({
-  open,
-  onClose,
-  job,
-  getStatusIndicator,
-}) {
+function JobDetailsDialogMobile({ open, onClose, job, getStatusIndicator }) {
   // Состояния компонента
   const [activeTab, setActiveTab] = useState("executions");
   const [executions, setExecutions] = useState([]);
@@ -498,40 +495,52 @@ function JobDetailsDialogMobile({
             position: "relative",
             flexDirection: "column",
             alignItems: "center",
+            backgroundColor: "#f5f5f5",
           }}
         >
           <Box
             sx={{
               position: "absolute",
-              top: 9,
-              left: 9,
+              top: 16,
+              left: 16,
             }}
           >
             {getStatusIndicator(job)}
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "center" }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: "bold", textAlign: "center" }}
+          >
             {job.job_name}
           </Typography>
           <Typography
-            variant="body1"
-            sx={{ textTransform: "uppercase", textAlign: "center" }}
+            variant="subtitle1"
+            sx={{
+              textTransform: "uppercase",
+              textAlign: "center",
+              color: "gray",
+            }}
           >
-            <strong>{job.job_type}</strong>
+            {job.job_type}
           </Typography>
-          <Typography variant="body2" sx={{ textAlign: "center" }}>
-            <strong>{formatDateTime(job.created_at)}</strong>
+          <Typography
+            variant="caption"
+            sx={{ textAlign: "center", color: "gray" }}
+          >
+            Создано: {formatDateTime(job.created_at)}
           </Typography>
           <Typography
             variant="body2"
             sx={{
               color: statusColors[job.build_status] || "black",
               textAlign: "center",
+              mt: 1,
             }}
           >
-            <strong>{job.build_status}</strong>
+            Статус сборки: {job.build_status}
           </Typography>
 
-          {/* Кнопки */}
+          {/* Кнопки управления */}
           <Box sx={{ mt: 2 }}>
             <TasksActions
               job={job}
@@ -542,44 +551,22 @@ function JobDetailsDialogMobile({
           </Box>
         </Box>
 
-        <Divider />
+        {/* Вкладки */}
+        <Tabs
+          value={activeTab}
+          onChange={(e, value) => setActiveTab(value)}
+          variant="fullWidth"
+          indicatorColor="primary"
+          textColor="primary"
+          sx={{ backgroundColor: "#fafafa" }}
+        >
+          <Tab label="Выполнения" value="executions" />
+          <Tab label="Расписание" value="schedule" />
+          <Tab label="Конфиг" value="config" />
+          <Tab label="События" value="events" />
+        </Tabs>
 
-        {/* Кнопки переключения вкладок */}
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-          <Button
-            variant={"outlined"}
-            onClick={() => setActiveTab("executions")}
-            sx={{ mr: 0.5, backgroundColor:
-                activeTab === "executions" ? "#c0c0c5" : "#ececf1", }}
-          >
-            Выполнения
-          </Button>
-          <Button
-            variant={"outlined"}
-            onClick={() => setActiveTab("schedule")}
-            sx={{ mr:  0.5, backgroundColor:
-                activeTab === "schedule" ? "#c0c0c5" : "#ececf1", }}
-          >
-            Расписание
-          </Button>
-          <Button
-            variant={"outlined"}
-            onClick={() => setActiveTab("config")}
-            sx={{ mr:  0.5, backgroundColor:
-                activeTab === "config" ? "#c0c0c5" : "#ececf1", }}
-          >
-            Конфиг
-          </Button>
-          {/* Добавляем новый таб "События" */}
-          <Button
-            variant={"outlined"}
-            onClick={() => setActiveTab("events")}
-            sx={{backgroundColor:
-                activeTab === "events" ? "#c0c0c5" : "#ececf1",}}
-          >
-            События
-          </Button>
-        </Box>
+        <Divider />
 
         {/* Содержимое */}
         <DialogContent dividers>
@@ -602,44 +589,50 @@ function JobDetailsDialogMobile({
                 <Grid container spacing={2}>
                   {executions.map((execution) => (
                     <Grid item xs={12} key={execution.job_execution_id}>
-                      <Paper variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                          ID: {formatJobExecutionId(execution.job_execution_id)}
+                      <Paper variant="outlined" sx={{ p: 2, pt:1 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: "bold", display:'flex', alignItems:'center', justifyContent:'space-between' }}
+                        >
+                          <Box>
+                            ID:{" "}
+                            {formatJobExecutionId(execution.job_execution_id)}
+                          </Box>
+                          {/* Кнопки действий */}
+                          <Box sx={{ mt: 1 }}>
+                            <TasksActions
+                              job={job}
+                              onLogsClick={() => handleLogsClick(execution)}
+                              onDownloadArtifacts={() =>
+                                handleDownloadArtifacts(job, execution)
+                              }
+                              onStopClick={() =>
+                                handleStopClick(execution.job_execution_id)
+                              }
+                              showStartButton={false}
+                            />
+                          </Box>
                         </Typography>
                         <Typography variant="body2">
-                          Статус: {execution.status}
+                          <strong>Статус:</strong> {execution.status}
                         </Typography>
                         <Typography variant="body2">
-                          Создано: {formatDateTime(execution.created_at)}
+                        <strong>Создано:</strong> {formatDateTime(execution.created_at)}
                         </Typography>
                         <Typography variant="body2">
-                          Начало: {formatDateTime(execution.start_time)}
+                        <strong>Начало:</strong> {formatDateTime(execution.start_time)}
                         </Typography>
                         <Typography variant="body2">
-                          Конец: {formatDateTime(execution.end_time)}
+                        <strong>Конец:</strong> {formatDateTime(execution.end_time)}
                         </Typography>
                         <Typography variant="body2">
-                          GPU: {execution.gpu_info?.type || "N/A"}
+                        <strong>GPU:</strong> {execution.gpu_info?.type || "N/A"}
                         </Typography>
                         {job.job_type !== "run" && (
                           <Typography variant="body2">
-                            Health: {execution.health_status || "N/A"}
+                            <strong>Health:</strong> {execution.health_status || "N/A"}
                           </Typography>
                         )}
-                        {/* Кнопки действий */}
-                        <Box sx={{ mt: 1 }}>
-                          <TasksActions
-                            job={job}
-                            onLogsClick={() => handleLogsClick(execution)}
-                            onDownloadArtifacts={() =>
-                              handleDownloadArtifacts(job, execution)
-                            }
-                            onStopClick={() =>
-                              handleStopClick(execution.job_execution_id)
-                            }
-                            showStartButton={false}
-                          />
-                        </Box>
                       </Paper>
                     </Grid>
                   ))}
@@ -677,7 +670,7 @@ function JobDetailsDialogMobile({
                         >
                           {renderScheduleDetails(schedule)}
                           {/* Кнопки действий */}
-                          <Box sx={{ mt: 1 }}>
+                          <Box sx={{ mt: 1, display: "flex" }}>
                             <Tooltip title="Редактировать расписание">
                               <IconButton
                                 onClick={() => handleEditSchedule(schedule)}
@@ -705,6 +698,7 @@ function JobDetailsDialogMobile({
                   )}
                   <Button
                     variant="outlined"
+                    color="primary"
                     onClick={handleAddSchedule}
                     sx={{ mt: 2 }}
                   >
@@ -733,7 +727,11 @@ function JobDetailsDialogMobile({
                   language="yaml"
                   style={coy}
                   showLineNumbers
-                  customStyle={{ borderRadius: "10px", maxHeight: "400px" }}
+                  customStyle={{
+                    borderRadius: "10px",
+                    maxHeight: "400px",
+                    backgroundColor: "#f0f0f0",
+                  }}
                 >
                   {config}
                 </SyntaxHighlighter>
@@ -741,7 +739,6 @@ function JobDetailsDialogMobile({
             </Box>
           )}
 
-          {/* Новый таб "События" */}
           {activeTab === "events" && (
             <Box sx={{ mt: 2 }}>
               {eventsLoading ? (
@@ -759,12 +756,18 @@ function JobDetailsDialogMobile({
                 <Typography color="error">{eventsError}</Typography>
               ) : (
                 <>
-                  {/* Проверяем, есть ли события */}
                   {Object.keys(events).length > 0 ? (
                     <List>
                       {Object.entries(events).map(([dateTime, log], index) => (
-                        <Paper variant="outlined" sx={{ p: 2, mb: 2 }} key={index}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                        <Paper
+                          variant="outlined"
+                          sx={{ p: 2, mb: 2 }}
+                          key={index}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: "bold" }}
+                          >
                             {formatDateTime(dateTime)}
                           </Typography>
                           <Typography variant="body2">{log}</Typography>
@@ -779,6 +782,7 @@ function JobDetailsDialogMobile({
             </Box>
           )}
         </DialogContent>
+
         <DialogActions>
           <Button onClick={onClose}>Закрыть</Button>
         </DialogActions>

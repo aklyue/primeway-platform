@@ -86,7 +86,7 @@ const Quickstart = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       {/* Левая колонка - основной контент */}
-      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px" }}>
+      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px", maxWidth:'850px' }}>
         {/* Заголовок */}
         <h1
           style={{
@@ -144,6 +144,7 @@ const Quickstart = () => {
             backgroundColor: "rgba(249, 115, 22, .08)",
             display: "flex",
             alignItems: "center",
+            flexWrap:'wrap',
             gap: "5px",
           }}
         >
@@ -375,14 +376,16 @@ ignore_patterns:
             padding: "15px 5px",
             borderRadius: "10px",
             backgroundColor: "rgba(249, 115, 22, .08)",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
+            
           }}
         >
+          <div style={{display: "flex",
+            alignItems: "center",
+            gap: "5px",}}>
           <ErrorOutlineIcon />
-          <em>Примечание:</em> Замените <code>job_config.yaml</code> на путь к
+          <em>Примечание:</em></div> Замените <code>job_config.yaml</code> на путь к
           вашему файлу конфигурации, если он находится в другом месте.
+          
         </p>
         <p>
           <strong>Вывод:</strong> Команда выдаст <code>JOB_ID</code>, который вы
@@ -611,15 +614,15 @@ ignore_patterns:
             position: "sticky",
             top: "40px",
             alignSelf: "flex-start",
-            marginLeft: "25px",
-            maxHeight: "calc(100vh - 40px)", // Ограничиваем максимальную высоту
-            overflowY: "auto", // Добавляем вертикальную прокрутку при необходимости
-            // Скрываем полосу прокрутки
-            "&::-webkit-scrollbar": {
-              display: "none", // Скрываем скроллбар в Chrome, Safari и Opera
-            },
-            "-ms-overflow-style": "none", // Скрываем скроллбар в Internet Explorer и Edge
-            "scrollbar-width": "none", // Скрываем скроллбар в Firefox
+            marginLeft: "20px",
+            // maxHeight: "calc(100vh - 40px)", // Ограничиваем максимальную высоту
+            // overflowY: "auto", // Добавляем вертикальную прокрутку при необходимости
+            // // Скрываем полосу прокрутки
+            // "&::-webkit-scrollbar": {
+            //   display: "none", // Скрываем скроллбар в Chrome, Safari и Opera
+            // },
+            // "-ms-overflow-style": "none", // Скрываем скроллбар в Internet Explorer и Edge
+            // "scrollbar-width": "none", // Скрываем скроллбар в Firefox
           }}
         >
           <Scrollspy

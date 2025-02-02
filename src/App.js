@@ -46,7 +46,7 @@ import OrganizationSettings from "./components/Organization/OrganizationSettings
 import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
-import { useTheme } from "@mui/material/styles";
+import { keyframes, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Docs from "./components/Docs"; // Компонент для документации
 import HomeIcon from "@mui/icons-material/Home";
@@ -65,6 +65,7 @@ import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
 import OrganizationEvents from "./components/Organization/OrganizationEvents";
+import { ReactComponent as Logo } from "./assets/favicon2.svg";
 
 export function Layout() {
   const {
@@ -88,13 +89,25 @@ export function Layout() {
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   // Ноутбуки/Компьютеры: от 960px и выше
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const drawerWidth = isTablet ? "9%" : "14%";
+  const isMinDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
+  const drawerWidth = isMinDesktop ? "6%" : isTablet ? "9%" : "14%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const snowflakeImage = new Image();
   snowflakeImage.src = snowflakeSvg;
+
+  const pulse = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
 
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
@@ -218,11 +231,12 @@ export function Layout() {
                 selected={location.pathname === "/gpu-list"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <MemoryIcon fontSize="medium" />
                   </ListItemIcon>
@@ -239,11 +253,12 @@ export function Layout() {
                 selected={location.pathname === "/tasks"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <AssignmentIcon fontSize="medium" />
                   </ListItemIcon>
@@ -260,11 +275,12 @@ export function Layout() {
                 selected={location.pathname === "/billing"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <PriceChangeIcon fontSize="medium" />
                   </ListItemIcon>
@@ -281,11 +297,12 @@ export function Layout() {
                 selected={location.pathname === "/api-keys"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <KeyIcon fontSize="medium" />
                   </ListItemIcon>
@@ -302,11 +319,12 @@ export function Layout() {
                 selected={location.pathname === "/settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <SettingsIcon fontSize="medium" />
                   </ListItemIcon>
@@ -323,11 +341,12 @@ export function Layout() {
                 selected={location.pathname === "/organization-settings"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
                     <RecentActorsIcon fontSize="medium" />
                   </ListItemIcon>
@@ -347,24 +366,29 @@ export function Layout() {
                 selected={location.pathname === "/docs/welcome"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <HomeIcon fontSize="medium" />
+                    <HomeIcon fontSize="medium" style={{ color:"rgba(255, 255, 255, 0.8)" }} />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <HomeIcon fontSize="small" />
+                      <HomeIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)"}} />
                     </ListItemIcon>
-                    <ListItemText primary="Добро Пожаловать" />
+                    <ListItemText
+                      primary="Добро Пожаловать"
+                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                    />
                   </>
                 )}
               </ListItemButton>
             </ListItem>
+
             {/* Начало работы */}
             <ListItem disablePadding>
               <ListItemButton
@@ -373,24 +397,32 @@ export function Layout() {
                 selected={location.pathname === "/docs/quickstart"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <FlashOnIcon fontSize="medium" />
+                    <FlashOnIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <FlashOnIcon fontSize="small" />
+                      <FlashOnIcon
+                        fontSize="small"
+                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      />
                     </ListItemIcon>
-                    <ListItemText primary="Начало работы" />
+                    <ListItemText
+                      primary="Начало работы"
+                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                    />
                   </>
                 )}
               </ListItemButton>
             </ListItem>
+
             {/* Jobs */}
             <ListItem disablePadding>
               <ListItemButton
@@ -399,24 +431,29 @@ export function Layout() {
                 selected={location.pathname === "/docs/jobs"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <WorkIcon fontSize="medium" />
+                    <WorkIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <WorkIcon fontSize="small" />
+                      <WorkIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
                     </ListItemIcon>
-                    <ListItemText primary="Jobs" />
+                    <ListItemText
+                      primary="Jobs"
+                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                    />
                   </>
                 )}
               </ListItemButton>
             </ListItem>
+
             {/* Configuration */}
             <ListItem disablePadding>
               <ListItemButton
@@ -425,25 +462,36 @@ export function Layout() {
                 selected={location.pathname === "/docs/configuration"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <SettingsIcon fontSize="medium" />
+                    <SettingsIcon
+                      fontSize="medium"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <SettingsIcon fontSize="small" />
+                      <SettingsIcon
+                        fontSize="small"
+                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      />
                     </ListItemIcon>
-                    <ListItemText primary="Configuration" />
+                    <ListItemText
+                      primary="Configuration"
+                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                    />
                   </>
                 )}
               </ListItemButton>
             </ListItem>
-            {/* Cli */}
+
+            {/* CLI */}
             <ListItem disablePadding>
               <ListItemButton
                 component={Link}
@@ -451,25 +499,28 @@ export function Layout() {
                 selected={location.pathname === "/docs/cli"}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  justifyContent: isTablet ? "center" : "flex-start",
-                  padding: isTablet ? "10px 0" : "10px 16px",
+                  justifyContent:
+                    isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
                 }}
               >
-                {isTablet ? (
+                {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <CodeIcon fontSize="medium" />
+                    <CodeIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <CodeIcon fontSize="small" />
+                      <CodeIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
                     </ListItemIcon>
-                    <ListItemText primary="Cli" />
+                    <ListItemText
+                      primary="CLI"
+                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                    />
                   </>
                 )}
               </ListItemButton>
             </ListItem>
-            {/* Добавьте дополнительные разделы документации аналогичным образом */}
           </>
         )}
       </List>
@@ -523,7 +574,7 @@ export function Layout() {
                 width: "100%",
                 height: "100vh",
                 backgroundColor: isDocsPage
-                  ? "#e8eaf6"
+                  ? "rgb(21 21 21)"
                   : !shouldRenderContent
                   ? "#FFFFFF"
                   : "#F5F5F5",
@@ -544,7 +595,7 @@ export function Layout() {
                     sx={{
                       zIndex: (theme) => theme.zIndex.drawer + 1,
                       backgroundColor: isDocsPage
-                        ? "#e8eaf6"
+                        ? "rgb(21 21 21)"
                         : !shouldRenderContent
                         ? "#FFFFFF"
                         : "#F5F5F5",
@@ -577,8 +628,13 @@ export function Layout() {
                           to="/"
                           sx={{
                             textDecoration: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "7px",
+                            color: isDocsPage ? "white" : "",
                           }}
                         >
+                          {isDocsPage ? <Logo width={32} height={32} /> : ""}
                           PrimeWay
                         </Typography>
                         <Box
@@ -668,9 +724,17 @@ export function Layout() {
                               color: isEventsOpen
                                 ? "secondary.main"
                                 : "#202123",
+                              backgroundColor: isDocsPage ? 'rgba(255, 255, 255, 0.04)' : "rgba(0, 0, 0, 0.04);",
                             }}
                           >
-                            <NotificationsNoneIcon />
+                            <NotificationsNoneIcon
+                              sx={{
+                                color: isDocsPage ? "rgba(255, 255, 255, 0.8)" : '',
+                                animation: isEventsOpen
+                                  ? ""
+                                  : `${pulse} 1.2s infinite ease-in-out`,
+                              }}
+                            />
                           </IconButton>
                         </Box>
                       )}
@@ -693,7 +757,7 @@ export function Layout() {
                                 <Box
                                   sx={{
                                     backgroundColor: isDocsPage
-                                      ? "#e8eaf6"
+                                      ? "rgb(21 21 21)"
                                       : "#F5F5F5",
                                     borderRadius: "50%",
                                     padding: "2.6px",
@@ -733,7 +797,9 @@ export function Layout() {
                         sx={{
                           "& .MuiDrawer-paper": {
                             width: "200px",
-                            ackgroundColor: isDocsPage ? "#e8eaf6" : "#F5F5F5",
+                            ackgroundColor: isDocsPage
+                              ? "rgb(21 21 21)"
+                              : "#F5F5F5",
                           },
                         }}
                       >
@@ -751,7 +817,7 @@ export function Layout() {
                             width: drawerWidth,
                             boxSizing: "border-box",
                             backgroundColor: isDocsPage
-                              ? "#e8eaf6"
+                              ? "rgb(21 21 21)"
                               : !shouldRenderContent
                               ? "#FFFFFF"
                               : "#F5F5F5",
@@ -951,10 +1017,17 @@ export function Layout() {
           horizontal: "right",
         }}
         PaperProps={{
-          style: { maxHeight: '500px', width: "570px", padding:'12px', borderRadius:'10px' },
+          style: {
+            maxHeight: "500px",
+            width: "570px",
+            padding: "12px",
+            borderRadius: "10px",
+          },
         }}
       >
-        <Typography variant="h5" textAlign={"center"}>События</Typography>
+        <Typography variant="h5" textAlign={"center"}>
+          События
+        </Typography>
         {currentOrganization ? (
           <OrganizationEvents
             organizationId={currentOrganization.id}

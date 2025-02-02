@@ -53,9 +53,9 @@ function Docs() {
   return (
     <Box
       sx={{
-        maxWidth: "1090px",
+        maxWidth: "1200px",
         margin: "0 auto",
-        padding: "20px 15px",
+        padding: "10px 10px",
         [theme.breakpoints.down("md")]: {
           padding: "15px 30px",
         },

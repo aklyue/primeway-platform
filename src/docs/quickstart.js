@@ -86,7 +86,7 @@ const Quickstart = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       {/* Левая колонка - основной контент */}
-      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px", maxWidth:'850px' }}>
+      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px", maxWidth:'1000px' }}>
         {/* Заголовок */}
         <h1
           style={{

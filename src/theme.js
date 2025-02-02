@@ -19,7 +19,7 @@ let theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "Söhne, Arial, sans-serif",
+    fontFamily: "JetBrains Mono, serif",
     fontSize: 14,
     lineHeight: "20px",
     fontWeight: 400,
@@ -100,7 +100,7 @@ let theme = createTheme({
       fontSize: "14px",
       fontWeight: 600,
       lineHeight: "20px",
-      fontFamily: "Söhne, Arial, sans-serif",
+      fontFamily: "JetBrains Mono, serif",
       [createTheme().breakpoints.down('sm')]: {
         fontSize: "12px",
       },
@@ -141,7 +141,7 @@ let theme = createTheme({
           fontSize: "14px",
           lineHeight: "20px",
           padding: "6px 16px",
-          fontFamily: "Söhне, Arial, sans-serif",
+          fontFamily: "JetBrains Mono, serif",
           [createTheme().breakpoints.down('sm')]: {
             fontSize: "12px",
           },
@@ -178,7 +178,7 @@ let theme = createTheme({
           "&:hover": {
             textDecoration: "underline",
           },
-          fontFamily: "Söhне, Arial, sans-serif",
+          fontFamily: "JetBrains Mono, serif",
         },
       },
     },
@@ -186,7 +186,7 @@ let theme = createTheme({
       styleOverrides: {
         root: {
           color: "#202123",
-          fontFamily: "Söhне, Arial, sans-serif",
+          fontFamily: "JetBrains Mono, serif",
         },
       },
     },

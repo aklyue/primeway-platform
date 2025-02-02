@@ -33,6 +33,8 @@ import TasksActions from "./TasksActions";
 import { AuthContext } from "../../AuthContext";
 import { useTheme } from "@mui/material/styles";
 import { wrap } from "framer-motion";
+import { TasksFiltersContext } from "./TasksFiltersContext";
+
 
 
 const statusOptions = [
@@ -72,9 +74,7 @@ function Tasks() {
   const [error, setError] = useState(null);
 
   // Состояния фильтров
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedJobType, setSelectedJobType] = useState("deploy");
-  const [isScheduledFilter, setIsScheduledFilter] = useState(false);
+
 
   // Состояния для модальных окон и текущей задачи
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -105,6 +105,15 @@ function Tasks() {
 
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [jobToStop, setJobToStop] = useState(null);
+
+  const {
+    selectedStatus,
+    setSelectedStatus,
+    selectedJobType,
+    setSelectedJobType,
+    isScheduledFilter,
+    setIsScheduledFilter,
+  } = useContext(TasksFiltersContext);
 
   const intervalRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -676,12 +685,12 @@ function Tasks() {
                   }}
                 >
                   {/* Ваши заголовки */}
-                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.5}>
+                  <Grid item xs={selectedJobType === "run" ? 1.7 : 1.5}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Имя
                     </Typography>
                   </Grid>
-                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.3}>
+                  <Grid item xs={selectedJobType === "run" ? 1.7 : 1.3}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       ID
                     </Typography>
@@ -691,17 +700,17 @@ function Tasks() {
                       Создана
                     </Typography>
                   </Grid>
-                  <Grid item xs={1.2}>
+                  <Grid item xs={selectedJobType === "run" ? 1.7 : 1.1}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Статус образа
                     </Typography>
                   </Grid>
-                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.4}>
+                  <Grid item xs={selectedJobType === "run" ? 1.7 : 1.4}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Начало
                     </Typography>
                   </Grid>
-                  <Grid item xs={selectedJobType === "run" ? 1.6 : 1.2}>
+                  <Grid item xs={selectedJobType === "run" ? 1.7 : 1.1}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Статус
                     </Typography>
@@ -709,7 +718,7 @@ function Tasks() {
                   {/* Дополнительные колонки для "deploy" */}
                   {selectedJobType === "deploy" && (
                     <>
-                      <Grid item xs={1.8}>
+                      <Grid item xs={2.2}>
                         <Typography variant="subtitle2" fontWeight="bold">
                           URL
                         </Typography>
@@ -721,7 +730,7 @@ function Tasks() {
                       </Grid>
                     </>
                   )}
-                  <Grid item xs={0.7}>
+                  <Grid item xs={selectedJobType === "run" ? 1.5 : 0.7}>
                     <Typography variant="subtitle2" fontWeight="bold">
                       Действия
                     </Typography>
@@ -899,7 +908,7 @@ function Tasks() {
                               {/* Имя */}
                               <Grid
                                 item
-                                xs={selectedJobType === "run" ? 1.6 : 1.5}
+                                xs={selectedJobType === "run" ? 1.7 : 1.5}
                               >
                                 <Typography variant="body2" sx={{fontSize:'13px'}}>
                                   {job.job_name}
@@ -908,7 +917,7 @@ function Tasks() {
                               {/* ID */}
                               <Grid
                                 item
-                                xs={selectedJobType === "run" ? 1.6 : 1.3}
+                                xs={selectedJobType === "run" ? 1.7 : 1.3}
                               >
                                 <Box
                                   sx={{
@@ -943,7 +952,7 @@ function Tasks() {
                                 </Typography>
                               </Grid>
                               {/* Статус образа */}
-                              <Grid item xs={1.2}>
+                              <Grid item xs={selectedJobType === "run" ? 1.7 : 1.1}>
                                 <Typography
                                   variant="body2"
                                   sx={{
@@ -961,7 +970,7 @@ function Tasks() {
                               {/* Начало */}
                               <Grid
                                 item
-                                xs={selectedJobType === "run" ? 1.6 : 1.4}
+                                xs={selectedJobType === "run" ? 1.7 : 1.4}
                               >
                                 <Typography variant="body2">
                                   {job.last_execution_start_time
@@ -974,7 +983,7 @@ function Tasks() {
                               {/* Статус */}
                               <Grid
                                 item
-                                xs={selectedJobType === "run" ? 1.6 : 1.2}
+                                xs={selectedJobType === "run" ? 1.7 : 1.1}
                               >
                                 <Typography
                                   variant="body2"
@@ -991,8 +1000,8 @@ function Tasks() {
                               {/* Дополнительные колонки для "deploy" */}
                               {selectedJobType === "deploy" && (
                                 <>
-                                  <Grid item xs={1.8}>
-                                    <Typography variant="body2" sx={{fontSize:"12px", whiteSpace: isMinDesktop ? 'normal' : 'nowrap'}}>
+                                  <Grid item xs={2.2}>
+                                    <Typography variant="body2" sx={{fontSize:"11px", whiteSpace: isMinDesktop ? 'normal' : 'nowrap', textAlign:'left' }}>
                                       {job.job_url || "N/A"}
                                     </Typography>
                                   </Grid>
@@ -1004,7 +1013,8 @@ function Tasks() {
                                 </>
                               )}
                               {/* Действия */}
-                              <Grid item xs={0.7}>
+                              <Grid item xs={selectedJobType === "run" ? 1.5 : 0.7}
+                              >
                                 <TasksActions
                                   job={job}
                                   onLogsClick={handleLogsClick}

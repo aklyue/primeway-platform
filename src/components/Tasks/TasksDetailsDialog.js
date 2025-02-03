@@ -83,6 +83,8 @@ function JobDetailsDialog({
   const [currentJobName, setCurrentJobName] = useState("");
   const [logsModalOpen, setLogsModalOpen] = useState(false);
 
+  const [jobWithConfig, setJobWithConfig] = useState({ ...job });
+
   // Состояния для расписания
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false);
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
@@ -117,6 +119,10 @@ function JobDetailsDialog({
     if (!id) return "N/A";
     return id.length > 12 ? `${id.slice(0, 3)}**${id.slice(-3)}` : id;
   };
+
+  useEffect(() => {
+    setJobWithConfig({ ...job });
+  }, [job]);
 
   // Функции-обработчики
   const handleLogsClick = (execution = null) => {
@@ -370,6 +376,9 @@ function JobDetailsDialog({
       // Конвертируем конфигурацию в YAML
       const yamlConfig = yaml.dump(response.data || {});
       setConfig(yamlConfig);
+  
+      // Обновляем jobWithConfig, добавляя config
+      setJobWithConfig((prevJob) => ({ ...prevJob, config: response.data }));
     } catch (error) {
       console.error("Ошибка при получении конфигурации:", error);
       showAlert("Ошибка при получении конфигурации задания.", "error");
@@ -945,7 +954,7 @@ function JobDetailsDialog({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TasksActions
-                job={job}
+                job={jobWithConfig}
                 onStopClick={handleCardStopClick}
                 displayMode="buttons" // Указываем режим "buttons"
               />
@@ -1042,7 +1051,7 @@ function JobDetailsDialog({
                           {/* Кнопки действий */}
                           <Box sx={{ mt: 2 }}>
                             <TasksActions
-                              job={job}
+                              job={execution}
                               onLogsClick={() => handleLogsClick(execution)}
                               onDownloadArtifacts={() =>
                                 handleDownloadArtifacts(job, execution)

@@ -393,6 +393,7 @@ function TasksActions({
         onJobStarted={() => {
           // Здесь можно обновить состояние задач или показать уведомление
         }}
+        startJob={startJob}
       />
     </>
   );

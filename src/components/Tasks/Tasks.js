@@ -74,7 +74,7 @@ function Tasks() {
   const [error, setError] = useState(null);
 
   // Состояния фильтров
-
+  const [triedSwitchJobType, setTriedSwitchJobType] = useState(false);
 
   // Состояния для модальных окон и текущей задачи
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -137,12 +137,27 @@ function Tasks() {
         status: selectedStatus || undefined,
         job_type: selectedJobType || undefined,
       };
-
+  
       axiosInstance
         .get(endpoint, { params })
         .then((response) => {
           const data = response.data || [];
           setAllJobs(data);
+  
+          if (
+            initialLoadRef.current &&
+            data.length === 0 &&
+            selectedJobType === "deploy" &&
+            !triedSwitchJobType
+          ) {
+            setTriedSwitchJobType(true);
+            setSelectedJobType("run");
+          } else {
+            if (initialLoadRef.current) {
+              setLoading(false);
+              initialLoadRef.current = false;
+            }
+          }
         })
         .catch((error) => {
           console.error("Ошибка при получении списка задач:", error);
@@ -150,12 +165,12 @@ function Tasks() {
             error.response?.data?.detail ||
             "Не удалось загрузить список задач.";
           setError(errorMessage);
-        })
-        .finally(() => {
           if (initialLoadRef.current) {
             setLoading(false);
-            initialLoadRef.current = false; // Устанавливаем после первой загрузки
+            initialLoadRef.current = false;
           }
+        })
+        .finally(() => {
           setJobTypeLoading(false);
         });
     } else {

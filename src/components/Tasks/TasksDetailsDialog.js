@@ -230,8 +230,44 @@ function JobDetailsDialog({
       });
   };
 
+  const handleCardStopClick = (job) => {
+    let executionId = job.job_execution_id || job.last_execution_id;
+
+    if (!executionId && !job.job_id) {
+      showAlert("Нет выполнения для остановки.", "error");
+      return;
+    }
+
+    const params = {};
+    if (executionId) {
+      params.job_execution_id = executionId;
+    } else {
+      params.job_id = job.job_id;
+    }
+
+    console.log("Параметры запроса для остановки задачи:", params);
+
+    axiosInstance
+      .post("/jobs/job-stop", null, { params })
+      .then((response) => {
+        const message =
+          response.data.message ||
+          `Выполнение задачи ${executionId} успешно остановлено.`;
+        showAlert(message, "success");
+        // Обновляем список выполнений, чтобы отразить изменения
+        fetchExecutions();
+      })
+      .catch((error) => {
+        handleApiError(
+          error,
+          `Ошибка при остановке выполнения задачи ${executionId}.`
+        );
+      });
+  };
+
   const handleStopClick = (jobExecutionId = null) => {
     // Если jobExecutionId не предоставлен, попробовать использовать last_execution_id
+    console.log("jobExecutionId:", jobExecutionId);
     const executionId = jobExecutionId || job.last_execution_id;
 
     if (!executionId) {
@@ -271,7 +307,13 @@ function JobDetailsDialog({
         params: { job_id: job.job_id },
       });
       const data = response.data || [];
-      setExecutions(data);
+
+      // Сортируем данные по дате создания в порядке убывания
+      const sortedData = data
+        .slice()
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      setExecutions(sortedData);
     } catch (error) {
       console.error("Ошибка при получении выполнений:", error);
       setExecutionsError("Ошибка при загрузке выполнений");
@@ -429,10 +471,6 @@ function JobDetailsDialog({
       specific_days: [],
     });
     setScheduleFormOpen(true);
-  };
-
-  const handleStartClick = () => {
-    alert("запуск");
   };
 
   // Функция для закрытия формы расписания
@@ -908,8 +946,7 @@ function JobDetailsDialog({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TasksActions
                 job={job}
-                onStopClick={(job) => handleStopClick(job)}
-                onStartClick={(job) => handleStartClick(job)}
+                onStopClick={handleCardStopClick}
                 displayMode="buttons" // Указываем режим "buttons"
               />
             </Box>
@@ -922,7 +959,7 @@ function JobDetailsDialog({
         <DialogContent dividers>
           <Box sx={{ display: "flex", height: "100%", mt: 1 }}>
             {/* Левая часть - Выполнения */}
-            <Box sx={{ flex: 1.4, mr: 2 }}>
+            <Box sx={{ flex: 1.4, mr: 2, overflow: "auto" }}>
               <Typography
                 variant="h6"
                 gutterBottom

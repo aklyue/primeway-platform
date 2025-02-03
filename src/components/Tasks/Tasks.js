@@ -204,23 +204,26 @@ function Tasks() {
 
   const applyFilters = () => {
     let filteredJobs = [...allJobs];
-
+  
     if (selectedJobType) {
       filteredJobs = filteredJobs.filter(
         (job) => job.job_type === selectedJobType
       );
     }
-
+  
     if (selectedStatus) {
       filteredJobs = filteredJobs.filter(
         (job) => job.last_execution_status === selectedStatus
       );
     }
-
+  
     if (isScheduledFilter) {
       filteredJobs = filteredJobs.filter((job) => job.is_scheduled);
     }
-
+  
+    // Добавляем сортировку по дате создания в порядке убывания
+    filteredJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  
     setJobs(filteredJobs);
   };
 
@@ -560,9 +563,9 @@ function Tasks() {
     }
   };
 
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
+  // if (error) {
+  //   return <Typography color="error">{error}</Typography>;
+  // }
 
   // Обработчик переключения типа задач
   const handleJobTypeChange = (jobType) => {
@@ -756,7 +759,7 @@ function Tasks() {
             ) : (
               <>
                 {jobs.length > 0 ? (
-                  jobs.map((job) => (
+                  jobs.slice().reverse().map((job) => (
                     <Grid
                       item
                       xs={12}
@@ -1158,7 +1161,7 @@ function Tasks() {
           ) : currentExecutions.length > 0 ? (
             // Отображаем список выполнений
             <Box>
-              {currentExecutions.map((execution) => {
+              {currentExecutions.slice().reverse().map((execution) => {
                 const executionId =
                   execution.job_execution_id || execution.execution_id;
                 const logsData = logsByExecutionId[executionId];

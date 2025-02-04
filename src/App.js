@@ -81,7 +81,7 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-const [authenticating, setAuthenticating] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
 
   // Телефоны: до 600px
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -374,16 +374,24 @@ const [authenticating, setAuthenticating] = useState(false);
               >
                 {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <HomeIcon fontSize="medium" style={{ color:"rgba(255, 255, 255, 0.8)" }} />
+                    <HomeIcon
+                      fontSize="medium"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <HomeIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)"}} />
+                      <HomeIcon
+                        fontSize="small"
+                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      />
                     </ListItemIcon>
                     <ListItemText
                       primary="Добро Пожаловать"
-                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                      primaryTypographyProps={{
+                        style: { color: "rgba(255, 255, 255, 0.8)" },
+                      }}
                     />
                   </>
                 )}
@@ -405,7 +413,10 @@ const [authenticating, setAuthenticating] = useState(false);
               >
                 {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <FlashOnIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
+                    <FlashOnIcon
+                      fontSize="medium"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    />
                   </ListItemIcon>
                 ) : (
                   <>
@@ -417,7 +428,9 @@ const [authenticating, setAuthenticating] = useState(false);
                     </ListItemIcon>
                     <ListItemText
                       primary="Начало работы"
-                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                      primaryTypographyProps={{
+                        style: { color: "rgba(255, 255, 255, 0.8)" },
+                      }}
                     />
                   </>
                 )}
@@ -439,16 +452,24 @@ const [authenticating, setAuthenticating] = useState(false);
               >
                 {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <WorkIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
+                    <WorkIcon
+                      fontSize="medium"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <WorkIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
+                      <WorkIcon
+                        fontSize="small"
+                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      />
                     </ListItemIcon>
                     <ListItemText
                       primary="Jobs"
-                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                      primaryTypographyProps={{
+                        style: { color: "rgba(255, 255, 255, 0.8)" },
+                      }}
                     />
                   </>
                 )}
@@ -485,7 +506,9 @@ const [authenticating, setAuthenticating] = useState(false);
                     </ListItemIcon>
                     <ListItemText
                       primary="Configuration"
-                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                      primaryTypographyProps={{
+                        style: { color: "rgba(255, 255, 255, 0.8)" },
+                      }}
                     />
                   </>
                 )}
@@ -507,16 +530,24 @@ const [authenticating, setAuthenticating] = useState(false);
               >
                 {isMinDesktop || isTablet ? (
                   <ListItemIcon sx={{ minWidth: 0 }}>
-                    <CodeIcon fontSize="medium" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
+                    <CodeIcon
+                      fontSize="medium"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    />
                   </ListItemIcon>
                 ) : (
                   <>
                     <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <CodeIcon fontSize="small" style={{ color: "rgba(255, 255, 255, 0.8)" }} />
+                      <CodeIcon
+                        fontSize="small"
+                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      />
                     </ListItemIcon>
                     <ListItemText
                       primary="CLI"
-                      primaryTypographyProps={{ style: { color: "rgba(255, 255, 255, 0.8)" } }}
+                      primaryTypographyProps={{
+                        style: { color: "rgba(255, 255, 255, 0.8)" },
+                      }}
                     />
                   </>
                 )}
@@ -725,12 +756,16 @@ const [authenticating, setAuthenticating] = useState(false);
                               color: isEventsOpen
                                 ? "secondary.main"
                                 : "#202123",
-                              backgroundColor: isDocsPage ? 'rgba(255, 255, 255, 0.04)' : "rgba(0, 0, 0, 0.04);",
+                              backgroundColor: isDocsPage
+                                ? "rgba(255, 255, 255, 0.04)"
+                                : "rgba(0, 0, 0, 0.04);",
                             }}
                           >
                             <NotificationsNoneIcon
                               sx={{
-                                color: isDocsPage ? "rgba(255, 255, 255, 0.8)" : '',
+                                color: isDocsPage
+                                  ? "rgba(255, 255, 255, 0.8)"
+                                  : "",
                                 animation: isEventsOpen
                                   ? ""
                                   : `${pulse} 1.2s infinite ease-in-out`,
@@ -972,26 +1007,41 @@ const [authenticating, setAuthenticating] = useState(false);
               p: 4,
             }}
           >
-            <Typography
-              gutterBottom
-              id="modal-title"
-              variant="h5"
-              component="h2"
-              sx={{ textAlign: "center" }}
-            >
-              Добро пожаловать
-            </Typography>
+            {authenticating ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: "200px", 
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <Typography
+                  gutterBottom
+                  id="modal-title"
+                  variant="h5"
+                  component="h2"
+                  sx={{ textAlign: "center" }}
+                >
+                  Добро пожаловать
+                </Typography>
 
-            <Box
-              sx={{
-                mt: 3,
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 2,
-              }}
-            >
-              <YandexAuth />
-            </Box>
+                <Box
+                  sx={{
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "center",
+                    zIndex: 2,
+                  }}
+                >
+                  <YandexAuth setAuthenticating={setAuthenticating} />
+                </Box>
+              </>
+            )}
           </Box>
         </Modal>
       )}

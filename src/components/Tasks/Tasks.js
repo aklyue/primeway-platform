@@ -458,6 +458,7 @@ function Tasks() {
         });
     }
   };
+  
 
   const handleStopClick = (job) => {
     setJobToStop(job);
@@ -774,7 +775,7 @@ function Tasks() {
             ) : (
               <>
                 {jobs.length > 0 ? (
-                  jobs.slice().reverse().map((job) => (
+                  jobs.map((job) => (
                     <Grid
                       item
                       xs={12}
@@ -1019,7 +1020,7 @@ function Tasks() {
                               {selectedJobType === "deploy" && (
                                 <>
                                   <Grid item xs={2.2}>
-                                    <Typography variant="body2" sx={{fontSize:"11px", whiteSpace: isMinDesktop ? 'normal' : 'nowrap', textAlign:'left' }}>
+                                    <Typography variant="body2" sx={{fontSize: job.job_url ? "11px" : '14px', whiteSpace: isMinDesktop ? 'normal' : 'nowrap', textAlign: 'center' }}>
                                       {job.job_url || "N/A"}
                                     </Typography>
                                   </Grid>
@@ -1176,7 +1177,7 @@ function Tasks() {
           ) : currentExecutions.length > 0 ? (
             // Отображаем список выполнений
             <Box>
-              {currentExecutions.slice().reverse().map((execution) => {
+              {currentExecutions.map((execution) => {
                 const executionId =
                   execution.job_execution_id || execution.execution_id;
                 const logsData = logsByExecutionId[executionId];

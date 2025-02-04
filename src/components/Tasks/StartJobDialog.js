@@ -20,10 +20,14 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  
+
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
     setError("");
   }, []);
+
+  
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -38,10 +42,13 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
     onClose();
   };
 
+  if (!job) {
+    return null; // Или отобразите индикатор загрузки
+  }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" onClick={(event) => event.stopPropagation()}>
       <DialogTitle>Запуск задачи: {job.job_name}</DialogTitle>
-      <DialogContent>
+      <DialogContent onClick={(event) => event.stopPropagation()}>
         <Typography variant="body1" gutterBottom>
           {job.config?.request_input_dir
             ? "Эта задача позволяет загрузить файл. Пожалуйста, выберите файл для загрузки или запустите задачу без него."
@@ -86,8 +93,7 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
         <Button onClick={onClose}>Отмена</Button>
         <Button
           onClick={handleStartJob}
-          color="primary"
-          variant="contained"
+          variant="outlined"
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} /> : "Запустить"}

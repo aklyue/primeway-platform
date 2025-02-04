@@ -271,21 +271,25 @@ function JobDetailsDialog({
       });
   };
 
-  const handleStopClick = (jobExecutionId = null) => {
-    // Если jobExecutionId не предоставлен, попробовать использовать last_execution_id
-    console.log("jobExecutionId:", jobExecutionId);
-    const executionId = jobExecutionId || job.last_execution_id;
-
-    if (!executionId) {
+  const handleStopClick = (job) => {
+    let executionId = job.job_execution_id || job.last_execution_id;
+  
+    if (!executionId && !job.job_id) {
       showAlert("Нет выполнения для остановки.", "error");
       return;
     }
-
-    // Отправляем POST-запрос для остановки выполнения задачи
+  
+    const params = {};
+    if (executionId) {
+      params.job_execution_id = executionId;
+    } else {
+      params.job_id = job.job_id;
+    }
+  
+    console.log("Параметры запроса для остановки задачи:", params);
+  
     axiosInstance
-      .post("/jobs/job-stop", null, {
-        params: { job_execution_id: executionId },
-      })
+      .post("/jobs/job-stop", null, { params })
       .then((response) => {
         const message =
           response.data.message ||
@@ -540,6 +544,23 @@ function JobDetailsDialog({
       ],
     }));
   };
+  useEffect(() => {
+    if (executions.length > 0) {
+      const latestExecution = executions[0]; // Предполагается, что список отсортирован
+      setJobWithConfig((prevJob) => ({
+        ...prevJob,
+        last_execution_status: latestExecution.status,
+        last_execution_id: latestExecution.job_execution_id,
+      }));
+    } else {
+      // Если выполнений нет
+      setJobWithConfig((prevJob) => ({
+        ...prevJob,
+        last_execution_status: undefined,
+        last_execution_id: undefined,
+      }));
+    }
+  }, [executions]);
 
   // Удалить конкретную дату
   const handleRemoveSpecificDay = (index) => {
@@ -811,11 +832,11 @@ function JobDetailsDialog({
           <Box
             sx={{
               position: "absolute",
-              top: 9,
-              left: 9,
+              top: 7,
+              left: 8,
             }}
           >
-            {getStatusIndicator(job)}
+            {getStatusIndicator(jobWithConfig)}
           </Box>
           <Stack
             direction="row"
@@ -1208,13 +1229,13 @@ function JobDetailsDialog({
                             <Grid item xs>
                               {/* Кнопки действий */}
                               <TasksActions
-                                job={job}
+                                job={execution}
                                 onLogsClick={() => handleLogsClick(execution)}
                                 onDownloadArtifacts={() =>
                                   handleDownloadArtifacts(job, execution)
                                 }
                                 onStopClick={() =>
-                                  handleStopClick(execution.job_execution_id)
+                                  handleStopClick(execution)
                                 }
                                 showStartButton={false}
                               />

@@ -222,7 +222,7 @@ const OrganizationSettings = () => {
         </Typography>
 
         
-        <OrganizationEvents organizationId={currentOrganization} />
+        <OrganizationEvents organizationId={currentOrganization.id} />
       </Box>
     </Box>
   );

@@ -65,9 +65,11 @@ function TasksActions({
   showStartButton = true,
   showLogsArtButton = true,
   displayMode = "menu",
+  showAlert,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [startDialogOpen, setStartDialogOpen] = useState(false);
+  const [jobWithConfig, setJobWithConfig] = useState(null);
 
   const handleMenuOpen = (event) => {
     event.stopPropagation();
@@ -84,10 +86,9 @@ function TasksActions({
     action(job);
     handleMenuClose();
   };
+  const status = job.status || job.last_execution_status;
 
-  const canStopJob =
-    job.last_execution_status === "creating" ||
-    job.last_execution_status === "running";
+  const canStopJob = status === "creating" || status === "running";
 
   const allowedLastExecutionStatuses = [
     "stopped",
@@ -98,8 +99,7 @@ function TasksActions({
 
   const canStartJob =
     job.build_status === "success" &&
-    (!job.last_execution_status ||
-      allowedLastExecutionStatuses.includes(job.last_execution_status));
+    (!status || allowedLastExecutionStatuses.includes(status));
 
   const canViewLogs =
     job.build_status === "success" &&
@@ -126,13 +126,42 @@ function TasksActions({
 
   const handleStartClick = (event) => {
     event.stopPropagation();
-    if (
-      job.job_type === "run" &&
-      job.config &&
-      job.config.request_input_dir
-    ) {
-      setStartDialogOpen(true);
+  
+    const allowedJobTypes = ["run", "deploy"];
+  
+    if (!allowedJobTypes.includes(job.job_type)) {
+      if (showAlert) {
+        showAlert("Эту задачу нельзя запустить из интерфейса.", "error");
+      }
+      return;
+    }
+  
+    if (job.job_type === "run") {
+      // Обрабатываем задачи типа "run"
+      axiosInstance
+        .get("/jobs/get-config", { params: { job_id: job.job_id } })
+        .then((response) => {
+          const config = response.data;
+          const hasRequestInputDir = config?.request_input_dir;
+  
+          const updatedJob = { ...job, config };
+          setJobWithConfig(updatedJob);
+  
+          if (hasRequestInputDir) {
+            setStartDialogOpen(true);
+          } else {
+            // Запускаем задачу без файла
+            startJob(updatedJob);
+          }
+        })
+        .catch((error) => {
+          console.error("Ошибка при получении конфигурации задачи:", error);
+          if (showAlert) {
+            showAlert("Ошибка при получении конфигурации задачи.", "error");
+          }
+        });
     } else {
+      // Для задач типа "deploy" запускаем задачу напрямую
       startJob(job);
     }
   };
@@ -178,7 +207,9 @@ function TasksActions({
         // Здесь вы можете обновить список задач или показать уведомление
       })
       .catch((error) => {
-        console.error("Ошибка при запуске задачи:", error);
+        if (showAlert) {
+          showAlert("Ошибка при запуске задачи.", error);
+        }
         if (error.response) {
           console.error("Данные ответа ошибки:", error.response.data);
           console.error("Статус ответа ошибки:", error.response.status);
@@ -240,15 +271,17 @@ function TasksActions({
       </Stack>
 
       {/* Добавляем StartJobDialog */}
-      <StartJobDialog
-        open={startDialogOpen}
-        onClose={() => setStartDialogOpen(false)}
-        job={job}
-        onJobStarted={() => {
-          // Здесь можно обновить состояние задач или показать уведомление
-        }}
-        startJob={startJob}
-      />
+      {startDialogOpen && jobWithConfig && (
+        <StartJobDialog
+          open={startDialogOpen}
+          onClose={() => {
+            setStartDialogOpen(false);
+            setJobWithConfig(null); // Очищаем состояние
+          }}
+          job={jobWithConfig} // Передаём сохранённую задачу с конфигурацией
+          startJob={startJob}
+        />
+      )}
     </>
   ) : (
     <>
@@ -280,7 +313,9 @@ function TasksActions({
             job.build_status === "building") && (
             <MenuItem onClick={handleMenuItemClick(onBuildLogsClick)}>
               <ListItemIcon>
-                <BugReportIcon sx={{ ...menuIconStyle, color: "warning.main" }} />
+                <BugReportIcon
+                  sx={{ ...menuIconStyle, color: "warning.main" }}
+                />
               </ListItemIcon>
               <Typography variant="body2" fontWeight={600}>
                 Логи сборки
@@ -386,15 +421,17 @@ function TasksActions({
       </Box>
 
       {/* Добавляем StartJobDialog */}
-      <StartJobDialog
-        open={startDialogOpen}
-        onClose={() => setStartDialogOpen(false)}
-        job={job}
-        onJobStarted={() => {
-          // Здесь можно обновить состояние задач или показать уведомление
-        }}
-        startJob={startJob}
-      />
+      {startDialogOpen && jobWithConfig && (
+        <StartJobDialog
+          open={startDialogOpen}
+          onClose={() => {
+            setStartDialogOpen(false);
+            setJobWithConfig(null); // Очищаем состояние
+          }}
+          job={jobWithConfig} // Передаём сохранённую задачу с конфигурацией
+          startJob={startJob}
+        />
+      )}
     </>
   );
 }

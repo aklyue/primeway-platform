@@ -81,6 +81,7 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
+const [authenticating, setAuthenticating] = useState(false);
 
   // Телефоны: до 600px
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

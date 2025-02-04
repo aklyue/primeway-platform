@@ -5,7 +5,7 @@ import { CircularProgress } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const YandexAuth = () => {
+const YandexAuth = ({ setAuthenticating }) => {
   const navigate = useNavigate();
   const { login, authToken, loading } = useContext(AuthContext);
   const isInitialized = useRef(false);
@@ -102,6 +102,7 @@ const YandexAuth = () => {
             .then((data) => {
               console.log("Auth data:", data);
               if (data.access_token) {
+                setAuthenticating(true);
                 fetch("https://api.primeway.io/auth/yandex", {
                   method: "POST",
                   headers: {
@@ -122,6 +123,7 @@ const YandexAuth = () => {
                       "Ошибка получения данных пользователя:",
                       error
                     );
+                    setAuthenticating(false);
                   });
               } else {
                 console.error("Не удалось получить access_token");

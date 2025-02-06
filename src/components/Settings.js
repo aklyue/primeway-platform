@@ -3,7 +3,7 @@ import { Box, Typography, Button, Divider, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../AuthContext";
 
-function Settings() {
+function Settings({ setAuthenticating }) {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -11,6 +11,7 @@ function Settings() {
     logout();
     navigate("/");
     localStorage.removeItem("lastCaptchaTime");
+    setAuthenticating(false)
   };
 
   return (

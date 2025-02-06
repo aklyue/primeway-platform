@@ -944,7 +944,7 @@ export function Layout() {
                         path="/settings"
                         element={
                           <ProtectedRoute>
-                            <Settings />
+                            <Settings setAuthenticating={setAuthenticating} />
                           </ProtectedRoute>
                         }
                       />

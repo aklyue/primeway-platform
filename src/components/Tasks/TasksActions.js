@@ -102,10 +102,12 @@ function TasksActions({
     (!status || allowedLastExecutionStatuses.includes(status));
 
   const canViewLogs =
-    job.build_status === "success" &&
-    !["pending", "provisioning", "creating"].includes(
-      job.last_execution_status
-    );
+    job.build_status === "success" ||
+    "stopped" ||
+    ("failed" &&
+      !["pending", "provisioning", "creating"].includes(
+        job.last_execution_status
+      ));
 
   const stopButtonDisabledReason = canStopJob
     ? ""
@@ -126,16 +128,16 @@ function TasksActions({
 
   const handleStartClick = (event) => {
     event.stopPropagation();
-  
+
     const allowedJobTypes = ["run", "deploy"];
-  
+
     if (!allowedJobTypes.includes(job.job_type)) {
       if (showAlert) {
         showAlert("Эту задачу нельзя запустить из интерфейса.", "error");
       }
       return;
     }
-  
+
     if (job.job_type === "run") {
       // Обрабатываем задачи типа "run"
       axiosInstance
@@ -143,10 +145,10 @@ function TasksActions({
         .then((response) => {
           const config = response.data;
           const hasRequestInputDir = config?.request_input_dir;
-  
+
           const updatedJob = { ...job, config };
           setJobWithConfig(updatedJob);
-  
+
           if (hasRequestInputDir) {
             setStartDialogOpen(true);
           } else {
@@ -169,23 +171,23 @@ function TasksActions({
   const startJob = (job, files = []) => {
     let data;
     let headers = {};
-  
+
     // Получаем токен из локального хранилища или контекста аутентификации
-    const token = localStorage.getItem('access_token'); // Или другой способ получения токена
+    const token = localStorage.getItem("access_token"); // Или другой способ получения токена
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
-  
+
     if (files.length > 0) {
       const formData = new FormData();
       formData.append("file", files[0]);
-  
+
       // Выводим содержимое FormData
       console.log("Содержимое FormData:");
       for (let pair of formData.entries()) {
         console.log(pair[0] + ": ", pair[1]);
       }
-  
+
       data = formData;
       // Не устанавливаем Content-Type для FormData
     } else {
@@ -194,7 +196,7 @@ function TasksActions({
       // Устанавливаем Content-Type в application/json
       headers["Content-Type"] = "application/json";
     }
-  
+
     axiosInstance
       .post("/jobs/job-start", data, {
         headers: headers,

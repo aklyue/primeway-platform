@@ -35,8 +35,6 @@ import { useTheme } from "@mui/material/styles";
 import { wrap } from "framer-motion";
 import { TasksFiltersContext } from "./TasksFiltersContext";
 
-
-
 const statusOptions = [
   "running",
   "stopped",
@@ -122,8 +120,6 @@ function Tasks() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMinDesktop = useMediaQuery(theme.breakpoints.down("lg"));
-  
-
 
   const fetchJobs = () => {
     if (initialLoadRef.current) {
@@ -137,13 +133,13 @@ function Tasks() {
         status: selectedStatus || undefined,
         job_type: selectedJobType || undefined,
       };
-  
+
       axiosInstance
         .get(endpoint, { params })
         .then((response) => {
           const data = response.data || [];
           setAllJobs(data);
-  
+
           if (
             initialLoadRef.current &&
             data.length === 0 &&
@@ -219,26 +215,28 @@ function Tasks() {
 
   const applyFilters = () => {
     let filteredJobs = [...allJobs];
-  
+
     if (selectedJobType) {
       filteredJobs = filteredJobs.filter(
         (job) => job.job_type === selectedJobType
       );
     }
-  
+
     if (selectedStatus) {
       filteredJobs = filteredJobs.filter(
         (job) => job.last_execution_status === selectedStatus
       );
     }
-  
+
     if (isScheduledFilter) {
       filteredJobs = filteredJobs.filter((job) => job.is_scheduled);
     }
-  
+
     // Добавляем сортировку по дате создания в порядке убывания
-    filteredJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  
+    filteredJobs.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+
     setJobs(filteredJobs);
   };
 
@@ -303,7 +301,7 @@ function Tasks() {
     } else {
       params.job_id = job.job_id;
     }
-
+    console.log(params);
     axiosInstance
       .get("/jobs/job-logs", {
         params: params,
@@ -458,7 +456,6 @@ function Tasks() {
         });
     }
   };
-  
 
   const handleStopClick = (job) => {
     setJobToStop(job);
@@ -636,7 +633,7 @@ function Tasks() {
         </Box>
       </Box>
       {/* Кнопки фильтров статусов */}
-      <Box sx={{ ml: 2, mb: 1, display: "flex", flexWrap:'wrap', gap:'5px' }}>
+      <Box sx={{ ml: 2, mb: 1, display: "flex", flexWrap: "wrap", gap: "5px" }}>
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
@@ -851,9 +848,8 @@ function Tasks() {
                               <span
                                 style={{
                                   color:
-                                    statusColors[
-                                      job.last_execution_status
-                                    ] || "black",
+                                    statusColors[job.last_execution_status] ||
+                                    "black",
                                 }}
                               >
                                 {job.last_execution_status || "N/A"}
@@ -862,7 +858,7 @@ function Tasks() {
                             {/* Дополнительные поля для "deploy" */}
                             {selectedJobType === "deploy" && (
                               <>
-                                <Typography variant="body2" sx={{ mt: 0.5, }}>
+                                <Typography variant="body2" sx={{ mt: 0.5 }}>
                                   <strong>URL:</strong> {job.job_url || "N/A"}
                                 </Typography>
                                 <Typography variant="body2" sx={{ mt: 0.5 }}>
@@ -929,7 +925,10 @@ function Tasks() {
                                 item
                                 xs={selectedJobType === "run" ? 1.7 : 1.5}
                               >
-                                <Typography variant="body2" sx={{fontSize:'13px'}}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontSize: "13px" }}
+                                >
                                   {job.job_name}
                                 </Typography>
                               </Grid>
@@ -971,7 +970,10 @@ function Tasks() {
                                 </Typography>
                               </Grid>
                               {/* Статус образа */}
-                              <Grid item xs={selectedJobType === "run" ? 1.7 : 1.1}>
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.7 : 1.1}
+                              >
                                 <Typography
                                   variant="body2"
                                   sx={{
@@ -1008,9 +1010,8 @@ function Tasks() {
                                   variant="body2"
                                   sx={{
                                     color:
-                                      statusColors[
-                                        job.last_execution_status
-                                      ] || "black",
+                                      statusColors[job.last_execution_status] ||
+                                      "black",
                                   }}
                                 >
                                   {job.last_execution_status || "N/A"}
@@ -1020,7 +1021,16 @@ function Tasks() {
                               {selectedJobType === "deploy" && (
                                 <>
                                   <Grid item xs={2.2}>
-                                    <Typography variant="body2" sx={{fontSize: job.job_url ? "11px" : '14px', whiteSpace: isMinDesktop ? 'normal' : 'nowrap', textAlign: 'center' }}>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        fontSize: job.job_url ? "11px" : "14px",
+                                        whiteSpace: isMinDesktop
+                                          ? "normal"
+                                          : "nowrap",
+                                        textAlign: "center",
+                                      }}
+                                    >
                                       {job.job_url || "N/A"}
                                     </Typography>
                                   </Grid>
@@ -1032,7 +1042,9 @@ function Tasks() {
                                 </>
                               )}
                               {/* Действия */}
-                              <Grid item xs={selectedJobType === "run" ? 1.5 : 0.7}
+                              <Grid
+                                item
+                                xs={selectedJobType === "run" ? 1.5 : 0.7}
                               >
                                 <TasksActions
                                   job={job}

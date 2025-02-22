@@ -25,8 +25,8 @@ import {
 } from "chart.js";
 
 // Импортируем адаптер для работы с временем
-import 'chartjs-adapter-date-fns';
-import { ru } from 'date-fns/locale';
+import "chartjs-adapter-date-fns";
+import { ru } from "date-fns/locale";
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(
@@ -38,7 +38,7 @@ ChartJS.register(
   ChartTooltip,
   Legend,
   Filler, // Регистрируем Filler
-  TimeScale,
+  TimeScale
 );
 
 function Billing() {
@@ -148,7 +148,7 @@ function Billing() {
         console.error("Ошибка при загрузке данных биллинга:", error);
         const errorMessage =
           error?.response?.data?.detail ||
-          error.message ||
+          error?.message ||
           "Ошибка при загрузке данных.";
         setError(errorMessage);
       })
@@ -270,9 +270,7 @@ function Billing() {
             return `Сумма покупки: ${context.parsed.y} ₽`;
           },
           title: function (context) {
-            return `Дата: ${
-              creditPurchasesData[context[0].dataIndex].date
-            }`;
+            return `Дата: ${creditPurchasesData[context[0].dataIndex].date}`;
           },
         },
       },
@@ -310,12 +308,12 @@ function Billing() {
     maintainAspectRatio: false,
     scales: {
       x: {
-        type: 'time', // Используем временную шкалу
+        type: "time", // Используем временную шкалу
         time: {
-          unit: 'day',
-          tooltipFormat: 'dd MMMM yyyy',
+          unit: "day",
+          tooltipFormat: "dd MMMM yyyy",
           displayFormats: {
-            day: 'dd MMM',
+            day: "dd MMM",
           },
         },
         adapters: {
@@ -426,8 +424,8 @@ function Billing() {
               justifyContent: "space-between",
               alignItems: isMobile || isTablet ? "center" : "flex-start",
               marginTop: "20px",
-              gap:'15px',
-              pr:2
+              gap: "15px",
+              pr: 2,
             }}
           >
             {/* Левая секция: График покупок кредитов (Bar Chart) */}
@@ -447,7 +445,6 @@ function Billing() {
                 <Bar
                   data={purchasesChartData}
                   options={purchasesChartOptions}
-                  
                 />
               ) : (
                 <Typography>Нет данных о покупках кредитов</Typography>
@@ -466,11 +463,7 @@ function Billing() {
                 Расходы за последние 7 дней
               </Typography>
               {creditUsagePerDay.length > 0 ? (
-                <Line
-                  data={expensesChartData}
-                  options={expensesChartOptions}
-                  
-                />
+                <Line data={expensesChartData} options={expensesChartOptions} />
               ) : (
                 <Typography>Нет данных для отображения графика.</Typography>
               )}

@@ -20,33 +20,39 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  
-
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
     setError("");
   }, []);
 
-  
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  const handleStartJob = () => {
+  const handleStartJob = async () => {
     setLoading(true);
     setError("");
-  
-    // Вызываем функцию startJob, передавая выбранные файлы
-    startJob(job, files);
-  
-    setLoading(false);
-    onClose();
+
+    try {
+      // Мы ожидаем завершения startJob
+      await startJob(job, files);
+      onClose();
+    } catch (e) {
+      setError(e.message || "Произошла ошибка при запуске задачи.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!job) {
     return null; // Или отобразите индикатор загрузки
   }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" onClick={(event) => event.stopPropagation()}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      onClick={(event) => event.stopPropagation()}
+    >
       <DialogTitle>Запуск задачи: {job.job_name}</DialogTitle>
       <DialogContent onClick={(event) => event.stopPropagation()}>
         <Typography variant="body1" gutterBottom>
@@ -66,7 +72,7 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
               backgroundColor: isDragActive ? "#f0f0f0" : "transparent",
             }}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label="Выберите файл" />
             <Typography variant="body2" color="textSecondary">
               Перетащите файл сюда или нажмите для выбора
             </Typography>
@@ -95,6 +101,7 @@ function StartJobDialog({ open, onClose, job, onJobStarted, startJob }) {
           onClick={handleStartJob}
           variant="outlined"
           disabled={loading}
+          data-testid="start-button"
         >
           {loading ? <CircularProgress size={24} /> : "Запустить"}
         </Button>

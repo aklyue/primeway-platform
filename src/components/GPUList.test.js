@@ -1,6 +1,13 @@
 // GPUList.test.js
+
 import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+} from "@testing-library/react";
 import GPUList from "./GPUList";
 import axiosInstance from "../api";
 
@@ -8,7 +15,7 @@ import axiosInstance from "../api";
 jest.mock("../api");
 
 // Мокаем компонент NvidiaIcon
-jest.mock("./NvidiaIcon", () => () => <div data-testid="nvidia-icon"></div>);
+jest.mock("./NvidiaIcon", () => () => <div data-testid="nvidia-icon" />);
 
 describe("GPUList Component", () => {
   afterEach(() => {
@@ -54,20 +61,45 @@ describe("GPUList Component", () => {
 
     // Ожидаем окончания загрузки данных
     await waitFor(() => {
-      expect(screen.getByText("Доступные GPU")).toBeInTheDocument();
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     });
 
     // Проверяем, что карточки GPU отображаются
     gpuData.forEach((gpu) => {
-      expect(screen.getByText(gpu.name)).toBeInTheDocument();
-      expect(
-        screen.getByText(`Память: ${gpu.memoryInGb} GB`)
-      ).toBeInTheDocument();
-      expect(screen.getByText(`${gpu.costPerHour} ₽/час`)).toBeInTheDocument();
-    });
+      // Находим элемент с названием GPU
+      const gpuNameElement = screen.getByText(gpu.name);
+      expect(gpuNameElement).toBeInTheDocument();
 
-    // Проверяем, что компонент NvidiaIcon отображается
-    expect(screen.getAllByTestId("nvidia-icon")).toHaveLength(gpuData.length);
+      // Поднимаемся к родительскому элементу карточки
+      const cardElement = gpuNameElement.closest(".MuiCard-root");
+      expect(cardElement).toBeInTheDocument();
+
+      // Ограничиваем область поиска текущей карточкой
+      const withinCard = within(cardElement);
+
+      // Проверяем, что внутри карточки есть элемент с нужным объемом памяти
+      const memoryElement = withinCard.getByText((_, element) => {
+        const text = element.textContent.replace(/\s+/g, " ").trim();
+        return (
+          text === `Память: ${gpu.memoryInGb} GB` &&
+          element.tagName.toLowerCase() === "p"
+        );
+      });
+      expect(memoryElement).toBeInTheDocument();
+
+      // Проверяем, что внутри карточки есть элемент с нужной стоимостью
+      const costElement = withinCard.getByText((_, element) => {
+        const text = element.textContent.replace(/\s+/g, " ").trim();
+        return (
+          text === `${gpu.costPerHour} ₽/час` &&
+          element.tagName.toLowerCase() === "span"
+        );
+      });
+      expect(costElement).toBeInTheDocument();
+
+      // Проверяем, что компонент NvidiaIcon отображается на каждой карточке
+      expect(withinCard.getByTestId("nvidia-icon")).toBeInTheDocument();
+    });
   });
 
   test("Копирует имя GPU при клике на карточку и отображает Snackbar", async () => {
@@ -94,8 +126,15 @@ describe("GPUList Component", () => {
       expect(screen.getByText("NVIDIA Tesla V100")).toBeInTheDocument();
     });
 
+    // Находим элемент с названием GPU
+    const gpuNameElement = screen.getByText("NVIDIA Tesla V100");
+
+    // Поднимаемся к родительскому элементу карточки
+    const cardElement = gpuNameElement.closest(".MuiCard-root");
+    expect(cardElement).toBeInTheDocument();
+
     // Кликаем на карточку GPU
-    fireEvent.click(screen.getByText("NVIDIA Tesla V100"));
+    fireEvent.click(cardElement);
 
     // Проверяем, что имя скопировано
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(

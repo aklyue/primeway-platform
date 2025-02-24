@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -80,14 +79,14 @@ const GPUList = () => {
     );
   }
 
-
   return (
     <Box sx={{ padding: { xs: "15px", sm: "25px" } }}>
       <Typography variant="h4" gutterBottom>
         Доступные GPU
       </Typography>
       <Typography variant="body1" paragraph>
-        Ознакомьтесь с доступными GPU и их характеристиками. Кликните по карточке, чтобы скопировать имя и использовать его в вашем конфиге.
+        Ознакомьтесь с доступными GPU и их характеристиками. Кликните по
+        карточке, чтобы скопировать имя и использовать его в вашем конфиге.
       </Typography>
 
       <Grid container spacing={4.5} justifyContent="flex-start" sx={{ mt: 2 }}>
@@ -119,8 +118,6 @@ const GPUList = () => {
 const GpuCard = ({ gpu, onCopy }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-
-  
   return (
     <Grid item xs={12} sm={6} md={4} lg={3}>
       <Card
@@ -154,7 +151,7 @@ const GpuCard = ({ gpu, onCopy }) => {
                 top: 8,
                 right: 8,
                 zIndex: 2,
-                color:'#fff',
+                color: "#fff",
                 "&:hover": {
                   backgroundColor: "rgba(255, 255, 255, 0.3)",
                 },
@@ -179,14 +176,17 @@ const GpuCard = ({ gpu, onCopy }) => {
           <NvidiaIcon />
 
           <Typography
-            sx={{ fontSize: "15px", fontWeight: "bold", color: "#fff", }}
+            sx={{ fontSize: "15px", fontWeight: "bold", color: "#fff" }}
             component="div"
             gutterBottom
           >
             {gpu.name}
           </Typography>
 
-          <Typography sx={{ fontSize: "14px", color: "#fff", }} color="textSecondary">
+          <Typography
+            sx={{ fontSize: "14px", color: "#fff" }}
+            color="textSecondary"
+          >
             <strong>Память:</strong> {gpu.memoryInGb} GB
           </Typography>
 
@@ -198,7 +198,7 @@ const GpuCard = ({ gpu, onCopy }) => {
             <Box
               component="span"
               sx={{
-                color: '#0bff04',
+                color: "#0bff04",
                 padding: "5px 20px",
                 borderRadius: "5px",
                 fontSize: "15px",

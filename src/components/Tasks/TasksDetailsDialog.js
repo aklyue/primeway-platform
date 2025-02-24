@@ -1259,6 +1259,7 @@ function JobDetailsDialog({
               {/* Переключатель вкладок */}
               <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                 <Button
+                  data-testid="tab-schedule"
                   variant={"outlined"}
                   onClick={() => setActiveTab("schedule")}
                   sx={{

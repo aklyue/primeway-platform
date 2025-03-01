@@ -8,7 +8,6 @@
     "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "@mui/x-date-pickers": "^7.24.0",
-    "@testing-library/user-event": "^13.5.0",
     "@yandex/smart-captcha": "2.6.2",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
@@ -55,6 +54,14 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(@babel/runtime|chartjs-adapter-date-fns|react-syntax-highlighter|react-snowfall)/).+\\.js$"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -73,12 +80,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.26.9",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/preset-react": "^7.26.3",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "babel-jest": "^29.7.0",
-    "jest": "^29.7.0"
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1"
   }
 }

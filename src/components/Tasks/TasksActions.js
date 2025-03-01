@@ -119,7 +119,7 @@ function TasksActions({
 
   const logsButtonDisabledReason = canViewLogs
     ? ""
-    : "Логи недоступны, так как задача завершена и не находится в процессе выполнения.";
+    : "Логи недоступны, так как задача не завершена.";
 
   const menuIconStyle = {
     color: "inherit",
@@ -292,6 +292,7 @@ function TasksActions({
           <IconButton
             onClick={handleMenuOpen}
             size="small"
+            aria-label="Действия"
             aria-controls={`actions-menu-${job.job_id}`}
             aria-haspopup="true"
             sx={{

@@ -52,8 +52,14 @@ function OrganizationEvents({ organizationId, amount }) {
   useEffect(() => {
     if (organizationId) {
       fetchEvents();
+    } else {
+      setEventsLoading(false); // Добавляем эту строку
     }
   }, [organizationId]);
+
+  if (!organizationId) {
+    return null; // Добавлено раннее возвращение null
+  }
 
   // Функция для форматирования даты и времени
   const formatDateTime = (dateTimeString) => {

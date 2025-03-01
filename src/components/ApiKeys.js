@@ -167,7 +167,6 @@ function ApiKeys() {
     handleMenuClose();
   };
 
-
   // Если данные загружаются, отображаем плейсхолдер загрузки на всю страницу
   if (loading) {
     return (
@@ -222,6 +221,7 @@ function ApiKeys() {
         onClose={handleClose}
         aria-labelledby="create-api-key-modal-title"
         aria-describedby="create-api-key-modal-description"
+        role="dialog"
       >
         <Box sx={{ ...modalStyle }}>
           <Typography
@@ -344,7 +344,10 @@ function ApiKeys() {
             <Table aria-label="api keys table">
               <TableHead
                 sx={{
-                  "& .MuiTableCell-root": { color: "black", textAlign: "center" },
+                  "& .MuiTableCell-root": {
+                    color: "black",
+                    textAlign: "center",
+                  },
                 }}
               >
                 <TableRow>
@@ -383,6 +386,7 @@ function ApiKeys() {
                           menuItemId === key.id ? "action-menu" : undefined
                         }
                         aria-haspopup="true"
+                        aria-label="Открыть меню действий"
                       >
                         <MoreVertIcon />
                       </IconButton>

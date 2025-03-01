@@ -42,7 +42,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ru } from "date-fns/locale";
 import yaml from "js-yaml";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { coy } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import JobDetailsDialogMobile from "./JobDetailsDialogMobile";
 import { useTheme } from "@mui/material/styles";
 import JobEvents from "./JobEvents";
@@ -273,21 +273,21 @@ function JobDetailsDialog({
 
   const handleStopClick = (job) => {
     let executionId = job.job_execution_id || job.last_execution_id;
-  
+
     if (!executionId && !job.job_id) {
       showAlert("Нет выполнения для остановки.", "error");
       return;
     }
-  
+
     const params = {};
     if (executionId) {
       params.job_execution_id = executionId;
     } else {
       params.job_id = job.job_id;
     }
-  
+
     console.log("Параметры запроса для остановки задачи:", params);
-  
+
     axiosInstance
       .post("/jobs/job-stop", null, { params })
       .then((response) => {
@@ -380,7 +380,7 @@ function JobDetailsDialog({
       // Конвертируем конфигурацию в YAML
       const yamlConfig = yaml.dump(response.data || {});
       setConfig(yamlConfig);
-  
+
       // Обновляем jobWithConfig, добавляя config
       setJobWithConfig((prevJob) => ({ ...prevJob, config: response.data }));
     } catch (error) {
@@ -1234,9 +1234,7 @@ function JobDetailsDialog({
                                 onDownloadArtifacts={() =>
                                   handleDownloadArtifacts(job, execution)
                                 }
-                                onStopClick={() =>
-                                  handleStopClick(execution)
-                                }
+                                onStopClick={() => handleStopClick(execution)}
                                 showStartButton={false}
                               />
                             </Grid>

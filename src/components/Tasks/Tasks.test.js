@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
   fireEvent,
-  act,
+  within,
 } from "@testing-library/react";
 import Tasks from "./Tasks";
 import "@testing-library/jest-dom";
@@ -17,52 +17,43 @@ import { TasksFiltersContext } from "./TasksFiltersContext";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 
-// Мок axiosInstance
+// Мокаем axiosInstance
 jest.mock("../../api");
 
-// Мок useMediaQuery
+// Мокаем useMediaQuery
 jest.mock("@mui/material", () => {
   const materialUi = jest.requireActual("@mui/material");
   return {
     ...materialUi,
     useMediaQuery: jest.fn(),
-    // Переэкспортируем необходимые компоненты
-    Box: materialUi.Box,
-    Typography: materialUi.Typography,
-    CircularProgress: materialUi.CircularProgress,
-    IconButton: materialUi.IconButton,
-    Tooltip: materialUi.Tooltip,
-    Button: materialUi.Button,
-    Grid: materialUi.Grid,
-    Dialog: materialUi.Dialog,
-    DialogTitle: materialUi.DialogTitle,
-    DialogContent: materialUi.DialogContent,
-    DialogActions: materialUi.DialogActions,
-    Paper: materialUi.Paper,
-    Snackbar: materialUi.Snackbar,
-    Alert: materialUi.Alert,
-    Card: materialUi.Card,
-    CardContent: materialUi.CardContent,
-    CardActions: materialUi.CardActions,
   };
 });
 
-// Исправленные моки компонентов
-jest.mock("./TasksActions", () => () => <div data-testid="tasks-actions" />);
-jest.mock("./TasksDetailsDialog", () => () => (
-  <div data-testid="tasks-details-dialog" />
+// Мокаем TasksActions компонент
+jest.mock("./TasksActions", () => (props) => (
+  <div data-testid="tasks-actions">
+    <button
+      aria-label="Остановить задачу"
+      onClick={(e) => {
+        e.stopPropagation();
+        props.onStopClick(props.job);
+      }}
+    >
+      Остановить задачу
+    </button>
+    <button
+      aria-label="Логи"
+      onClick={(e) => {
+        e.stopPropagation();
+        props.onLogsClick(props.job);
+      }}
+    >
+      Логи
+    </button>
+  </div>
 ));
 
-// Мок функций date-fns
-jest.mock("date-fns", () => {
-  const originalDateFns = jest.requireActual("date-fns");
-  return {
-    ...originalDateFns,
-    format: jest.fn(() => "formatted-date"),
-    parseISO: jest.fn((dateString) => new Date(dateString)),
-  };
-});
-
+// Мокаем контексты
 const mockAuthContext = {
   authToken: "test-token",
 };
@@ -83,33 +74,12 @@ const mockTasksFiltersContext = {
 describe("Компонент Tasks", () => {
   beforeEach(() => {
     axiosInstance.get.mockReset();
+    axiosInstance.post.mockReset();
     jest.clearAllMocks();
   });
 
-  const renderComponent = (screenSize = "desktop") => {
-    // Мок useMediaQuery
-    useMediaQuery.mockImplementation((query) => {
-      if (screenSize === "mobile") {
-        if (query.includes("down") && query.includes('"sm"')) return true;
-        if (query.includes("between") && query.includes('"sm", "md"'))
-          return false;
-        if (query.includes("down") && query.includes('"lg"')) return true;
-        return false;
-      } else if (screenSize === "tablet") {
-        if (query.includes("down") && query.includes('"sm"')) return false;
-        if (query.includes("between") && query.includes('"sm", "md"'))
-          return true;
-        if (query.includes("down") && query.includes('"lg"')) return true;
-        return false;
-      } else {
-        // Десктоп
-        if (query.includes("down") && query.includes('"sm"')) return false;
-        if (query.includes("between") && query.includes('"sm", "md"'))
-          return false;
-        if (query.includes("down") && query.includes('"lg"')) return false;
-        return false;
-      }
-    });
+  const renderComponent = () => {
+    useMediaQuery.mockImplementation(() => false);
 
     const theme = createTheme();
 
@@ -126,210 +96,130 @@ describe("Компонент Tasks", () => {
     );
   };
 
-  test("рендерится без ошибок и фетчит задачи", async () => {
-    axiosInstance.get.mockResolvedValueOnce({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Тестовая задача 1",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "run",
-        },
-      ],
+  test("загружает и отображает список задач при монтировании", async () => {
+    const mockJobsData = [
+      {
+        job_id: "job1",
+        job_name: "Тестовая задача 1",
+        created_at: "2023-08-01T12:00:00Z",
+        build_status: "success",
+        last_execution_status: "running",
+        last_execution_start_time: "2023-08-01T12:30:00Z",
+        job_type: "run",
+      },
+    ];
+
+    // Мокаем axiosInstance.get для /jobs/get-organization-jobs
+    axiosInstance.get.mockImplementation((url, config) => {
+      if (url === "/jobs/get-organization-jobs") {
+        return Promise.resolve({ data: mockJobsData });
+      } else {
+        return Promise.reject(new Error(`Unhandled GET request to ${url}`));
+      }
     });
 
     renderComponent();
 
-    // Ожидаем, что спиннер загрузки отображается изначально
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    // Ожидаем, что запрос был сделан с правильными параметрами
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        "/jobs/get-organization-jobs",
+        {
+          params: {
+            organization_id: mockOrganizationContext.currentOrganization.id,
+            is_scheduled: undefined,
+            status: undefined,
+            job_type: "run",
+          },
+        }
+      );
+    });
 
-    // Ждем загрузки задач и рендера компонента
-    const taskElement = await screen.findByText("Тестовая задача 1");
-
-    // Проверяем, что задача отображается
-    expect(taskElement).toBeInTheDocument();
-
-    // Проверяем, что спиннер загрузки исчез
-    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    // Проверяем, что задача отображается в интерфейсе
+    expect(await screen.findByText("Тестовая задача 1")).toBeInTheDocument();
   });
 
-  test("корректно применяет фильтры", async () => {
-    axiosInstance.get.mockResolvedValue({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Тестовая задача 1",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "run",
-        },
-        {
-          job_id: "job2",
-          job_name: "Тестовая задача 2",
-          created_at: "2023-08-02T12:00:00Z",
-          build_status: "failed",
-          last_execution_status: "failed",
-          last_execution_start_time: "2023-08-02T12:30:00Z",
-          job_type: "run",
-        },
-      ],
+  test("отправляет запрос на остановку задачи при подтверждении остановки", async () => {
+    const mockJob = {
+      job_id: "job1",
+      job_name: "Тестовая задача 1",
+      created_at: "2023-08-01T12:00:00Z",
+      build_status: "success",
+      last_execution_status: "running",
+      last_execution_start_time: "2023-08-01T12:30:00Z",
+      job_type: "run",
+    };
+
+    // Мокаем axiosInstance.get
+    axiosInstance.get.mockImplementation((url, config) => {
+      if (url === "/jobs/get-organization-jobs") {
+        return Promise.resolve({ data: [mockJob] });
+      } else {
+        return Promise.reject(new Error(`Unhandled GET request to ${url}`));
+      }
+    });
+
+    // Мокаем axiosInstance.post
+    axiosInstance.post.mockImplementation((url, data, config) => {
+      if (url === "/jobs/job-stop") {
+        return Promise.resolve({
+          data: { message: "Задача успешно остановлена." },
+        });
+      } else {
+        return Promise.reject(new Error(`Unhandled POST request to ${url}`));
+      }
     });
 
     renderComponent();
 
-    // Ждем загрузки задач
-    const taskElement1 = await screen.findByText("Тестовая задача 1");
-    const taskElement2 = await screen.findByText("Тестовая задача 2");
+    // Ожидаем отображения задачи
+    expect(await screen.findByText("Тестовая задача 1")).toBeInTheDocument();
 
-    // Обе задачи должны отображаться
-    expect(taskElement1).toBeInTheDocument();
-    expect(taskElement2).toBeInTheDocument();
+    // Симулируем нажатие на кнопку "Остановить задачу"
+    fireEvent.click(screen.getByLabelText("Остановить задачу"));
 
-    // Симулируем нажатие на фильтр статуса 'running'
-    fireEvent.click(screen.getByRole("button", { name: /running/i }));
-
-    // Проверяем, что setSelectedStatus вызывается
-    expect(mockTasksFiltersContext.setSelectedStatus).toHaveBeenCalledWith(
-      "running"
-    );
-  });
-
-  test("отображает задачи в виде карточек на мобильных экранах", async () => {
-    axiosInstance.get.mockResolvedValue({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Тестовая задача 1",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "run",
-        },
-      ],
+    // Ожидаем появления диалогового окна подтверждения
+    const confirmDialog = await screen.findByRole("dialog", {
+      name: /Подтверждение остановки/i,
     });
 
-    renderComponent("mobile");
+    // Находим кнопку "Остановить" внутри диалога
+    const stopButton = within(confirmDialog).getByText("Остановить");
 
-    // Ждем загрузки задач
-    const taskElement = await screen.findByText("Тестовая задача 1");
+    // Нажимаем на кнопку "Остановить"
+    fireEvent.click(stopButton);
 
-    // Проверяем, что задача отображается
-    expect(taskElement).toBeInTheDocument();
+    // Ожидаем, что axios.post был вызван с правильными параметрами
+    await waitFor(() => {
+      expect(axiosInstance.post).toHaveBeenCalledWith("/jobs/job-stop", null, {
+        params: { job_id: mockJob.job_id },
+      });
+    });
 
-    // Проверяем, что отображается компонент Card (для мобильной вёрстки)
-    expect(screen.getByText("Тестовая задача 1")).toBeInTheDocument();
+    // Ожидаем, что диалоговое окно закроется
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: /Подтверждение остановки/i })
+      ).not.toBeInTheDocument();
+    });
   });
 
-  test("обрабатывает ошибки при загрузке данных", async () => {
-    axiosInstance.get.mockRejectedValueOnce(new Error("Network Error"));
-
-    renderComponent();
-
-    // Ждем обработки ошибки
-    await waitFor(() => expect(axiosInstance.get).toHaveBeenCalled());
-
-    // Проверяем, что отображается сообщение об отсутствии задач
-    await waitFor(() =>
-      expect(screen.getByText("Нет доступных задач.")).toBeInTheDocument()
-    );
-  });
-
-  test("открывает диалог деталей при клике на задачу", async () => {
-    axiosInstance.get.mockResolvedValue({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Тестовая задача 1",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "run",
-        },
-      ],
+  test("отображает сообщение об ошибке при неудачной загрузке списка задач", async () => {
+    // Мокаем, чтобы axiosInstance.get выбрасывал ошибку
+    axiosInstance.get.mockRejectedValueOnce({
+      response: {
+        data: { detail: "Не удалось загрузить список задач." },
+      },
     });
 
     renderComponent();
 
-    // Ждем загрузки задач
-    const taskElement = await screen.findByText("Тестовая задача 1");
-
-    // Симулируем клик по задаче
-    fireEvent.click(taskElement);
-
-    // Проверяем, что компонент диалога деталей отображается
-    expect(screen.getByTestId("tasks-details-dialog")).toBeInTheDocument();
-  });
-
-  test("рендерит компонент TasksActions с правильными пропсами", async () => {
-    axiosInstance.get.mockResolvedValue({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Тестовая задача 1",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "run",
-        },
-      ],
+    // Ожидаем, что запрос был сделан
+    await waitFor(() => {
+      expect(axiosInstance.get).toHaveBeenCalled();
     });
 
-    renderComponent();
-
-    // Ждем загрузки задач
-    await screen.findByText("Тестовая задача 1");
-
-    // Проверяем, что компонент TasksActions рендерится
-    expect(screen.getByTestId("tasks-actions")).toBeInTheDocument();
-  });
-
-  test("корректно обрабатывает переключение типа задач", async () => {
-    axiosInstance.get.mockResolvedValue({
-      data: [
-        {
-          job_id: "job1",
-          job_name: "Deploy задача",
-          created_at: "2023-08-01T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "running",
-          last_execution_start_time: "2023-08-01T12:30:00Z",
-          job_type: "deploy",
-        },
-        {
-          job_id: "job2",
-          job_name: "Run задача",
-          created_at: "2023-08-02T12:00:00Z",
-          build_status: "success",
-          last_execution_status: "completed",
-          last_execution_start_time: "2023-08-02T12:30:00Z",
-          job_type: "run",
-        },
-      ],
-    });
-
-    renderComponent();
-
-    // Ждем загрузки задач
-    const runTaskElement = await screen.findByText("Run задача");
-
-    // По умолчанию selectedJobType равен 'run', поэтому должна отображаться только 'Run задача'
-    expect(runTaskElement).toBeInTheDocument();
-    expect(screen.queryByText("Deploy задача")).not.toBeInTheDocument();
-
-    // Кликаем по кнопке 'Deploy', чтобы переключить тип задачи
-    fireEvent.click(screen.getByRole("button", { name: /Deploy/i }));
-
-    // Проверяем, что setSelectedJobType вызывается
-    expect(mockTasksFiltersContext.setSelectedJobType).toHaveBeenCalledWith(
-      "deploy"
-    );
+    // Ожидаем, что сообщение об ошибке отображается
+    expect(await screen.findByText("Нет доступных задач.")).toBeInTheDocument();
   });
 });

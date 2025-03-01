@@ -20,8 +20,7 @@ function Docs() {
   const theme = useTheme();
 
   // Используем useMediaQuery для определения устройства
-   const isMobile = useMediaQuery('(max-width:1000px)');
-
+  const isMobile = useMediaQuery("(max-width:1000px)");
 
   // Определяем индекс текущего документа
   const currentDocIndex = docsStructure.findIndex(
@@ -107,7 +106,7 @@ function Docs() {
             display: "flex",
             flexDirection: isMobile ? "column" : "row",
             alignItems: isMobile ? "stretch" : "center",
-            gap:'10px',
+            gap: "10px",
             justifyContent: "space-between",
             mt: 4,
             mb: 2,

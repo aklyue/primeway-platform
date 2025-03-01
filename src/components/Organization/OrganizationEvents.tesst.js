@@ -7,7 +7,7 @@ import OrganizationEvents from "./OrganizationEvents";
 
 jest.mock("../../api");
 
-describe("OrganizationEvents Component", () => {
+describe("Компонент OrganizationEvents", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -23,6 +23,12 @@ describe("OrganizationEvents Component", () => {
 
     render(<OrganizationEvents organizationId="org-1" />);
 
+    // Проверяем, что запрос был сделан с правильными параметрами
+    expect(axiosInstance.get).toHaveBeenCalledWith(
+      "/organizations/org-1/events",
+      { params: { amount: undefined } }
+    );
+
     // Проверяем, что индикатор загрузки отображается
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
 
@@ -36,6 +42,12 @@ describe("OrganizationEvents Component", () => {
     axiosInstance.get.mockRejectedValue(new Error("Network Error"));
 
     render(<OrganizationEvents organizationId="org-1" />);
+
+    // Проверяем, что запрос был сделан с правильными параметрами
+    expect(axiosInstance.get).toHaveBeenCalledWith(
+      "/organizations/org-1/events",
+      { params: { amount: undefined } }
+    );
 
     // Ожидаем, что сообщение об ошибке отображается
     await waitFor(() => {
@@ -61,7 +73,13 @@ describe("OrganizationEvents Component", () => {
 
     axiosInstance.get.mockResolvedValue({ data: mockEvents });
 
-    render(<OrganizationEvents organizationId="org-1" />);
+    render(<OrganizationEvents organizationId="org-1" amount={10} />);
+
+    // Проверяем, что запрос был сделан с правильными параметрами
+    expect(axiosInstance.get).toHaveBeenCalledWith(
+      "/organizations/org-1/events",
+      { params: { amount: 10 } }
+    );
 
     // Ожидаем завершения загрузки
     await waitFor(() => {
@@ -84,6 +102,12 @@ describe("OrganizationEvents Component", () => {
     axiosInstance.get.mockResolvedValue({ data: [] });
 
     render(<OrganizationEvents organizationId="org-1" />);
+
+    // Проверяем, что запрос был сделан с правильными параметрами
+    expect(axiosInstance.get).toHaveBeenCalledWith(
+      "/organizations/org-1/events",
+      { params: { amount: undefined } }
+    );
 
     // Ожидаем завершения загрузки и отображения сообщения
     await waitFor(() => {

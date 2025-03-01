@@ -711,6 +711,7 @@ export function Layout() {
                             to="/gpu-list"
                             color="inherit"
                             sx={{
+                              fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: !isDocsPage
                                 ? "primary.main"
@@ -732,6 +733,7 @@ export function Layout() {
                             to="/docs"
                             color="inherit"
                             sx={{
+                              fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: isDocsPage
                                 ? "primary.main"
@@ -751,6 +753,7 @@ export function Layout() {
 
                           {/* Добавляем иконку событий */}
                           <IconButton
+                            aria-label="Открыть события"
                             onClick={handleEventsClick}
                             sx={{
                               color: isEventsOpen
@@ -1013,7 +1016,7 @@ export function Layout() {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  minHeight: "200px", 
+                  minHeight: "200px",
                 }}
               >
                 <CircularProgress />

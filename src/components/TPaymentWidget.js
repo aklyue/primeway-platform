@@ -163,8 +163,8 @@ function TPaymentWidget(props) {
           label="Сумма пополнения"
           value={addFunds}
           onChange={(e) => setAddFunds(e.target.value)}
-          InputProps={{ inputProps: { min: 1, step: 1 } }}
-          helperText="Минимальная сумма: 1 ₽"
+          InputProps={{ inputProps: { min: 100, step: 1 } }}
+          helperText="Минимальная сумма: 100 ₽"
         />
         <button
           style={{

@@ -31,14 +31,13 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
 import AuthProvider, { AuthContext } from "./AuthContext";
 import {
   OrganizationContext,
   OrganizationProvider,
 } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
-import Snowfall from "react-snowfall";
-import snowflakeSvg from "./assets/snowflake.svg";
 import Billing from "./components/Billing";
 import ApiKeys from "./components/ApiKeys";
 import Settings from "./components/Settings";
@@ -65,6 +64,7 @@ import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
 import OrganizationEvents from "./components/Organization/OrganizationEvents";
+import ModelsPage from './components/ModelsPage';
 import { ReactComponent as Logo } from "./assets/favicon2.svg";
 
 export function Layout() {
@@ -94,9 +94,6 @@ export function Layout() {
   const drawerWidth = isMinDesktop ? "6%" : isTablet ? "9%" : "14%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const snowflakeImage = new Image();
-  snowflakeImage.src = snowflakeSvg;
 
   const pulse = keyframes`
   0% {
@@ -265,6 +262,27 @@ export function Layout() {
                   </ListItemIcon>
                 ) : (
                   <ListItemText primary="Задачи" />
+                )}
+              </ListItemButton>
+            </ListItem>
+            {/* Модели */}
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/models"
+                selected={location.pathname === "/models"}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+                sx={{
+                  justifyContent: isMinDesktop || isTablet ? "center" : "flex-start",
+                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
+                }}
+              >
+                {isMinDesktop || isTablet ? (
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    <ModelTrainingIcon fontSize="medium" />
+                  </ListItemIcon>
+                ) : (
+                  <ListItemText primary="Модели" />
                 )}
               </ListItemButton>
             </ListItem>
@@ -613,13 +631,6 @@ export function Layout() {
               }}
             >
               <CssBaseline />
-              <Snowfall
-                color="#d1d1dc"
-                images={[snowflakeImage]}
-                radius={[10, 12]}
-                snowflakeCount={30}
-                style={{ zIndex: 10000, opacity: "0.6" }}
-              />
               {shouldRenderContent && (
                 <>
                   <AppBar
@@ -926,6 +937,14 @@ export function Layout() {
                             <Tasks />
                           </ProtectedRoute>
                         }
+                      />
+                      <Route 
+                        path="/models" 
+                        element={
+                          <ProtectedRoute>
+                            <ModelsPage />
+                          </ProtectedRoute>
+                        } 
                       />
                       <Route
                         path="/billing"

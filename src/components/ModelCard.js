@@ -1,19 +1,22 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from "react";
 import {
-  Card,
-  CardContent,
   Typography,
-  CardActions,
   Button,
   Modal,
   Box,
-} from '@mui/material';
-import ConfigureModelForm from './ConfigureModelForm';
-import { AuthContext } from '../AuthContext';
-import axiosInstance from '../api';
-import { OrganizationContext } from './Organization/OrganizationContext';
+  Grid,
+  IconButton,
+  Divider,
+} from "@mui/material";
+import ConfigureModelForm from "./ConfigureModelForm";
+import { AuthContext } from "../AuthContext";
+import axiosInstance from "../api";
+import { OrganizationContext } from "./Organization/OrganizationContext";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import CloseIcon from "@mui/icons-material/Close";
+import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 
-function ModelCard({ model }) {
+function ModelCard({ model, isLast }) {
   const { authToken } = useContext(AuthContext);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,9 +36,9 @@ function ModelCard({ model }) {
     try {
       const { defaultConfig } = model;
       const formData = new FormData();
-      formData.append('organization_id', currentOrganization?.id || '');
+      formData.append("organization_id", currentOrganization?.id || "");
       formData.append(
-        'vllm_config_str',
+        "vllm_config_str",
         JSON.stringify({
           model: defaultConfig.modelName,
           args: defaultConfig.args.reduce(
@@ -48,11 +51,11 @@ function ModelCard({ model }) {
           ),
         })
       );
-      formData.append('config_str', JSON.stringify(defaultConfig.modelConfig));
+      formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
 
-      await axiosInstance.post('/models/run', formData, {
+      await axiosInstance.post("/models/run", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${authToken}`,
         },
       });
@@ -62,128 +65,84 @@ function ModelCard({ model }) {
       );
     } catch (error) {
       console.error(error);
-      alert('Произошла ошибка при запуске модели.');
+      alert("Произошла ошибка при запуске модели.");
     } finally {
       setLoading(false);
     }
   };
-
-  // If this is the suggestion card, render it accordingly
-  if (model.isNewModelCard) {
-    return (
-      <Box
-        sx={{
-          flex: '1 1 calc(33.333% - 16px)',
-          display: 'flex',
-          flexDirection: 'column',
-          minWidth: 275,
-          maxWidth: 400,
-        }}
-      >
-        <Card
-          sx={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}
-        >
-          <CardContent sx={{ flexGrow: 1 }}>
-            <Typography variant="h5">Добавить новую модель</Typography>
-            <Typography variant="body2">
-              Создайте свою собственную модель
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button
-              onClick={handleConfigureOpen}
-              variant="contained"
-              color="primary"
-              sx={{ color: 'white' }}
-            >
-              Добавить модель
-            </Button>
-          </CardActions>
-        </Card>
-
-        {/* Configure Modal for New Model */}
-        <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              bgcolor: 'background.paper',
-              boxShadow: 24,
-              p: 4,
-              maxHeight: '90vh',
-              overflowY: 'auto',
-            }}
-          >
-            <ConfigureModelForm
-              // No initialConfig for new model
-              onClose={handleConfigureClose}
-            />
-          </Box>
-        </Modal>
-      </Box>
-    );
-  }
+  console.log(model.imgURL);
 
   return (
-    <Box
-      sx={{
-        flex: '1 1 calc(33.333% - 16px)',
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 275,
-        maxWidth: 400,
-      }}
-    >
-      <Card sx={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Typography variant="h5">{model.name}</Typography>
-          <Typography variant="subtitle1">{model.type}</Typography>
-          <Typography variant="body2">{model.description}</Typography>
-        </CardContent>
-        <CardActions>
+    <>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        sx={{ justifyContent: "center" }}
+      >
+        <Grid item xs={6}>
+          <Typography
+            sx={{ pl: 2, display: "flex", alignItems: "center", gap: "5px" }}
+            variant="body1"
+          >
+            <img width={26} height={26} src={model.imgURL} />
+            {model.name}
+          </Typography>
+        </Grid>
+        <Grid sx={{ textAlign: "center" }} item xs={2}>
+          <Typography variant="body1">{model.type}</Typography>
+        </Grid>
+        <Grid sx={{ textAlign: "center" }} item xs={2}>
           <Button
             onClick={handleRun}
             disabled={loading}
-            variant="contained"
-            color="primary"
-            sx={{ color: 'white' }}
+            variant="outlined"
+            sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
           >
             Запустить
+            <RocketLaunchOutlinedIcon
+              sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
+            />
           </Button>
-          <Button
-            onClick={handleConfigureOpen}
-            variant="outlined"
-            color="secondary"
-          >
-            Настроить
-          </Button>
-        </CardActions>
-      </Card>
-
-      {/* Configure Modal for Existing Model */}
+        </Grid>
+        <Grid sx={{ textAlign: "center" }} item xs={2}>
+          <IconButton onClick={handleConfigureOpen}>
+            <MoreVertIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+      {!isLast && <Divider sx={{ my: 1 }} />}
+      {/* Модальное окно для настройки существующей модели */}
       <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
-            maxHeight: '90vh',
-            overflowY: 'auto',
+            pr: 2,
+            maxHeight: "95vh",
+            overflowY: "hidden",
+            borderRadius: 3,
+            outline: "none",
           }}
         >
+          <Button
+            sx={{ position: "absolute", left: 1, top: 12 }}
+            onClick={handleConfigureClose}
+          >
+            <CloseIcon />
+          </Button>
           <ConfigureModelForm
             initialConfig={model.defaultConfig}
             onClose={handleConfigureClose}
           />
         </Box>
       </Modal>
-    </Box>
+    </>
   );
 }
 

@@ -54,10 +54,14 @@ function ConfigureModelForm({ initialConfig, onClose }) {
 
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
   const [args, setArgs] = useState(
-    initialConfig?.args?.length > 0 ? initialConfig.args : [{ key: "", value: "" }]
+    initialConfig?.args?.length > 0
+      ? initialConfig.args
+      : [{ key: "", value: "" }]
   );
   const [flags, setFlags] = useState(
-    initialConfig?.flags?.length > 0 ? initialConfig.flags : [{ key: "", value: "True" }]
+    initialConfig?.flags?.length > 0
+      ? initialConfig.flags
+      : [{ key: "", value: "True" }]
   );
   const [modelConfig, setModelConfig] = useState(
     initialConfig?.modelConfig || {
@@ -74,7 +78,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
         specific_days: [],
       },
     }
-  )
+  );
 
   const [loading, setLoading] = useState(false);
 
@@ -175,7 +179,10 @@ function ConfigureModelForm({ initialConfig, onClose }) {
       ...modelConfig,
       schedule: {
         ...modelConfig.schedule,
-        [section]: [...(modelConfig.schedule[section] || []), { start: "", end: "" }],
+        [section]: [
+          ...(modelConfig.schedule[section] || []),
+          { start: "", end: "" },
+        ],
       },
     });
   };
@@ -266,7 +273,12 @@ function ConfigureModelForm({ initialConfig, onClose }) {
     });
   };
 
-  const handleSpecificDayTimeWindowChange = (dayIndex, windowIndex, field, value) => {
+  const handleSpecificDayTimeWindowChange = (
+    dayIndex,
+    windowIndex,
+    field,
+    value
+  ) => {
     const newSpecificDays = [...(modelConfig.schedule.specific_days || [])];
     newSpecificDays[dayIndex].time_windows[windowIndex][field] = value;
     setModelConfig({
@@ -315,7 +327,9 @@ function ConfigureModelForm({ initialConfig, onClose }) {
         },
       });
       // Handle success
-      const message = response.data.message || "Model started successfully! You can view it in the 'tasks' section.";
+      const message =
+        response.data.message ||
+        "Model started successfully! You can view it in the 'tasks' section.";
       setAlertMessage(message);
       setAlertSeverity("success");
       setAlertOpen(true);
@@ -331,7 +345,9 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           errorMessage = error.response.data.detail;
         } else if (Array.isArray(error.response.data.detail)) {
           // Extract the 'msg' from each error detail and join them
-          errorMessage = error.response.data.detail.map((d) => d.msg).join(", ");
+          errorMessage = error.response.data.detail
+            .map((d) => d.msg)
+            .join(", ");
         }
       }
       setAlertMessage(errorMessage);
@@ -348,16 +364,16 @@ function ConfigureModelForm({ initialConfig, onClose }) {
 
   return (
     <Paper
+      elevation={0}
       sx={{
-        p: isMobile ? 1 : 3,
-        maxHeight: "90vh",
+        p: isMobile ? 1 : 4,
+        maxHeight: "95vh",
         overflowY: "auto",
         margin: "auto",
-        mt: 4,
         maxWidth: 800,
       }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ paddingBottom: "16px" }}>
         {/* VLLM Configuration */}
         <Typography variant="h6">VLLM Configuration</Typography>
 
@@ -402,7 +418,11 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 <li {...props}>
                   <div>
                     <strong>{option.key}</strong>
-                    <Typography variant="caption" color="textSecondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
                       {option.description}
                     </Typography>
                   </div>
@@ -472,7 +492,11 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 <li {...props}>
                   <div>
                     <strong>{option.key}</strong>
-                    <Typography variant="caption" color="textSecondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
                       {option.description}
                     </Typography>
                   </div>
@@ -562,9 +586,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             key={index}
           >
             <FormControl sx={{ flex: 1 }}>
-              <InputLabel id={`gpu-select-label-${index}`}>
-                GPU Name
-              </InputLabel>
+              <InputLabel id={`gpu-select-label-${index}`}>GPU Name</InputLabel>
               <Select
                 labelId={`gpu-select-label-${index}`}
                 label="GPU Name"
@@ -889,9 +911,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                     borderRadius: 2,
                   }}
                 >
-                  <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                  >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <TextField
                       label="Date"
                       type="date"
@@ -1046,6 +1066,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             </IconButton>
           </Box>
         ))}
+
         <Button
           variant="text"
           startIcon={<AddCircle />}
@@ -1056,29 +1077,26 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           Add Environment Variable
         </Button>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={loading}
-          sx={{ mt: 2, color: 'white' }}
-        >
-          {loading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Деплой"
-          )}
-        </Button>
-        <Button
-          variant="text"
-          onClick={onClose}
-          sx={{ mt: 2, ml: 2 }}
-        >
-          Cancel
-        </Button>
+        <Divider sx={{ my: 2 }} />
+        <Box sx={{ textAlign: "end" }}>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ mt: 2, color: "white", padding: "7px 18px" }}
+          >
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Деплой"
+            )}
+          </Button>
+          <Button variant="text" onClick={onClose} sx={{ mt: 2, ml: 2 }}>
+            Cancel
+          </Button>
+        </Box>
       </form>
 
       {/* Snackbar for alerts */}

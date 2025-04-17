@@ -28,7 +28,7 @@ let theme = createTheme({
       fontWeight: 700,
       lineHeight: 1.2,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "1.9rem",
       },
     },
@@ -37,7 +37,7 @@ let theme = createTheme({
       fontWeight: 700,
       lineHeight: 1.3,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "1.6rem",
       },
     },
@@ -46,7 +46,7 @@ let theme = createTheme({
       fontWeight: 700,
       lineHeight: 1.3,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "1.3rem",
       },
     },
@@ -55,7 +55,7 @@ let theme = createTheme({
       fontWeight: 600,
       lineHeight: 1.35,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "1.2rem",
       },
     },
@@ -64,7 +64,7 @@ let theme = createTheme({
       fontWeight: 600,
       lineHeight: 1.4,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "1rem",
       },
     },
@@ -73,7 +73,7 @@ let theme = createTheme({
       fontWeight: 600,
       lineHeight: 1.5,
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "0.8rem",
       },
     },
@@ -82,7 +82,7 @@ let theme = createTheme({
       fontWeight: 400,
       lineHeight: "20px",
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "12px",
       },
     },
@@ -91,7 +91,7 @@ let theme = createTheme({
       fontWeight: 400,
       lineHeight: "20px",
       color: "#202123",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "12px",
       },
     },
@@ -101,7 +101,7 @@ let theme = createTheme({
       fontWeight: 600,
       lineHeight: "20px",
       fontFamily: "JetBrains Mono, serif",
-      [createTheme().breakpoints.down('sm')]: {
+      [createTheme().breakpoints.down("sm")]: {
         fontSize: "12px",
       },
     },
@@ -115,11 +115,18 @@ let theme = createTheme({
             backgroundColor: "rgba(131, 131, 131, 0.1)",
           },
           "&.Mui-selected": {
-            backgroundColor: 'rgba(131, 131, 131, 0.2)',
+            backgroundColor: "rgba(131, 131, 131, 0.2)",
             "&:hover": {
-              backgroundColor: 'rgba(131, 131, 131, 0.3)',
+              backgroundColor: "rgba(131, 131, 131, 0.3)",
             },
           },
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          color: "#353740", // Устанавливаем цвет по умолчанию
         },
       },
     },
@@ -142,7 +149,7 @@ let theme = createTheme({
           lineHeight: "20px",
           padding: "6px 16px",
           fontFamily: "JetBrains Mono, serif",
-          [createTheme().breakpoints.down('sm')]: {
+          [createTheme().breakpoints.down("sm")]: {
             fontSize: "12px",
           },
         },
@@ -185,7 +192,8 @@ let theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: "#202123",
+          // color: "#202123",
+          color: "inherit",
           fontFamily: "JetBrains Mono, serif",
         },
       },

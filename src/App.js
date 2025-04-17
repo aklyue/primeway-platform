@@ -28,10 +28,11 @@ import {
   Button,
   ListItemIcon,
   Popover,
+  Stack,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
+import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import AuthProvider, { AuthContext } from "./AuthContext";
 import {
   OrganizationContext,
@@ -64,8 +65,9 @@ import GPUList from "./components/GPUList";
 import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
 import OrganizationEvents from "./components/Organization/OrganizationEvents";
-import ModelsPage from './components/ModelsPage';
+import ModelsPage from "./components/ModelsPage";
 import { ReactComponent as Logo } from "./assets/favicon2.svg";
+import MenuItem from "./components/MenuItem";
 
 export function Layout() {
   const {
@@ -91,7 +93,7 @@ export function Layout() {
 
   // Ноутбуки/Компьютеры: от 960px и выше
   const isMinDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
-  const drawerWidth = isMinDesktop ? "6%" : isTablet ? "9%" : "14%";
+  const drawerWidth = isTablet || isMinDesktop ? "8%" : "4%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -190,390 +192,437 @@ export function Layout() {
 
   const isEventsOpen = Boolean(eventsAnchorEl);
 
+  const dashboardMenuItems = [
+    {
+      name: "GPU",
+      to: "/gpu-list",
+      icon: <MemoryIcon fontSize="medium" />,
+    },
+    {
+      name: "Задачи",
+      to: "/tasks",
+      icon: <AssignmentIcon fontSize="medium" />,
+    },
+    {
+      name: "Модели",
+      to: "/models",
+      icon: <ModelTrainingIcon fontSize="medium" />,
+    },
+    {
+      name: "Биллинг",
+      to: "/billing",
+      icon: <PriceChangeIcon fontSize="medium" />,
+    },
+    {
+      name: "API Ключи",
+      to: "/api-keys",
+      icon: <KeyIcon fontSize="medium" />,
+    },
+    {
+      name: "Настройки",
+      to: "/settings",
+      icon: <SettingsIcon fontSize="medium" />,
+    },
+    {
+      name: "Организации",
+      to: "/organization-settings",
+      icon: <RecentActorsIcon fontSize="medium" />,
+    },
+  ];
+
+  const docsMenuItems = [
+    {
+      name: "Добро пожаловать",
+      to: "/docs/welcome",
+      icon: (
+        <HomeIcon
+          fontSize="medium"
+          style={{ color: "rgba(255, 255, 255, 0.8)" }}
+        />
+      ),
+    },
+    {
+      name: "Быстрый старт",
+      to: "/docs/quickstart",
+      icon: (
+        <FlashOnIcon
+          fontSize="medium"
+          style={{ color: "rgba(255, 255, 255, 0.8)" }}
+        />
+      ),
+    },
+    {
+      name: "Задачи",
+      to: "/docs/jobs",
+      icon: (
+        <WorkIcon
+          fontSize="medium"
+          style={{ color: "rgba(255, 255, 255, 0.8)" }}
+        />
+      ),
+    },
+    {
+      name: "Конфигурация",
+      to: "/docs/configuration",
+      icon: (
+        <SettingsIcon
+          fontSize="medium"
+          style={{ color: "rgba(255, 255, 255, 0.8)" }}
+        />
+      ),
+    },
+    {
+      name: "CLI",
+      to: "/docs/cli",
+      icon: (
+        <CodeIcon
+          fontSize="medium"
+          style={{ color: "rgba(255, 255, 255, 0.8)" }}
+        />
+      ),
+    },
+  ];
+
+  const menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
+
   // Содержимое Drawer
+  // const drawer = (
+  //   <div>
+  //     <Toolbar />
+  //     <List>
+  //       {isMobile && (
+  //         <List sx={{ display: "flex" }}>
+  //           <ListItem disablePadding>
+  //             <ListItemButton
+  //               component={Link}
+  //               to="/gpu-list"
+  //               selected={!location.pathname.startsWith("/docs")}
+  //               onClick={handleDrawerToggle}
+  //             >
+  //               <ListItemText primary="Дашборд" />
+  //             </ListItemButton>
+  //           </ListItem>
+  //           <ListItem disablePadding>
+  //             <ListItemButton
+  //               component={Link}
+  //               to="/docs"
+  //               selected={location.pathname.startsWith("/docs")}
+  //               onClick={handleDrawerToggle}
+  //             >
+  //               <ListItemText primary="Доки" />
+  //             </ListItemButton>
+  //           </ListItem>
+  //         </List>
+  //       )}
+  //       {!isDocsPage ? (
+  //         <>
+  //           {/* Список элементов меню для дашборда */}
+  //           <Tooltip title="GPU" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/gpu-list"
+  //                 selected={location.pathname === "/gpu-list"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <MemoryIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Задачи */}
+  //           <Tooltip title="Задачи" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/tasks"
+  //                 selected={location.pathname === "/tasks"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <AssignmentIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Модели */}
+  //           <Tooltip title="Модели" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/models"
+  //                 selected={location.pathname === "/models"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <ModelTrainingIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Биллинг */}
+  //           <Tooltip title="Биллинг" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/billing"
+  //                 selected={location.pathname === "/billing"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <PriceChangeIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* API Ключи */}
+  //           <Tooltip title="API Ключи" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/api-keys"
+  //                 selected={location.pathname === "/api-keys"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <KeyIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Настройки */}
+  //           <Tooltip title="Настройки" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/settings"
+  //                 selected={location.pathname === "/settings"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <SettingsIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Организация */}
+  //           <Tooltip title="Организация" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/organization-settings"
+  //                 selected={location.pathname === "/organization-settings"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <RecentActorsIcon fontSize="medium" />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+  //         </>
+  //       ) : (
+  //         <>
+  //           {/* Список элементов меню для документации */}
+  //           {/* Добро Пожаловать */}
+  //           <Tooltip title="Добро Пожаловать" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/docs/welcome"
+  //                 selected={location.pathname === "/docs/welcome"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <HomeIcon
+  //                     fontSize="medium"
+  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
+  //                   />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Начало работы */}
+  //           <Tooltip title="Начало работы" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/docs/quickstart"
+  //                 selected={location.pathname === "/docs/quickstart"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <FlashOnIcon
+  //                     fontSize="medium"
+  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
+  //                   />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Jobs */}
+  //           <Tooltip title="Задачи" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/docs/jobs"
+  //                 selected={location.pathname === "/docs/jobs"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <WorkIcon
+  //                     fontSize="medium"
+  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
+  //                   />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* Configuration */}
+  //           <Tooltip title="Конфигурация" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/docs/configuration"
+  //                 selected={location.pathname === "/docs/configuration"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <SettingsIcon
+  //                     fontSize="medium"
+  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
+  //                   />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+
+  //           {/* CLI */}
+  //           <Tooltip title="CLI" placement="right">
+  //             <ListItem disablePadding>
+  //               <ListItemButton
+  //                 component={Link}
+  //                 to="/docs/cli"
+  //                 selected={location.pathname === "/docs/cli"}
+  //                 onClick={isMobile ? handleDrawerToggle : undefined}
+  //                 sx={{
+  //                   justifyContent: "center",
+  //                   padding: "10px 0",
+  //                 }}
+  //               >
+  //                 <ListItemIcon sx={{ minWidth: 0 }}>
+  //                   <CodeIcon
+  //                     fontSize="medium"
+  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
+  //                   />
+  //                 </ListItemIcon>
+  //               </ListItemButton>
+  //             </ListItem>
+  //           </Tooltip>
+  //         </>
+  //       )}
+  //     </List>
+  //   </div>
+  // );
+
   const drawer = (
     <div>
       <Toolbar />
-      <List>
-        {isMobile && (
-          <List sx={{ display: "flex" }}>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/gpu-list"
-                selected={!location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Дашборд" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs"
-                selected={location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Доки" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        )}
-        {!isDocsPage ? (
-          <>
-            {/* Список элементов меню для дашборда */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/gpu-list"
-                selected={location.pathname === "/gpu-list"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <MemoryIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="GPU" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* Задачи */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/tasks"
-                selected={location.pathname === "/tasks"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <AssignmentIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="Задачи" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* Модели */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/models"
-                selected={location.pathname === "/models"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent: isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <ModelTrainingIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="Модели" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* Биллинг */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/billing"
-                selected={location.pathname === "/billing"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <PriceChangeIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="Биллинг" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* API Ключи */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/api-keys"
-                selected={location.pathname === "/api-keys"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <KeyIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="API Ключи" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* Настройки */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/settings"
-                selected={location.pathname === "/settings"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <SettingsIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="Настройки" />
-                )}
-              </ListItemButton>
-            </ListItem>
-            {/* Организация */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/organization-settings"
-                selected={location.pathname === "/organization-settings"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <RecentActorsIcon fontSize="medium" />
-                  </ListItemIcon>
-                ) : (
-                  <ListItemText primary="Организация" />
-                )}
-              </ListItemButton>
-            </ListItem>
-          </>
-        ) : (
-          <>
-            {/* Список элементов меню для документации */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/welcome"
-                selected={location.pathname === "/docs/welcome"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <HomeIcon
-                      fontSize="medium"
-                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                    />
-                  </ListItemIcon>
-                ) : (
-                  <>
-                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <HomeIcon
-                        fontSize="small"
-                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Добро Пожаловать"
-                      primaryTypographyProps={{
-                        style: { color: "rgba(255, 255, 255, 0.8)" },
-                      }}
-                    />
-                  </>
-                )}
-              </ListItemButton>
-            </ListItem>
-
-            {/* Начало работы */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/quickstart"
-                selected={location.pathname === "/docs/quickstart"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <FlashOnIcon
-                      fontSize="medium"
-                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                    />
-                  </ListItemIcon>
-                ) : (
-                  <>
-                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <FlashOnIcon
-                        fontSize="small"
-                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Начало работы"
-                      primaryTypographyProps={{
-                        style: { color: "rgba(255, 255, 255, 0.8)" },
-                      }}
-                    />
-                  </>
-                )}
-              </ListItemButton>
-            </ListItem>
-
-            {/* Jobs */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/jobs"
-                selected={location.pathname === "/docs/jobs"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <WorkIcon
-                      fontSize="medium"
-                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                    />
-                  </ListItemIcon>
-                ) : (
-                  <>
-                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <WorkIcon
-                        fontSize="small"
-                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Jobs"
-                      primaryTypographyProps={{
-                        style: { color: "rgba(255, 255, 255, 0.8)" },
-                      }}
-                    />
-                  </>
-                )}
-              </ListItemButton>
-            </ListItem>
-
-            {/* Configuration */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/configuration"
-                selected={location.pathname === "/docs/configuration"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <SettingsIcon
-                      fontSize="medium"
-                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                    />
-                  </ListItemIcon>
-                ) : (
-                  <>
-                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <SettingsIcon
-                        fontSize="small"
-                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Configuration"
-                      primaryTypographyProps={{
-                        style: { color: "rgba(255, 255, 255, 0.8)" },
-                      }}
-                    />
-                  </>
-                )}
-              </ListItemButton>
-            </ListItem>
-
-            {/* CLI */}
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs/cli"
-                selected={location.pathname === "/docs/cli"}
-                onClick={isMobile ? handleDrawerToggle : undefined}
-                sx={{
-                  justifyContent:
-                    isMinDesktop || isTablet ? "center" : "flex-start",
-                  padding: isMinDesktop || isTablet ? "10px 0" : "10px 16px",
-                }}
-              >
-                {isMinDesktop || isTablet ? (
-                  <ListItemIcon sx={{ minWidth: 0 }}>
-                    <CodeIcon
-                      fontSize="medium"
-                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                    />
-                  </ListItemIcon>
-                ) : (
-                  <>
-                    <ListItemIcon sx={{ minWidth: 0, mr: "10px" }}>
-                      <CodeIcon
-                        fontSize="small"
-                        style={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="CLI"
-                      primaryTypographyProps={{
-                        style: { color: "rgba(255, 255, 255, 0.8)" },
-                      }}
-                    />
-                  </>
-                )}
-              </ListItemButton>
-            </ListItem>
-          </>
-        )}
-      </List>
+      {isMobile && (
+        <List sx={{ display: "flex" }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/gpu-list"
+              selected={!location.pathname.startsWith("/docs")}
+              onClick={handleDrawerToggle}
+            >
+              <ListItemText primary="Дашборд" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/docs"
+              selected={location.pathname.startsWith("/docs")}
+              onClick={handleDrawerToggle}
+            >
+              <ListItemText primary="Доки" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      )}
+      <Stack
+        spacing={1}
+        sx={{
+          alignItems: "center",
+        }}
+      >
+        {menuItems.map((item) => (
+          <MenuItem
+            key={item.to}
+            to={item.to}
+            name={item.name}
+            icon={item.icon}
+            isMobile={isMobile}
+            handleDrawerToggle={handleDrawerToggle}
+          />
+        ))}
+      </Stack>
     </div>
   );
 
@@ -677,8 +726,7 @@ export function Layout() {
                             color: isDocsPage ? "white" : "",
                           }}
                         >
-                          {isDocsPage ? <Logo width={32} height={32} /> : ""}
-                          PrimeWay
+                          <Logo width={32} height={32} />
                         </Typography>
                         <Box
                           sx={{
@@ -692,7 +740,7 @@ export function Layout() {
                             noWrap
                             sx={{
                               textDecoration: "none",
-                              ml: "6px",
+                              ml: "8px",
                               color: "secondary.main",
                             }}
                           >
@@ -846,7 +894,7 @@ export function Layout() {
                         }}
                         sx={{
                           "& .MuiDrawer-paper": {
-                            width: "200px",
+                            width: "150px",
                             ackgroundColor: isDocsPage
                               ? "rgb(21 21 21)"
                               : "#F5F5F5",
@@ -938,13 +986,13 @@ export function Layout() {
                           </ProtectedRoute>
                         }
                       />
-                      <Route 
-                        path="/models" 
+                      <Route
+                        path="/models"
                         element={
                           <ProtectedRoute>
                             <ModelsPage />
                           </ProtectedRoute>
-                        } 
+                        }
                       />
                       <Route
                         path="/billing"

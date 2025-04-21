@@ -9,6 +9,7 @@ let theme = createTheme({
     },
     primary: {
       main: "#353740",
+      icon: "#a2a2a2",
     },
     secondary: {
       main: "#5282ff",
@@ -116,6 +117,7 @@ let theme = createTheme({
           },
           "&.Mui-selected": {
             backgroundColor: "rgba(131, 131, 131, 0.2)",
+
             "&:hover": {
               backgroundColor: "rgba(131, 131, 131, 0.3)",
             },
@@ -126,7 +128,7 @@ let theme = createTheme({
     MuiSvgIcon: {
       styleOverrides: {
         root: {
-          color: "#353740", // Устанавливаем цвет по умолчанию
+          color: "inherit", // Устанавливаем цвет по умолчанию
         },
       },
     },

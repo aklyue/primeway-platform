@@ -7,10 +7,40 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 
 function ModelsPage() {
-  // Include an extra item for the suggestion card
-  const cards = [...modelsData];
+  // Разделяем модели на "Запущенные" и "Базовые"
+  const launchedModels = modelsData.filter((model) => model.isLaunched);
+  const basicModels = modelsData.filter((model) => !model.isLaunched);
 
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+  // Состояние для запущенных моделей
+  // const [launchedModels, setLaunchedModels] = useState([]);
+
+  // const { authToken } = useContext(AuthContext);
+  // const { currentOrganization } = useContext(OrganizationContext);
+
+  // useEffect(() => {
+  //   const fetchLaunchedModels = async () => {
+  //     if (currentOrganization && authToken) {
+  //       try {
+  //         const response = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
+  //           params: {
+  //             organization_id: currentOrganization.id,
+  //           },
+  //           headers: {
+  //             Authorization: `Bearer ${authToken}`,
+  //           },
+  //         });
+  //         const data = response.data || [];
+  //         setLaunchedModels(data);
+  //       } catch (error) {
+  //         console.error("Ошибка при получении запущенных моделей:", error);
+  //         // Обработка ошибки (отображение уведомления и т.д.)
+  //       }
+  //     }
+  //   };
+
+  //   fetchLaunchedModels();
+  // }, [currentOrganization, authToken]);
 
   const handleConfigureOpen = () => {
     setIsConfigureOpen(true);
@@ -21,7 +51,7 @@ function ModelsPage() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, height: "100vh", boxSizing: "border-box" }}>
       <Box
         sx={{
           display: "flex",
@@ -72,47 +102,124 @@ function ModelsPage() {
         </Box>
       </Modal>
 
+      {/* Контейнер для двух секций */}
       <Box
         sx={{
-          border: "2px solid rgba(0, 0, 0, 0.12)",
-          borderRadius: "16px",
-          pt: 2,
-          pb: 1,
+          display: "flex",
+          flexDirection: "column",
+          height: `calc(100% - 80px)`, // Подгоните 80px под высоту вашего заголовка и отступов
         }}
       >
-        <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-          <Grid item xs={6}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Название
-            </Typography>
-          </Grid>
-          <Grid sx={{ textAlign: "center" }} item xs={2}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Тип модели
-            </Typography>
-          </Grid>
-          <Grid sx={{ textAlign: "center" }} item xs={2}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Действие
-            </Typography>
-          </Grid>
-          <Grid sx={{ textAlign: "center" }} item xs={2}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Настройки
-            </Typography>
-          </Grid>
-        </Grid>
+        {/* Верхняя секция - "Запущенные модели" */}
+        <Box
+          sx={{
+            overflowY: "auto",
+            maxHeight: "50%",
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            Запущенные модели
+          </Typography>
 
-        <Divider sx={{ my: 1 }} />
+          <Box
+            sx={{
+              border: "2px solid rgba(0, 0, 0, 0.12)",
+              borderRadius: "16px",
+              pt: 2,
+            }}
+          >
+            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+              <Grid item xs={6}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Название
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Автор
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Действие
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Настройки
+                </Typography>
+              </Grid>
+            </Grid>
 
-        {/* Список моделей */}
-        {cards.map((model, index) => (
-          <ModelCard
-            key={model.id || index}
-            model={model}
-            isLast={index === cards.length - 1}
-          />
-        ))}
+            <Divider sx={{ my: 1 }} />
+
+            {/* Список "Запущенных моделей" */}
+            {launchedModels.map((model, index) => (
+              <ModelCard
+                key={model.id || index}
+                model={model}
+                isLast={index === launchedModels.length - 1}
+                isBasic={false}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Нижняя секция - "Базовые модели" */}
+        <Box
+          sx={{
+            overflowY: "auto",
+            maxHeight: "50%",
+            mt: 4,
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            Базовые модели
+          </Typography>
+
+          <Box
+            sx={{
+              border: "2px solid rgba(0, 0, 0, 0.12)",
+              borderRadius: "16px",
+              pt: 2,
+            }}
+          >
+            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+              <Grid item xs={6}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Название
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Тип модели
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Действие
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Настройки
+                </Typography>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Список "Базовых моделей" */}
+            {basicModels.map((model, index) => (
+              <ModelCard
+                key={model.id || index}
+                model={model}
+                isLast={index === basicModels.length - 1}
+                isBasic={true}
+              />
+            ))}
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

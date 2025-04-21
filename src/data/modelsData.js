@@ -44,6 +44,7 @@ export const modelsData = [
     imgURL:
       "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/gemma-color.png",
     type: "LLM",
+    isLaunched: true,
     description:
       "Модели Gemma 3 являются многомодальными, обрабатывают ввод текста и изображений и генерируют текстовый вывод, с открытыми весами как для предварительно обученных вариантов, так и для вариантов, настроенных на основе инструкций.",
     defaultConfig: {

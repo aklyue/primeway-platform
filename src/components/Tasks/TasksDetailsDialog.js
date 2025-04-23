@@ -896,7 +896,7 @@ function JobDetailsDialog({
               sx={{
                 height: "2px",
                 flexGrow: 1,
-                minWidth: "3px", // Минимальная ширина, чтобы полоска не исчезала на маленьких экранах
+                minWidth: "3px",
                 borderRadius: "5px",
                 bgcolor: "black",
               }}

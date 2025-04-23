@@ -1,46 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Box, Button, Divider, Grid, Modal, Typography } from "@mui/material";
 import ModelCard from "./ModelCard";
 import { modelsData } from "../data/modelsData";
 import ConfigureModelForm from "./ConfigureModelForm";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import { AuthContext } from "../AuthContext";
+import axiosInstance from "../api";
+import { OrganizationContext } from "./Organization/OrganizationContext";
 
 function ModelsPage() {
-  // Разделяем модели на "Запущенные" и "Базовые"
-  const launchedModels = modelsData.filter((model) => model.isLaunched);
-  const basicModels = modelsData.filter((model) => !model.isLaunched);
+  // Состояния для запущенных моделей
+  const [launchedModels, setLaunchedModels] = useState([]);
+  const { authToken } = useContext(AuthContext);
+  const { currentOrganization } = useContext(OrganizationContext);
+
+  useEffect(() => {
+    const fetchLaunchedModels = async () => {
+      if (currentOrganization && authToken) {
+        try {
+          const response = await axiosInstance.get(
+            "/jobs/get-vllm-deploy-jobs",
+            {
+              params: {
+                organization_id: currentOrganization.id,
+              },
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+              },
+            }
+          );
+          const data = response.data || [];
+          setLaunchedModels(data);
+        } catch (error) {
+          console.error("Ошибка при получении запущенных моделей:", error);
+          // Обработка ошибки (отображение уведомления и т.д.)
+        }
+      }
+    };
+    fetchLaunchedModels();
+  }, [currentOrganization, authToken]);
 
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-  // Состояние для запущенных моделей
-  // const [launchedModels, setLaunchedModels] = useState([]);
-
-  // const { authToken } = useContext(AuthContext);
-  // const { currentOrganization } = useContext(OrganizationContext);
-
-  // useEffect(() => {
-  //   const fetchLaunchedModels = async () => {
-  //     if (currentOrganization && authToken) {
-  //       try {
-  //         const response = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
-  //           params: {
-  //             organization_id: currentOrganization.id,
-  //           },
-  //           headers: {
-  //             Authorization: `Bearer ${authToken}`,
-  //           },
-  //         });
-  //         const data = response.data || [];
-  //         setLaunchedModels(data);
-  //       } catch (error) {
-  //         console.error("Ошибка при получении запущенных моделей:", error);
-  //         // Обработка ошибки (отображение уведомления и т.д.)
-  //       }
-  //     }
-  //   };
-
-  //   fetchLaunchedModels();
-  // }, [currentOrganization, authToken]);
 
   const handleConfigureOpen = () => {
     setIsConfigureOpen(true);
@@ -129,7 +130,7 @@ function ModelsPage() {
             }}
           >
             <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                 <Typography variant="subtitle1" fontWeight="bold">
                   Название
                 </Typography>
@@ -137,6 +138,11 @@ function ModelsPage() {
               <Grid sx={{ textAlign: "center" }} item xs={2}>
                 <Typography variant="subtitle1" fontWeight="bold">
                   Автор
+                </Typography>
+              </Grid>
+              <Grid sx={{ textAlign: "center" }} item xs={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  URL
                 </Typography>
               </Grid>
               <Grid sx={{ textAlign: "center" }} item xs={2}>
@@ -154,14 +160,20 @@ function ModelsPage() {
             <Divider sx={{ my: 1 }} />
 
             {/* Список "Запущенных моделей" */}
-            {launchedModels.map((model, index) => (
-              <ModelCard
-                key={model.id || index}
-                model={model}
-                isLast={index === launchedModels.length - 1}
-                isBasic={false}
-              />
-            ))}
+            {launchedModels.length > 0 ? (
+              launchedModels.map((model, index) => (
+                <ModelCard
+                  key={model.job_id || index}
+                  model={model}
+                  isLast={index === launchedModels.length - 1}
+                  isBasic={false} // Запущенные модели не базовые
+                />
+              ))
+            ) : (
+              <Typography align="center" sx={{ mt: 2, mb: 2 }}>
+                Нет запущенных моделей.
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -210,12 +222,12 @@ function ModelsPage() {
             <Divider sx={{ my: 1 }} />
 
             {/* Список "Базовых моделей" */}
-            {basicModels.map((model, index) => (
+            {modelsData.map((model, index) => (
               <ModelCard
                 key={model.id || index}
                 model={model}
-                isLast={index === basicModels.length - 1}
-                isBasic={true}
+                isLast={index === modelsData.length - 1}
+                isBasic={true} // Базовые модели
               />
             ))}
           </Box>

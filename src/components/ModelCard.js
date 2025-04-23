@@ -23,7 +23,10 @@ function ModelCard({ model, isLast, isBasic }) {
   const [loading, setLoading] = useState(false);
   const { currentOrganization } = useContext(OrganizationContext);
 
-  const isLaunched = model.isLaunched;
+  // Если модель базовая, то она не запущена
+  // Если модель запущенная, то она уже запущена и у нее есть jobId
+  const isLaunched = !isBasic;
+  const jobId = isLaunched ? model.job_id : null;
 
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
 
@@ -43,8 +46,9 @@ function ModelCard({ model, isLast, isBasic }) {
     setIsConfigureOpen(false);
   };
 
-  // Function to handle running a model
+  // Функция для запуска базовой модели
   const handleRun = async () => {
+    if (!isBasic) return; // Запускать можно только базовые модели
     setLoading(true);
     try {
       const { defaultConfig } = model;
@@ -66,13 +70,17 @@ function ModelCard({ model, isLast, isBasic }) {
       );
       formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
 
-      await axiosInstance.post("/models/run", formData, {
+      const response = await axiosInstance.post("/models/run", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${authToken}`,
         },
       });
 
+      // Предполагаем, что в ответе приходит job_id запущенной модели
+      const { job_id } = response.data;
+
+      // Обновляем состояние или перенаправляем пользователя
       alert(
         'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
       );
@@ -83,6 +91,42 @@ function ModelCard({ model, isLast, isBasic }) {
       setLoading(false);
     }
   };
+
+  // Функция для остановки запущенной модели
+  const handleStop = async () => {
+    if (isBasic) return; // Останавливать можно только запущенные модели
+    setLoading(true);
+    try {
+      const params = {};
+      if (jobId) {
+        params.job_id = jobId;
+      } else {
+        alert("Идентификатор задачи отсутствует.");
+        setLoading(false);
+        return;
+      }
+
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      alert("Модель успешно остановлена.");
+      // Дополнительно можно обновить список запущенных моделей
+    } catch (error) {
+      console.error("Ошибка при остановке модели:", error);
+      alert("Произошла ошибка при остановке модели.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Определяем данные для отображения в зависимости от типа модели
+  const modelName = isBasic ? model.name : model.job_name || model.job_name;
+  const modelType = isBasic ? model.type : model.author;
+  const modelImage = isBasic ? model.imgURL : null;
 
   return (
     <>
@@ -104,85 +148,117 @@ function ModelCard({ model, isLast, isBasic }) {
         }}
         onClick={handleModelDialogOpen}
       >
-        <Grid item xs={6}>
+        <Grid item xs={isBasic ? 6 : 4}>
           <Typography
             sx={{ pl: 2, display: "flex", alignItems: "center", gap: "5px" }}
             variant="body1"
           >
-            <img width={26} height={26} src={model.imgURL} alt={model.name} />
-            {model.name}
+            {modelImage && (
+              <img width={26} height={26} src={modelImage} alt={modelName} />
+            )}
+            {modelName}
           </Typography>
         </Grid>
 
         <Grid item xs={2} sx={{ textAlign: "center" }}>
-          <Typography variant="body1">{model.type}</Typography>
+          <Typography variant="body1">{modelType}</Typography>
+        </Grid>
+        {!isBasic && (
+          <Grid item xs={2} sx={{ textAlign: "center" }}>
+            <Typography variant="body1">{model.url}</Typography>
+          </Grid>
+        )}
+        <Grid item xs={2} sx={{ textAlign: "center" }}>
+          {isBasic ? (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRun();
+              }}
+              disabled={loading}
+              variant="outlined"
+              sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+            >
+              Запустить
+              <RocketLaunchOutlinedIcon
+                sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
+              />
+            </Button>
+          ) : (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStop();
+              }}
+              disabled={loading}
+              variant="outlined"
+              sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+            >
+              Остановить
+              {/* Можно заменить иконку, если нужно */}
+              <RocketLaunchOutlinedIcon
+                sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
+              />
+            </Button>
+          )}
         </Grid>
         <Grid item xs={2} sx={{ textAlign: "center" }}>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation(); // Предотвращаем всплытие события
-              handleRun();
-            }}
-            disabled={loading}
-            variant="outlined"
-            sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
-          >
-            {isBasic ? "Запустить" : "Остановить"}
-            <RocketLaunchOutlinedIcon
-              sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
-            />
-          </Button>
-        </Grid>
-        <Grid item xs={2} sx={{ textAlign: "center" }}>
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation(); // Предотвращаем всплытие события
-              handleConfigureOpen();
-            }}
-          >
-            <MoreVertIcon />
-          </IconButton>
+          {isBasic && (
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConfigureOpen();
+              }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+          )}
+          {/* Если нужно добавить настройки для запущенных моделей, можно добавить условие */}
         </Grid>
       </Grid>
       {!isLast && <Divider sx={{ mb: 1 }} />}
 
-      {/* Модальное окно для просмотра модели */}
-      <ModelsDialog
-        open={isModelDialogOpen}
-        onClose={handleModelDialogClose}
-        model={model}
-      />
+      {/* Модальное окно для просмотра модели (только для базовых моделей) */}
+      {isBasic && (
+        <ModelsDialog
+          open={isModelDialogOpen}
+          onClose={handleModelDialogClose}
+          model={model}
+        />
+      )}
 
-      {/* Модальное окно для настройки модели */}
-      <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            pr: 2,
-            maxHeight: "95vh",
-            overflowY: "hidden",
-            borderRadius: 3,
-            outline: "none",
-          }}
-        >
-          <Button
-            sx={{ position: "absolute", left: 1, top: 12 }}
-            onClick={handleConfigureClose}
+      {/* Модальное окно для настройки модели (только для базовых моделей) */}
+      {isBasic && (
+        <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              pr: 2,
+              maxHeight: "95vh",
+              overflowY: "hidden",
+              borderRadius: 3,
+              outline: "none",
+            }}
           >
-            <CloseIcon />
-          </Button>
-          <ConfigureModelForm
-            initialConfig={model.defaultConfig}
-            onClose={handleConfigureClose}
-          />
-        </Box>
-      </Modal>
+            <Button
+              sx={{ position: "absolute", left: 1, top: 12 }}
+              onClick={handleConfigureClose}
+            >
+              <CloseIcon />
+            </Button>
+            <ConfigureModelForm
+              initialConfig={model.defaultConfig}
+              onClose={handleConfigureClose}
+            />
+          </Box>
+        </Modal>
+      )}
     </>
   );
 }

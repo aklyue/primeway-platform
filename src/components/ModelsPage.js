@@ -10,11 +10,15 @@ import axiosInstance from "../api";
 import { OrganizationContext } from "./Organization/OrganizationContext";
 
 function ModelsPage() {
-  // Состояния для запущенных моделей
+  // **Состояния**
   const [launchedModels, setLaunchedModels] = useState([]);
+  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+
+  // **Контексты**
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
 
+  // **Получение запущенных моделей**
   useEffect(() => {
     const fetchLaunchedModels = async () => {
       if (currentOrganization && authToken) {
@@ -41,8 +45,7 @@ function ModelsPage() {
     fetchLaunchedModels();
   }, [currentOrganization, authToken]);
 
-  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-
+  // **Обработчики открытия и закрытия модального окна настройки**
   const handleConfigureOpen = () => {
     setIsConfigureOpen(true);
   };
@@ -53,6 +56,7 @@ function ModelsPage() {
 
   return (
     <Box sx={{ p: 3, height: "100vh", boxSizing: "border-box" }}>
+      {/* **Заголовок страницы и кнопка добавления модели** */}
       <Box
         sx={{
           display: "flex",
@@ -75,7 +79,7 @@ function ModelsPage() {
         </Button>
       </Box>
 
-      {/* Модальное окно для настройки новой модели */}
+      {/* **Модальное окно для настройки новой модели** */}
       <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
         <Box
           sx={{
@@ -103,19 +107,22 @@ function ModelsPage() {
         </Box>
       </Modal>
 
-      {/* Контейнер для двух секций */}
+      {/* **Контейнер для двух секций** */}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           height: `calc(100% - 80px)`, // Подгоните 80px под высоту вашего заголовка и отступов
+          minHeight: 0,
         }}
       >
-        {/* Верхняя секция - "Запущенные модели" */}
+        {/* **Верхняя секция - "Запущенные модели"** */}
         <Box
           sx={{
-            overflowY: "auto",
-            maxHeight: "50%",
+            flex: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
           }}
         >
           <Typography variant="h5" gutterBottom>
@@ -127,61 +134,78 @@ function ModelsPage() {
               border: "2px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
               pt: 2,
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              minHeight: 0,
+              maxHeight: "90%",
             }}
           >
+            {/* **Заголовки колонок** */}
             <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={4}>
-                <Typography variant="subtitle1" fontWeight="bold">
+              <Grid item xs={3}>
+                <Typography variant="subtitle2" fontWeight="bold">
                   Название
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  Автор
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Дата создания
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Состояние
+                </Typography>
+              </Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
                   URL
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
                   Действие
-                </Typography>
-              </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  Настройки
                 </Typography>
               </Grid>
             </Grid>
 
             <Divider sx={{ my: 1 }} />
 
-            {/* Список "Запущенных моделей" */}
-            {launchedModels.length > 0 ? (
-              launchedModels.map((model, index) => (
-                <ModelCard
-                  key={model.job_id || index}
-                  model={model}
-                  isLast={index === launchedModels.length - 1}
-                  isBasic={false} // Запущенные модели не базовые
-                />
-              ))
-            ) : (
-              <Typography align="center" sx={{ mt: 2, mb: 2 }}>
-                Нет запущенных моделей.
-              </Typography>
-            )}
+            {/* **Область с прокруткой** */}
+            <Box
+              sx={{
+                overflowY: "auto",
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              {/* **Список "Запущенных моделей"** */}
+              {launchedModels.length > 0 ? (
+                launchedModels.map((model, index) => (
+                  <ModelCard
+                    key={model.job_id || index}
+                    model={model}
+                    isLast={index === launchedModels.length - 1}
+                    isBasic={false} // Запущенные модели не базовые
+                  />
+                ))
+              ) : (
+                <Typography align="center" sx={{ mt: 2, mb: 2 }}>
+                  Нет запущенных моделей.
+                </Typography>
+              )}
+            </Box>
           </Box>
         </Box>
 
-        {/* Нижняя секция - "Базовые модели" */}
+        {/* **Нижняя секция - "Базовые модели"** */}
         <Box
           sx={{
-            overflowY: "auto",
-            maxHeight: "50%",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
             mt: 4,
           }}
         >
@@ -194,42 +218,51 @@ function ModelsPage() {
               border: "2px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
               pt: 2,
+              display: "flex",
+              flexDirection: "column",
+
+              minHeight: 0,
             }}
           >
+            {/* **Заголовки колонок** */}
             <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
               <Grid item xs={6}>
-                <Typography variant="subtitle1" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight="bold">
                   Название
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
+              <Grid item xs={4} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
                   Тип модели
                 </Typography>
               </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
                   Действие
-                </Typography>
-              </Grid>
-              <Grid sx={{ textAlign: "center" }} item xs={2}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  Настройки
                 </Typography>
               </Grid>
             </Grid>
 
             <Divider sx={{ my: 1 }} />
 
-            {/* Список "Базовых моделей" */}
-            {modelsData.map((model, index) => (
-              <ModelCard
-                key={model.id || index}
-                model={model}
-                isLast={index === modelsData.length - 1}
-                isBasic={true} // Базовые модели
-              />
-            ))}
+            {/* **Область с прокруткой** */}
+            <Box
+              sx={{
+                overflowY: "auto",
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              {/* **Список "Базовых моделей"** */}
+              {modelsData.map((model, index) => (
+                <ModelCard
+                  key={model.id || index}
+                  model={model}
+                  isLast={index === modelsData.length - 1}
+                  isBasic={true} // Базовые модели
+                />
+              ))}
+            </Box>
           </Box>
         </Box>
       </Box>

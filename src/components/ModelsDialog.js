@@ -11,19 +11,35 @@ import {
   Tooltip,
   Snackbar,
   Alert,
-  TextField,
   Divider,
-  Stack,
-  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { format, parseISO, isValid } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import axiosInstance from "../api"; // Предполагается, что у вас есть axiosInstance для запросов
+import axiosInstance from "../api";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import ConfigureModelForm from "./ConfigureModelForm";
-import { useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
+import {
+  PlayCircleFilled as PlayCircleFilledIcon,
+  Stop as StopIcon,
+} from "@mui/icons-material";
+import JobEvents from "./Tasks/JobEvents";
+
+const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
+  transition: "all 0.2s ease",
+  "&:hover": {
+    transform: "scale(1.1)",
+    backgroundColor:
+      colorvariant === "error"
+        ? theme.palette.error.light
+        : theme.palette.success.light,
+  },
+  "&.Mui-disabled": {
+    opacity: 0.5,
+    transform: "none",
+  },
+}));
 
 function ModelsDialog({ open, onClose, model }) {
   // Состояния
@@ -33,11 +49,12 @@ function ModelsDialog({ open, onClose, model }) {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("config");
+  const [activeTab, setActiveTab] = useState("events");
+  const [modelStatus, setModelStatus] = useState(
+    model.health_status || "running"
+  );
 
-  const theme = useTheme();
-
-  // Функция для форматирования даты и времени (при необходимости)
+  // Функция для форматирования даты и времени
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "N/A";
     try {
@@ -56,27 +73,18 @@ function ModelsDialog({ open, onClose, model }) {
     setAlertOpen(true);
   };
 
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    showAlert("Скопировано в буфер обмена.");
+  };
+
   // Получение деталей модели при открытии диалогового окна
   useEffect(() => {
     if (open && model) {
       setConfigLoading(true);
-      // Например, если у вас есть API для получения деталей модели
-      // axiosInstance.get(`/models/${model.id}`)
-      //   .then(response => {
-      //     setModelDetails(response.data);
-      //     setConfig(JSON.stringify(response.data.defaultConfig, null, 2));
-      //   })
-      //   .catch(error => {
-      //     console.error("Ошибка при получении деталей модели:", error);
-      //     showAlert("Ошибка при загрузке деталей модели.", "error");
-      //   })
-      //   .finally(() => {
-      //     setConfigLoading(false);
-      //   });
-
-      // Для примера используем данные из переданного объекта model
       setModelDetails(model);
       setConfig(JSON.stringify(model.defaultConfig, null, 2));
+      setModelStatus(model.health_status || "running");
       setConfigLoading(false);
     } else {
       setModelDetails(null);
@@ -89,10 +97,31 @@ function ModelsDialog({ open, onClose, model }) {
     setAlertOpen(false);
   };
 
-  // Обработка запуска модели (если требуется)
-  const handleRunModel = async () => {
-    // Здесь вы можете реализовать запуск модели
-    showAlert("Модель успешно запущена.", "success");
+  const handleStartModel = async () => {
+    try {
+      await axiosInstance.post("/jobs/job-start", null, {
+        params: { job_id: model.job_id },
+      });
+      showAlert("Модель успешно запущена.", "success");
+      setModelStatus("running");
+    } catch (error) {
+      console.error("Ошибка при запуске модели:", error);
+      showAlert("Ошибка при запуске модели.", "error");
+    }
+  };
+
+  const handleStopModel = async () => {
+    console.log();
+    try {
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params: { job_id: model.job_id },
+      });
+      showAlert("Модель успешно остановлена.", "success");
+      setModelStatus("stopped");
+    } catch (error) {
+      console.error("Ошибка при остановке модели:", error);
+      showAlert("Ошибка при остановке модели.", "error");
+    }
   };
 
   if (!model) {
@@ -118,20 +147,20 @@ function ModelsDialog({ open, onClose, model }) {
           sx={{
             p: 2,
             display: "flex",
-
+            justifyContent: "space-between",
             alignItems: "center",
             position: "relative",
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            {model.name}
+            {model.job_name}
           </Typography>
           <Box
             sx={{
               height: "2px",
               flexGrow: 1,
               minWidth: "3px",
-              maxWidth: "200px",
+              maxWidth: "230px",
               borderRadius: "5px",
               ml: 1,
               mr: 1,
@@ -140,16 +169,97 @@ function ModelsDialog({ open, onClose, model }) {
           />
           <Box>
             <Typography variant="body1">
-              <strong>21.04.2025 15:46:58</strong>
+              <strong>{model.created_at}</strong>
             </Typography>
           </Box>
+          <Box
+            sx={{
+              height: "2px",
+              flexGrow: 1,
+              minWidth: "3px",
+              maxWidth: "230px",
+              borderRadius: "5px",
+              ml: 1,
+              mr: 1,
+              bgcolor: "black",
+            }}
+          />
+          {model.job_url && (
+            <Tooltip title="Скопировать URL">
+              <Typography
+                variant="body2"
+                sx={{
+                  marginLeft: 2,
+                  padding: "3px 8px",
+                  borderRadius: "12px",
+                  border: "1px solid #5282ff",
+                  backgroundColor: "none",
+                  color: "secondary.main",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  "&:hover": {
+                    backgroundColor: "#8fa8ea",
+                    color: "white",
+                  },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopy(model.job_url);
+                }}
+              >
+                {model.job_url}
+              </Typography>
+            </Tooltip>
+          )}
 
-          <IconButton
-            sx={{ position: "absolute", right: 8, top: 10 }}
-            onClick={onClose}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
           >
-            <CloseIcon />
-          </IconButton>
+            <Tooltip title="Запустить модель">
+              <span>
+                <ActionIconButton
+                  onClick={handleStartModel}
+                  colorvariant="success"
+                  size="small"
+                  disabled={modelStatus === "running"}
+                  aria-label="Запустить модель"
+                >
+                  <PlayCircleFilledIcon
+                    sx={{
+                      color:
+                        modelStatus === "running"
+                          ? "text.disabled"
+                          : "success.main",
+                    }}
+                  />
+                </ActionIconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Остановить модель">
+              <span>
+                <ActionIconButton
+                  onClick={handleStopModel}
+                  colorvariant="error"
+                  size="small"
+                  disabled={modelStatus !== "running"}
+                  aria-label="Остановить модель"
+                >
+                  <StopIcon
+                    sx={{
+                      color:
+                        modelStatus === "running"
+                          ? "error.main"
+                          : "text.disabled",
+                    }}
+                  />
+                </ActionIconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
 
         <Divider />
@@ -182,16 +292,16 @@ function ModelsDialog({ open, onClose, model }) {
                 <Box>
                   {/* Отображение деталей модели */}
                   <Typography variant="subtitle1">
-                    <strong>ID:</strong> {model.id}
+                    <strong>ID:</strong> {model.job_id}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Название:</strong> {model.name}
+                    <strong>Название:</strong> {model.job_name}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Тип:</strong> {model.type}
+                    <strong>Тип:</strong> {model.gpu_type?.type || "N/A"}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Описание:</strong> {model.description}
+                    <strong>Статус:</strong> {modelStatus}
                   </Typography>
                   {/* Дополнительные параметры модели */}
                 </Box>
@@ -205,7 +315,6 @@ function ModelsDialog({ open, onClose, model }) {
             <Box sx={{ flex: 1, ml: 2, overflow: "auto" }}>
               <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                 <Button
-                  data-testid="tab-schedule"
                   variant={"outlined"}
                   onClick={() => setActiveTab("schedule")}
                   sx={{
@@ -280,21 +389,13 @@ function ModelsDialog({ open, onClose, model }) {
                   )}
                 </Box>
               )}
-              {activeTab === "events" && "<JobEvents />"}
+              {activeTab === "events" && <JobEvents jobId={model.job_id} />}
             </Box>
           </Box>
         </DialogContent>
 
         <DialogActions>
           <Button onClick={onClose}>Закрыть</Button>
-          <Button
-            onClick={handleRunModel}
-            variant="contained"
-            color="primary"
-            sx={{ color: "white", padding: "8px 16px" }}
-          >
-            Запустить модель
-          </Button>
         </DialogActions>
       </Dialog>
 

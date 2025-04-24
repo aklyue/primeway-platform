@@ -12,24 +12,49 @@ import ConfigureModelForm from "./ConfigureModelForm";
 import { AuthContext } from "../AuthContext";
 import axiosInstance from "../api";
 import { OrganizationContext } from "./Organization/OrganizationContext";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CloseIcon from "@mui/icons-material/Close";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ModelsDialog from "./ModelsDialog";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+// Импорт SVG как React-компонентов
+import { ReactComponent as DeepSeek } from "../assets/deepseek-color.svg";
+import { ReactComponent as Google } from "../assets/gemma-color.svg";
+import { ReactComponent as HuggingFace } from "../assets/huggingface-color.svg";
 
 function ModelCard({ model, isLast, isBasic }) {
+  // **Контексты**
   const { authToken } = useContext(AuthContext);
-  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { currentOrganization } = useContext(OrganizationContext);
 
-  // Если модель базовая, то она не запущена
-  // Если модель запущенная, то она уже запущена и у нее есть jobId
+  // **Состояния**
+  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+  const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // **Переменные модели**
   const isLaunched = !isBasic;
   const jobId = isLaunched ? model.job_id : null;
 
-  const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
+  const modelName = isBasic ? model.name : model.job_name || "N/A";
+  const modelType = isBasic ? model.type : model.author || "N/A";
 
+  // Получаем имя модели в нижнем регистре
+  const modelNameImg = (model.name || model.job_name || "")
+    .toLowerCase()
+    .trim();
+
+  // Определяем компонент изображения модели в зависимости от названия
+  let ModelImageComponent;
+  if (modelNameImg.includes("deepseek")) {
+    ModelImageComponent = DeepSeek;
+  } else if (modelNameImg.includes("google")) {
+    ModelImageComponent = Google;
+  } else {
+    ModelImageComponent = HuggingFace;
+  }
+
+  // **Обработчики открытия и закрытия модальных окон**
   const handleModelDialogOpen = () => {
     setIsModelDialogOpen(true);
   };
@@ -46,28 +71,29 @@ function ModelCard({ model, isLast, isBasic }) {
     setIsConfigureOpen(false);
   };
 
-  // Функция для запуска базовой модели
+  // **Функция запуска базовой модели**
   const handleRun = async () => {
     if (!isBasic) return; // Запускать можно только базовые модели
     setLoading(true);
+
     try {
       const { defaultConfig } = model;
+
+      const vllmConfig = {
+        model: defaultConfig.modelName,
+        args: defaultConfig.args.reduce(
+          (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
+          {}
+        ),
+        flags: defaultConfig.flags.reduce(
+          (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
+          {}
+        ),
+      };
+
       const formData = new FormData();
       formData.append("organization_id", currentOrganization?.id || "");
-      formData.append(
-        "vllm_config_str",
-        JSON.stringify({
-          model: defaultConfig.modelName,
-          args: defaultConfig.args.reduce(
-            (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
-            {}
-          ),
-          flags: defaultConfig.flags.reduce(
-            (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
-            {}
-          ),
-        })
-      );
+      formData.append("vllm_config_str", JSON.stringify(vllmConfig));
       formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
 
       const response = await axiosInstance.post("/models/run", formData, {
@@ -77,44 +103,37 @@ function ModelCard({ model, isLast, isBasic }) {
         },
       });
 
-      // Предполагаем, что в ответе приходит job_id запущенной модели
       const { job_id } = response.data;
 
-      // Обновляем состояние или перенаправляем пользователя
       alert(
         'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
       );
     } catch (error) {
-      console.error(error);
+      console.error("Ошибка при запуске модели:", error);
       alert("Произошла ошибка при запуске модели.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Функция для остановки запущенной модели
+  // **Функция остановки запущенной модели**
   const handleStop = async () => {
     if (isBasic) return; // Останавливать можно только запущенные модели
     setLoading(true);
+
     try {
-      const params = {};
-      if (jobId) {
-        params.job_id = jobId;
-      } else {
+      if (!jobId) {
         alert("Идентификатор задачи отсутствует.");
         setLoading(false);
         return;
       }
 
       await axiosInstance.post("/jobs/job-stop", null, {
-        params,
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       alert("Модель успешно остановлена.");
-      // Дополнительно можно обновить список запущенных моделей
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
       alert("Произошла ошибка при остановке модели.");
@@ -122,11 +141,6 @@ function ModelCard({ model, isLast, isBasic }) {
       setLoading(false);
     }
   };
-
-  // Определяем данные для отображения в зависимости от типа модели
-  const modelName = isBasic ? model.name : model.job_name || model.job_name;
-  const modelType = isBasic ? model.type : model.author;
-  const modelImage = isBasic ? model.imgURL : null;
 
   return (
     <>
@@ -142,92 +156,105 @@ function ModelCard({ model, isLast, isBasic }) {
           "&:hover": {
             background: "rgba(0, 0, 0, 0.05)",
             borderBottomLeftRadius: isLast ? "24px" : "",
-            borderEndEndRadius: isLast ? "16px" : "",
+            borderBottomRightRadius: isLast ? "16px" : "",
           },
           overflow: "hidden",
         }}
-        onClick={handleModelDialogOpen}
+        onClick={isBasic ? handleConfigureOpen : handleModelDialogOpen}
       >
-        <Grid item xs={isBasic ? 6 : 4}>
+        {/* **Название модели** */}
+        <Grid item xs={isBasic ? 6 : 3}>
           <Typography
             sx={{ pl: 2, display: "flex", alignItems: "center", gap: "5px" }}
-            variant="body1"
+            variant="body2"
           >
-            {modelImage && (
-              <img width={26} height={26} src={modelImage} alt={modelName} />
+            {ModelImageComponent && (
+              <ModelImageComponent width={26} height={26} alt={modelName} />
             )}
             {modelName}
           </Typography>
         </Grid>
 
-        <Grid item xs={2} sx={{ textAlign: "center" }}>
-          <Typography variant="body1">{modelType}</Typography>
-        </Grid>
-        {!isBasic && (
-          <Grid item xs={2} sx={{ textAlign: "center" }}>
-            <Typography variant="body1">{model.url}</Typography>
-          </Grid>
+        {isBasic ? (
+          // **Базовые модели**
+          <>
+            {/* **Тип модели** */}
+            <Grid item xs={4} sx={{ textAlign: "center" }}>
+              <Typography variant="body2">{modelType}</Typography>
+            </Grid>
+
+            {/* **Действие (Кнопка запуска)** */}
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRun();
+                }}
+                disabled={loading}
+                variant="outlined"
+                sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+              >
+                Запустить
+                <RocketLaunchOutlinedIcon
+                  sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
+                />
+              </Button>
+            </Grid>
+          </>
+        ) : (
+          // **Запущенные модели**
+          <>
+            {/* **Дата создания** */}
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Typography variant="body2">
+                {model.created_at || "N/A"}
+              </Typography>
+            </Grid>
+
+            {/* **Состояние** */}
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Typography variant="body2">
+                {model.last_execution_status || "N/A"}
+              </Typography>
+            </Grid>
+
+            {/* **URL** */}
+            <Grid item xs={3} sx={{ textAlign: "center" }}>
+              <Typography variant="body2">{model.job_url || "N/A"}</Typography>
+            </Grid>
+
+            {/* **Действие (Кнопка остановки)** */}
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStop();
+                }}
+                disabled={loading}
+                variant="outlined"
+                sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+              >
+                Остановить
+                <RocketLaunchOutlinedIcon
+                  sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
+                />
+              </Button>
+            </Grid>
+          </>
         )}
-        <Grid item xs={2} sx={{ textAlign: "center" }}>
-          {isBasic ? (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRun();
-              }}
-              disabled={loading}
-              variant="outlined"
-              sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
-            >
-              Запустить
-              <RocketLaunchOutlinedIcon
-                sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
-              />
-            </Button>
-          ) : (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStop();
-              }}
-              disabled={loading}
-              variant="outlined"
-              sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
-            >
-              Остановить
-              {/* Можно заменить иконку, если нужно */}
-              <RocketLaunchOutlinedIcon
-                sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
-              />
-            </Button>
-          )}
-        </Grid>
-        <Grid item xs={2} sx={{ textAlign: "center" }}>
-          {isBasic && (
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                handleConfigureOpen();
-              }}
-            >
-              <MoreVertIcon />
-            </IconButton>
-          )}
-          {/* Если нужно добавить настройки для запущенных моделей, можно добавить условие */}
-        </Grid>
       </Grid>
+
       {!isLast && <Divider sx={{ mb: 1 }} />}
 
-      {/* Модальное окно для просмотра модели (только для базовых моделей) */}
-      {isBasic && (
-        <ModelsDialog
-          open={isModelDialogOpen}
-          onClose={handleModelDialogClose}
-          model={model}
-        />
-      )}
+      {/* **Модальное окно с деталями модели** */}
+      <ModelsDialog
+        open={isModelDialogOpen}
+        onClose={handleModelDialogClose}
+        model={model}
+        isBasic={isBasic}
+      />
 
-      {/* Модальное окно для настройки модели (только для базовых моделей) */}
+      {/* **Модальное окно настройки модели (только для базовых моделей)** */}
       {isBasic && (
         <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
           <Box

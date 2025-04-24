@@ -88,12 +88,12 @@ let theme = createTheme({
       },
     },
     body2: {
-      fontSize: "14px",
+      fontSize: "13px",
       fontWeight: 400,
       lineHeight: "20px",
       color: "#202123",
       [createTheme().breakpoints.down("sm")]: {
-        fontSize: "12px",
+        fontSize: "11px",
       },
     },
     button: {

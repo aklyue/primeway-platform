@@ -55,30 +55,7 @@ function ModelsPage() {
   };
 
   return (
-    <Box sx={{ p: 3, height: "100vh", boxSizing: "border-box" }}>
-      {/* **Заголовок страницы и кнопка добавления модели** */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h4" gutterBottom>
-          Доступные Модели
-        </Typography>
-        <Button
-          onClick={handleConfigureOpen}
-          variant="contained"
-          color="primary"
-          sx={{ color: "white", padding: "8px 16px" }}
-        >
-          Добавить модель
-          <AddIcon sx={{ color: "#FFFFFF", fontSize: "20px", ml: 0.5 }} />
-        </Button>
-      </Box>
-
+    <Box sx={{ boxSizing: "border-box" }}>
       {/* **Модальное окно для настройки новой модели** */}
       <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
         <Box
@@ -112,14 +89,14 @@ function ModelsPage() {
         sx={{
           display: "flex",
           flexDirection: "column",
-          height: `calc(100% - 80px)`, // Подгоните 80px под высоту вашего заголовка и отступов
+
           minHeight: 0,
         }}
       >
         {/* **Верхняя секция - "Запущенные модели"** */}
         <Box
           sx={{
-            flex: 1.5,
+            maxHeight: "50vh",
             display: "flex",
             flexDirection: "column",
             minHeight: 0,
@@ -176,7 +153,7 @@ function ModelsPage() {
             <Box
               sx={{
                 overflowY: "auto",
-                flex: 1,
+
                 minHeight: 0,
               }}
             >
@@ -202,16 +179,34 @@ function ModelsPage() {
         {/* **Нижняя секция - "Базовые модели"** */}
         <Box
           sx={{
-            flex: 1,
+            maxHeight: "40vh",
             display: "flex",
             flexDirection: "column",
             minHeight: 0,
-            mt: 4,
+            mt: 3,
           }}
         >
-          <Typography variant="h5" gutterBottom>
-            Базовые модели
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 1,
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Базовые модели
+            </Typography>
+            <Button
+              onClick={handleConfigureOpen}
+              variant="contained"
+              color="primary"
+              sx={{ color: "white", padding: "8px 16px" }}
+            >
+              Добавить модель
+              <AddIcon sx={{ color: "#FFFFFF", fontSize: "20px", ml: 0.5 }} />
+            </Button>
+          </Box>
 
           <Box
             sx={{
@@ -249,7 +244,7 @@ function ModelsPage() {
             <Box
               sx={{
                 overflowY: "auto",
-                flex: 1,
+
                 minHeight: 0,
               }}
             >

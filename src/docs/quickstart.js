@@ -155,21 +155,6 @@ const Quickstart = () => {
 
         {/* Шаг 3 */}
         <h2 id="step-3">Шаг 3: Приобретите кредиты</h2>
-        <div
-          style={{
-            padding: "15px 5px",
-            borderRadius: "10px",
-            backgroundColor: "rgba(249, 115, 22, .08)",
-            display: "flex",
-            alignItems: "center",
-            fontSize: "16px",
-            gap: "5px",
-          }}
-        >
-          <ErrorOutlineIcon />
-          <strong>Примечание</strong>: если вы только начинаете работу, у вас
-          есть грантовые кредиты
-        </div>
         <p>
           <strong>Перейдите в раздел платежей:</strong> Зайдите в свой кошелек.
         </p>
@@ -288,30 +273,52 @@ const Quickstart = () => {
         </p>
         <h3>Пример файла конфигурации для обучающей задачи</h3>
         <CodeBlock
-          code={`primeway_api_token: ВАШ_API_КЛЮЧ  # Включите эту строку, если не используете \`.env\` файл или переменную окружения
+          code={`# Обязательные поля
+        docker_image: python:3.10-slim
 
-docker_image: python:3.10-slim
-job_name: train_sklearn_model
-job_type: run
-context: .  # Директория с вашим кодом
-command: ["python", "train.py"]
-request_input_dir: /custom-data
-disk_space: 25
-gpu_types:
-  - type: RTX 2000 Ada
-    count: 1
-requirements:
-  - numpy
-  - joblib
-  - scikit-learn
-  - pandas
-ignore_patterns:
-  - '*.pyc'
-  - __pycache__
-  - venv
-  - build
-  - primeway
-  - '*.egg-info'`}
+        job_name: train_sklearn_model
+
+        job_type: run
+
+        # Опциональные поля
+        primeway_api_token: YOUR_API_KEY  # Включите эту строку, если не используете файл .env или переменную окружения
+
+        context: .  # Директория с вашим кодом
+
+        command: ["python", "train.py"]
+
+        request_input_dir: /custom-data
+
+        disk_space: 25  # в ГБ
+
+        gpu_types:
+          - type: NVIDIA A100
+            count: 1
+
+        env:
+          - name: ENVIRONMENT
+            value: production
+
+        requirements:
+          - numpy
+          - joblib
+          - scikit-learn
+          - pandas
+
+        apt_packages:
+          - libssl-dev
+          - libffi-dev
+
+        ignore_patterns:
+          - '*.pyc'
+          - __pycache__
+          - venv
+          - build
+          - primeway
+          - '*.egg-info'
+
+        job_timeout: 7200  # Таймаут задачи в секундах (2 часа)
+        `}
           language="yaml"
         />
         <p>
@@ -319,31 +326,25 @@ ignore_patterns:
         </p>
         <ul>
           <li>
-            <code>primeway_api_token</code>: Ваш API-ключ (включайте только,
-            если не используете <code>.env</code> или переменную окружения).
-          </li>
-          <li>
-            <code>docker_image</code>: Базовый образ Docker; PrimeWay
-            позаботится об остальном.
+            <code>docker_image</code>: Базовый Docker-образ; PrimeWay позаботится об остальном.
           </li>
           <li>
             <code>job_name</code>: Уникальное имя для вашей задачи.
           </li>
           <li>
-            <code>job_type</code>: Используйте <code>run</code> для одноразовых
-            задач или <code>deploy</code> для постоянных сервисов.
+            <code>job_type</code>: Используйте <code>run</code> для одноразовых задач или <code>deploy</code> для постоянных сервисов.
           </li>
           <li>
-            <code>context</code>: Путь к вашему коду (например, <code>.</code>{" "}
-            для текущей директории - относительно файла конфигурации).
+            <code>primeway_api_token</code>: Ваш API-ключ (включайте только, если не используете файл <code>.env</code> или переменную окружения).
           </li>
           <li>
-            <code>command</code>: Команда, которую необходимо выполнить внутри
-            контейнера.
+            <code>context</code>: Путь к вашему коду (например, <code>.</code> для текущей директории - относительно файла конфигурации).
           </li>
           <li>
-            <code>request_input_dir</code>: Директория внутри контейнера, куда
-            будут помещены входные данные.
+            <code>command</code>: Команда, которую необходимо выполнить внутри контейнера.
+          </li>
+          <li>
+            <code>request_input_dir</code>: Директория внутри контейнера, куда будут помещены входные данные.
           </li>
           <li>
             <code>disk_space</code>: Объём дискового пространства (в ГБ).
@@ -352,12 +353,19 @@ ignore_patterns:
             <code>gpu_types</code>: Список типов GPU и их количество.
           </li>
           <li>
-            <code>requirements</code>: Список Python-пакетов, необходимых вашему
-            приложению.
+            <code>env</code>: Переменные окружения для вашей задачи.
           </li>
           <li>
-            <code>ignore_patterns</code>: Шаблоны файлов, которые нужно
-            исключить при загрузке.
+            <code>requirements</code>: Список Python-пакетов, необходимых вашему приложению.
+          </li>
+          <li>
+            <code>apt_packages</code>: Список системных пакетов для установки через <code>apt-get</code>.
+          </li>
+          <li>
+            <code>ignore_patterns</code>: Шаблоны файлов, которые нужно исключить при загрузке.
+          </li>
+          <li>
+            <code>job_timeout</code>: Максимальное время выполнения задачи в секундах.
           </li>
         </ul>
 

@@ -5,9 +5,6 @@ import {
   Box,
   IconButton,
   Tooltip,
-  List,
-  ListItem,
-  ListItemText,
   Typography,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -58,15 +55,17 @@ const Configuration = () => {
     { id: "creating-a-job", label: "Создание задачи" },
     { id: "running-a-job", label: "Запуск задачи" },
     {
+      id: "configuration-options",
+      label: "Опции конфигурации",
+    },
+    {
       id: "example-deploy-job-configuration",
       label: "Пример конфигурации Deploy-задачи",
     },
-    {
-      id: "using-args-vs-entry_script-vs-command",
-      label: "Использование args, entry_script и command",
-    },
     { id: "environment-variables", label: "Переменные окружения" },
     { id: "managing-dependencies", label: "Управление зависимостями" },
+    { id: "gpu-resources", label: "GPU-ресурсы" },
+    { id: "scheduling-and-timeouts", label: "Планирование и таймауты" },
   ];
 
   const theme = useTheme();
@@ -89,56 +88,47 @@ const Configuration = () => {
             <strong>Создайте конфигурационный файл:</strong> Напишите YAML-файл (например, <code>job_config.yaml</code>) с необходимыми полями.
           </p>
           <CodeBlock
-            code={`docker_image: python:3.9-slim
+            code={`# Обязательные поля
+docker_image: python:3.9-slim
 
 job_name: data-processing-job
 
-job_type: run
+job_type: run  # возможные значения: "run" или "deploy"
 
+# Опциональные поля
 primeway_api_token: YOUR_PRIMEWAY_API_TOKEN
 
-entry_script: main.py
+context: ./app  # путь к вашему проекту
 
-project_dir: ./app
-
-request_input_dir: /custom-data
+command: "python main.py"
 
 args: "--input /custom-data/data.csv"
 
-memory: 2
-
-disk_space: 10
-
-cpu_count: 2
+disk_space: 10  # в ГБ
 
 gpu_types:
-
   - type: NVIDIA A40
-
     count: 1
 
 env:
-
   - name: ENVIRONMENT
-
     value: production
 
 requirements:
-
   - pandas
-
   - numpy
 
 apt_packages:
-
   - libpq-dev
 
-timeout: 3600  # 1 час`}
+request_input_dir: /custom-data
+
+job_timeout: 3600  # Таймаут задачи в секундах`}
             language="yaml"
           />
 
           <p>
-            <strong>Подготовьте ваш проект:</strong> Убедитесь, что ваш <code>project_dir</code> содержит все необходимые скрипты.
+            <strong>Подготовьте ваш проект:</strong> Убедитесь, что директория, указанная в <code>context</code>, содержит все необходимые скрипты и файлы.
           </p>
         </section>
 
@@ -154,7 +144,7 @@ timeout: 3600  # 1 час`}
             language="bash"
           />
 
-          <p>Ответ:</p>
+          <p>Ответ при успешном создании:</p>
           <CodeBlock
             code={`{"job_id": "ewkljngp-weglngg-weklgn-wegnkln"}`}
             language="json"
@@ -170,14 +160,14 @@ timeout: 3600  # 1 час`}
           <ol>
             <li>Валидирует вашу конфигурацию.</li>
             <li>
-              Пакует и загружает ваш каталог проекта, если указан <code>project_dir</code>.
+              Пакует и загружает ваш проект, указанный в <code>context</code>, если он предоставлен.
             </li>
             <li>Запускает задачу на платформе PrimeWay.</li>
             <li>Предоставляет информацию о статусе выполнения задачи.</li>
           </ol>
 
           <p>
-            Как вы видите, задачу нужно создать только один раз, а затем вы можете использовать разные данные для её выполнения. Процесс сборки требуется только на этапе создания.
+            Обратите внимание, что задачу нужно создать только один раз. После создания вы можете запускать её с разными входными данными. Процесс загрузки проекта выполняется только при изменении содержимого директории <code>context</code>.
           </p>
 
           <h3>Опции CLI:</h3>
@@ -191,44 +181,100 @@ timeout: 3600  # 1 час`}
           </ul>
         </section>
 
+        {/* Секция: Опции конфигурации */}
+        <section id="configuration-options">
+          <h2>Опции конфигурации</h2>
+          <p>
+            Ниже перечислены все доступные опции конфигурации с пояснениями:
+          </p>
+          <ul>
+            <li>
+              <strong>docker_image</strong> (string, обязательное): Базовый Docker-образ для запуска вашей задачи.
+            </li>
+            <li>
+              <strong>job_name</strong> (string, обязательное): Уникальное имя для вашей задачи.
+            </li>
+            <li>
+              <strong>job_type</strong> (string, обязательное): Тип задачи. Возможные значения: <code>"run"</code> или <code>"deploy"</code>.
+            </li>
+            <li>
+              <strong>primeway_api_token</strong> (string, опционально): Ваш API-токен для доступа к платформе PrimeWay.
+            </li>
+            <li>
+              <strong>context</strong> (string, опционально): Путь к директории с вашим проектом. Если указан, содержимое директории будет загружено и использовано при выполнении задачи.
+            </li>
+            <li>
+              <strong>command</strong> (string или list, опционально): Команда для запуска внутри контейнера. Если не указана, используется команда по умолчанию из Docker-образа.
+            </li>
+            <li>
+              <strong>args</strong> (string или list, опционально): Аргументы для команды. Используется вместе с <code>command</code>.
+            </li>
+            <li>
+              <strong>disk_space</strong> (int, опционально): Требуемое дисковое пространство в гигабайтах.
+            </li>
+            <li>
+              <strong>gpu_types</strong> (list, опционально): Список GPU, необходимых для задачи. Каждый элемент содержит <code>type</code> и <code>count</code>.
+            </li>
+            <li>
+              <strong>job_timeout</strong> (int, опционально): Таймаут выполнения задачи в секундах.
+            </li>
+            <li>
+              <strong>request_input_dir</strong> (string, опционально): Директория внутри контейнера, куда будут смонтированы ваши входные данные.
+            </li>
+            <li>
+              <strong>port</strong> (int, опционально): Используется для задач типа <code>"deploy"</code>. Указывает на порт, который будет открыт для внешнего доступа.
+            </li>
+            <li>
+              <strong>env</strong> (list, опционально): Список переменных окружения для вашей задачи. Каждый элемент имеет <code>name</code> и <code>value</code>.
+            </li>
+            <li>
+              <strong>requirements</strong> (list, опционально): Список Python-пакетов для установки через <code>pip</code>.
+            </li>
+            <li>
+              <strong>apt_packages</strong> (list, опционально): Список системных пакетов для установки через <code>apt-get</code>.
+            </li>
+            <li>
+              <strong>health_endpoint</strong> (string, опционально): Используется для задач типа <code>"deploy"</code>. URL-эндпоинт для проверки состояния вашего сервиса.
+            </li>
+            <li>
+              <strong>schedule</strong> (object, опционально): Планировщик для периодического запуска задач. Поддерживает параметры cron.
+            </li>
+            <li>
+              <strong>autoscaler_timeout</strong> (int, опционально): Время бездействия в секундах, после которого сервис автоматически масштабируется до нуля.
+            </li>
+          </ul>
+        </section>
+
         {/* Секция: Пример конфигурации Deploy-задачи */}
         <section id="example-deploy-job-configuration">
           <h2>Пример конфигурации Deploy-задачи</h2>
           <CodeBlock
-            code={`docker_image: pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+            code={`# Обязательные поля
+docker_image: pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
 
 job_name: web-api-service
 
 job_type: deploy
 
+# Опциональные поля
 primeway_api_token: YOUR_PRIMEWAY_API_TOKEN
 
-project_dir: ./api_service
+context: ./api_service  # путь к вашему проекту
 
 command: "gunicorn app:app --bind 0.0.0.0:8000"
 
-memory: 2
-
-disk_space: 20
-
-cpu_count: 1
+disk_space: 20  # в ГБ
 
 gpu_types:
-
   - type: NVIDIA L40
-
     count: 1
 
 env:
-
   - name: ENV
-
     value: production
 
 requirements:
-
   - flask
-
   - gunicorn
 
 apt_packages: []
@@ -237,7 +283,7 @@ port: 8000
 
 health_endpoint: "/health"
 
-idle_timeout: 300  # 5 минут`}
+autoscaler_timeout: 300  # Автоматическое масштабирование при бездействии (в секундах)`}
             language="yaml"
           />
 
@@ -246,123 +292,123 @@ idle_timeout: 300  # 5 минут`}
           <h4>Особенности Deploy-задач:</h4>
           <ul>
             <li>
-              Параметры <code>port</code> и <code>health_endpoint</code> являются обязательными.
+              Параметры <code>port</code> и <code>health_endpoint</code> являются обязательными для задач типа <code>"deploy"</code>.
             </li>
             <li>
-              Параметр <code>idle_timeout</code> можно использовать для автоматического масштабирования сервиса при отсутствии активности.
+              Параметр <code>autoscaler_timeout</code> используется для автоматического масштабирования сервиса при отсутствии активности.
             </li>
           </ul>
 
           <h4>Пользовательская команда:</h4>
           <p>
-            Параметр <code>command</code> используется для запуска приложения с помощью Gunicorn.
+            Параметр <code>command</code> используется для запуска вашего веб-приложения. Убедитесь, что ваш сервис слушает на <code>0.0.0.0</code> и порту, указанном в параметре <code>port</code>.
           </p>
-        </section>
-
-        {/* Секция: Использование args, entry_script и command */}
-        <section id="using-args-vs-entry_script-vs-command">
-          <h3>Использование args, entry_script и command</h3>
-          <p>
-            <code>entry_script</code>: Укажите скрипт для выполнения внутри каталога вашего проекта.
-          </p>
-          <p>
-            <code>args</code>: Передайте аргументы скрипту, указанному в <code>entry_script</code>.
-          </p>
-          <p>
-            <code>command</code>: Переопределяет <code>entry_script</code> и <code>args</code> для запуска пользовательской команды. Используйте это, когда вам нужен полный контроль над командой выполнения.
-          </p>
-          <p>
-            <strong>Рекомендация:</strong> Используйте <code>args</code> для передачи параметров вашему скрипту для гибкости и повторного использования.
-          </p>
-
-          <h4>Пример:</h4>
-
-          <p>Использование <code>entry_script</code> и <code>args</code>:</p>
-          <CodeBlock
-            code={`entry_script: train.py
-
-args: --epochs 10 --batch_size 32`}
-            language="yaml"
-          />
-
-          <p>Использование <code>command</code>:</p>
-          <CodeBlock
-            code={`command: python train.py --epochs 10 --batch_size 32`}
-            language="bash"
-          />
         </section>
 
         {/* Секция: Переменные окружения */}
         <section id="environment-variables">
-          <h3>Переменные окружения</h3>
+          <h2>Переменные окружения</h2>
           <p>
-            <strong>Назначение:</strong> Храните конфигурационные значения или секреты без их жесткого кодирования.
+            <strong>Назначение:</strong> Храните конфигурационные значения или секреты без их жесткого кодирования в вашем приложении.
           </p>
           <p>
             <strong>Определение:</strong>
           </p>
           <CodeBlock
             code={`env:
-
   - name: API_KEY
-
     value: "your_api_key"
-
   - name: DEBUG
-
     value: "false"`}
             language="yaml"
           />
+          <p>
+            Эти переменные будут доступны внутри вашего контейнера при выполнении задачи.
+          </p>
         </section>
 
         {/* Секция: Управление зависимостями */}
         <section id="managing-dependencies">
-          <h3>Управление зависимостями</h3>
+          <h2>Управление зависимостями</h2>
           <p>
-            <strong>Python-пакеты:</strong> Используйте поле <code>requirements</code> для указания пакетов.
+            <strong>Python-пакеты:</strong> Используйте поле <code>requirements</code> для указания пакетов, которые должны быть установлены через <code>pip</code>.
           </p>
           <CodeBlock
             code={`requirements:
-
   - pandas
-
   - numpy
-
   - scikit-learn`}
             language="yaml"
           />
 
           <p>
-            <strong>Системные пакеты:</strong> Используйте <code>apt_packages</code> для системных зависимостей.
+            <strong>Системные пакеты:</strong> Используйте <code>apt_packages</code> для указания системных зависимостей, которые должны быть установлены через <code>apt-get</code>.
           </p>
           <CodeBlock
             code={`apt_packages:
-
   - libgl1-mesa-glx
-
   - libglib2.0-0`}
             language="yaml"
           />
+        </section>
 
+        {/* Секция: GPU-ресурсы */}
+        <section id="gpu-resources">
+          <h2>GPU-ресурсы</h2>
           <p>
-            <strong>GPU-ресурсы:</strong> Укажите GPU, если они необходимы.
+            Если ваша задача требует использования GPU, укажите необходимые ресурсы в поле <code>gpu_types</code>.
           </p>
           <CodeBlock
             code={`gpu_types:
-
-  - name: NVIDIA H100
-
+  - type: NVIDIA H100
     count: 8`}
             language="yaml"
           />
+          <p>
+            Доступные типы GPU могут быть разными. Свяжитесь с поддержкой для получения полного списка доступных GPU.
+          </p>
         </section>
+
+        {/* Секция: Планирование и таймауты */}
+        <section id="scheduling-and-timeouts">
+          <h2>Планирование и таймауты</h2>
+          <h3>Планирование задач</h3>
+          <p>
+            Вы можете настроить расписание для периодического запуска задач с помощью поля <code>schedule</code>.
+          </p>
+          <CodeBlock
+            code={`schedule:
+  cron: "0 * * * *"  # Ежечасный запуск`}
+            language="yaml"
+          />
+          <p>
+            Формат расписания основан на синтаксисе cron.
+          </p>
+
+          <h3>Таймауты</h3>
+          <ul>
+            <li>
+              <strong>job_timeout</strong>: Максимальное время выполнения задачи в секундах.
+            </li>
+            <li>
+              <strong>creation_timeout</strong>: Максимальное время ожидания для создания ресурсов.
+            </li>
+            <li>
+              <strong>health_check_timeout</strong>: Время ожидания успешного прохождения проверки здоровья для задач типа <code>"deploy"</code>.
+            </li>
+            <li>
+              <strong>autoscaler_timeout</strong>: Время бездействия в секундах, после которого сервис автоматически масштабируется до нуля.
+            </li>
+          </ul>
+        </section>
+
       </Box>
 
       {/* Правая колонка - Навигация Scrollspy */}
       {!isMobile && (
         <Box
           sx={{
-            width: "200px",
+            width: "250px",
             flexShrink: 0,
             position: "sticky",
             top: "40px",

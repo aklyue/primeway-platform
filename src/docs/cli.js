@@ -76,7 +76,7 @@ const CLI = () => {
           <p>
             Установите CLI PrimeWay:
           </p>
-          <CodeBlock code={`pip install primeway-cli`} language="bash" />
+          <CodeBlock code={`pip install primeway`} language="bash" />
           <p>
             Проверьте установку:
           </p>
@@ -106,7 +106,6 @@ const CLI = () => {
             <li><code>primeway create</code>: Создание новых задач или конвейеров.</li>
             <li><code>primeway run</code>: Выполнение задач или конвейеров.</li>
             <li><code>primeway job</code>: Управление отдельными задачами.</li>
-            <li><code>primeway pipeline</code>: Управление конвейерами.</li>
             <li><code>primeway stop</code>: Остановка выполняющихся задач.</li>
           </ul>
         </section>
@@ -132,21 +131,6 @@ const CLI = () => {
             <CodeBlock code={`primeway job artifacts JOB_ID --output-dir ./artifacts`} language="bash" />
             <p><strong>Остановить задачу:</strong></p>
             <CodeBlock code={`primeway stop job --job-id JOB_ID`} language="bash" />
-          </section>
-
-          {/* Команды конвейеров */}
-          <section id="pipeline-commands">
-            <h3>Команды конвейеров</h3>
-            <p><strong>Создать конвейер:</strong></p>
-            <CodeBlock code={`primeway create pipeline --config pipeline_config.yaml`} language="bash" />
-            <p><strong>Запустить конвейер:</strong></p>
-            <CodeBlock code={`primeway run pipeline PIPELINE_ID`} language="bash" />
-            <p><strong>Список конвейеров:</strong></p>
-            <CodeBlock code={`primeway pipeline list`} language="bash" />
-            <p><strong>Список выполнений конвейера:</strong></p>
-            <CodeBlock code={`primeway pipeline executions PIPELINE_ID`} language="bash" />
-            <p><strong>Получить детали выполнения конвейера:</strong></p>
-            <CodeBlock code={`primeway pipeline execution-info EXECUTION_ID`} language="bash" />
           </section>
         </section>
 

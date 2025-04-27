@@ -1,6 +1,6 @@
 // src/components/ModelsDialog.jsx
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
   Alert,
   Divider,
   DialogTitle,
+  Grid,
+  Paper,
 } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -25,13 +27,15 @@ import { styled } from "@mui/material/styles";
 import {
   PlayCircleFilled as PlayCircleFilledIcon,
   Stop as StopIcon,
+  ContentCopy as ContentCopyIcon,
+  BugReport as BugReportIcon,
 } from "@mui/icons-material";
 import JobEvents from "./Tasks/JobEvents";
 import { AuthContext } from "../AuthContext";
 
 // Импортируем модуль yaml
 import yaml from "js-yaml";
-import { OrganizationContext } from "./Organization/OrganizationContext";
+import TasksActions from "./Tasks/TasksActions"; // Импортируем TasksActions
 
 const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
   transition: "all 0.2s ease",
@@ -50,30 +54,36 @@ const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
 
 function ModelsDialog({ open, onClose, model }) {
   const { authToken } = useContext(AuthContext); // Получаем токен авторизации
-  const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию
 
   // Состояния
-  const [jobDetails, setJobDetails] = useState(); // Инициализируем с моделью
+  const [jobDetails, setJobDetails] = useState({ ...model });
   const [configLoading, setConfigLoading] = useState(true);
   const [config, setConfig] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("executions");
   const [jobStatus, setJobStatus] = useState(model.last_execution_status);
+  const [modelStatus, setModelStatus] = useState(model?.last_execution_status);
 
-  // **Состояния для логов**
+  // Состояния для выполнений
+  const [executions, setExecutions] = useState([]);
+  const [executionsLoading, setExecutionsLoading] = useState(true);
+  const [executionsError, setExecutionsError] = useState(null);
+  const initialExecutionsLoadRef = useRef(true);
+
+  // Состояния для логов
   const [logsModalOpen, setLogsModalOpen] = useState(false);
   const [currentLogs, setCurrentLogs] = useState("");
   const [logsLoading, setLogsLoading] = useState(false);
 
-  // **Состояния для расписания**
-  const [scheduleLoading, setScheduleLoading] = useState(false);
-  const [scheduleData, setScheduleData] = useState(null);
+  // Состояния для логов сборки
+  const [buildLogsModalOpen, setBuildLogsModalOpen] = useState(false);
+  const [buildLogsLoading, setBuildLogsLoading] = useState(false);
 
   const job_id = model.job_id;
 
-  // Функция для форматирования даты и времени
+  // Функция форматирования даты и времени
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "N/A";
     try {
@@ -97,59 +107,74 @@ function ModelsDialog({ open, onClose, model }) {
     showAlert("Скопировано в буфер обмена.");
   };
 
-  // Функция для загрузки деталей задачи из `/jobs/get-organization-jobs`
-  const fetchJobDetails = async () => {
-    if (!currentOrganization) {
-      console.error("Организация не выбрана.");
-      return;
+  // Функция для получения списка выполнений задачи
+  const fetchExecutions = async () => {
+    if (initialExecutionsLoadRef.current) {
+      setExecutionsLoading(true);
     }
-
+    setExecutionsError(null);
     try {
-      const response = await axiosInstance.get("/jobs/get-organization-jobs", {
-        params: {
-          organization_id: currentOrganization.id,
-          // Здесь можно добавить дополнительные параметры фильтрации, если необходимо
-        },
+      const response = await axiosInstance.get("/jobs/executions", {
+        params: { job_id },
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      const jobs = response.data;
+      const data = response.data || [];
 
-      const jobData = jobs.find((job) => job.job_id === job_id);
+      // Сортируем выполнения по дате создания в порядке убывания
+      const sortedData = data.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
 
-      if (jobData) {
-        setJobDetails(jobData);
-        setJobStatus(jobData.last_execution_status);
+      setExecutions(sortedData);
+
+      // Обновляем статус задачи на основе последнего выполнения
+      if (sortedData.length > 0) {
+        const latestExecution = sortedData[0];
+        setJobStatus(latestExecution.status);
       } else {
-        console.error("Задача не найдена в списке задач организации.");
-        showAlert("Задача не найдена в организации.", "error");
-        // Мы не сбрасываем jobDetails, чтобы сохранить исходные данные модели
+        setJobStatus("No executions found");
       }
     } catch (error) {
-      console.error("Ошибка при получении деталей задачи:", error);
-      showAlert("Ошибка при получении деталей задачи.", "error");
+      console.error("Ошибка при получении выполнений:", error);
+      setExecutionsError("Ошибка при загрузке выполнений");
+      showAlert("Ошибка при получении выполнений задачи.", "error");
+    } finally {
+      if (initialExecutionsLoadRef.current) {
+        setExecutionsLoading(false);
+        initialExecutionsLoadRef.current = false;
+      }
     }
   };
 
-  // Функция для загрузки расписания задачи
-  const fetchSchedule = async () => {
-    // Если вы не планируете использовать расписание сейчас, можно оставить функцию пустой
+  const handleStartModel = async () => {
+    try {
+      await axiosInstance.post("/jobs/job-start", null, {
+        params: { job_id: model.job_id },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      showAlert("Модель успешно запущена.", "success");
+      setModelStatus("running");
+    } catch (error) {
+      console.error("Ошибка при запуске модели:", error);
+      showAlert("Ошибка при запуске модели.", "error");
+    }
   };
 
-  // Получение деталей задачи, конфигурации и расписания при открытии диалогового окна
-  useEffect(() => {
-    if (open && job_id) {
-      setConfigLoading(true);
-      fetchJobDetails();
-      fetchConfig();
-      fetchSchedule(); // Вызываем функцию для загрузки расписания
-    } else {
-      // Мы не сбрасываем jobDetails, чтобы сохранить исходные данные модели
-      setConfig("");
-      setScheduleData(null);
+  const handleStopModel = async () => {
+    try {
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params: { job_id: model.job_id },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      showAlert("Модель успешно остановлена.", "success");
+      setModelStatus("stopped");
+    } catch (error) {
+      console.error("Ошибка при остановке модели:", error);
+      showAlert("Ошибка при остановке модели.", "error");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, job_id]);
+  };
 
+  // Функция для загрузки конфигурации
   const fetchConfig = async () => {
     setConfigLoading(true);
     try {
@@ -169,6 +194,17 @@ function ModelsDialog({ open, onClose, model }) {
     }
   };
 
+  // Получение данных при открытии диалога
+  useEffect(() => {
+    if (open && job_id) {
+      fetchExecutions();
+      fetchConfig();
+    } else {
+      setConfig("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, job_id]);
+
   // Обработка закрытия оповещения
   const handleAlertClose = () => {
     setAlertOpen(false);
@@ -182,58 +218,139 @@ function ModelsDialog({ open, onClose, model }) {
       });
       showAlert("Задача успешно запущена.", "success");
       setJobStatus("running");
+      fetchExecutions(); // Обновляем выполнения
     } catch (error) {
       console.error("Ошибка при запуске задачи:", error);
       showAlert("Ошибка при запуске задачи.", "error");
     }
   };
 
-  const handleStopJob = async () => {
+  const handleStopJob = async (job) => {
     try {
+      const executionId = job.job_execution_id || job.last_execution_id;
+      const params = executionId
+        ? { job_execution_id: executionId }
+        : { job_id: job_id };
+
       await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id },
+        params,
         headers: { Authorization: `Bearer ${authToken}` },
       });
       showAlert("Задача успешно остановлена.", "success");
       setJobStatus("stopped");
+      fetchExecutions(); // Обновляем выполнения
     } catch (error) {
       console.error("Ошибка при остановке задачи:", error);
       showAlert("Ошибка при остановке задачи.", "error");
     }
   };
 
-  // **Функция для получения логов задачи**
-  const handleLogsClick = async () => {
+  // Функция для получения логов выполнения задачи
+  const handleLogsClick = async (execution = null) => {
     setLogsModalOpen(true);
     setLogsLoading(true);
     setCurrentLogs(""); // Сбрасываем предыдущие логи
 
     try {
-      if (!job_id) {
+      let params = {};
+
+      if (execution && execution.job_execution_id) {
+        params.job_execution_id = execution.job_execution_id;
+      } else if (job_id) {
+        params.job_id = job_id;
+      } else {
         setCurrentLogs("Идентификатор задачи отсутствует.");
         setLogsLoading(false);
         return;
       }
 
       const response = await axiosInstance.get("/jobs/job-logs", {
-        params: { job_id },
+        params,
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
       const logs = response.data.logs || "Логи отсутствуют.";
       setCurrentLogs(logs);
     } catch (error) {
-      console.error(`Ошибка при получении логов для задачи ${job_id}:`, error);
+      console.error("Ошибка при получении логов задачи:", error);
       const errorMessage =
-        error.response?.data?.detail ||
-        (error.response?.status === 404
-          ? "Логи недоступны."
-          : "Ошибка при получении логов.");
+        error.response?.data?.detail || "Ошибка при получении логов задачи.";
       setCurrentLogs(errorMessage);
     } finally {
       setLogsLoading(false);
     }
   };
+
+  // Функция для скачивания артефактов
+  const handleDownloadArtifacts = async (job, execution = null) => {
+    // Показываем Snackbar
+    showAlert("Скачивание артефактов началось...", "info");
+
+    // Проверяем, что задача имеет тип "run"
+    if (job.job_type !== "run") {
+      showAlert("Артефакты доступны только для задач типа 'run'.", "error");
+      return;
+    }
+
+    const params = {};
+
+    if (execution && execution.job_execution_id) {
+      params.job_execution_id = execution.job_execution_id;
+    } else if (job.last_execution_id) {
+      params.job_execution_id = job.last_execution_id;
+    } else if (job.job_id) {
+      params.job_id = job.job_id;
+    } else {
+      showAlert("Не указан идентификатор задачи или выполнения.", "error");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.get("/jobs/get-job-artifacts", {
+        params: params,
+        responseType: "blob",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      const blob = new Blob([response.data], { type: "application/zip" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "artifacts.zip";
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (fileNameMatch && fileNameMatch.length === 2) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(
+        `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
+        error
+      );
+      const errorMessage =
+        error.response?.data?.detail || "Ошибка при скачивании артефактов.";
+      showAlert(errorMessage, "error");
+    }
+  };
+
+  // Функция для форматирования идентификатора выполнения
+  const formatJobExecutionId = (id) => {
+    if (!id) return "N/A";
+    return id.length > 12 ? `${id.slice(0, 3)}**${id.slice(-3)}` : id;
+  };
+
+  // Проверка наличия задачи
+  if (!jobDetails) {
+    return null;
+  }
 
   return (
     <>
@@ -250,6 +367,7 @@ function ModelsDialog({ open, onClose, model }) {
           },
         }}
       >
+        {/* Заголовок и информация о задаче */}
         <Box
           sx={{
             p: 2,
@@ -263,7 +381,7 @@ function ModelsDialog({ open, onClose, model }) {
         >
           {/* Левая часть заголовка */}
           <Typography variant="h6" sx={{ fontWeight: "bold", mr: 2 }}>
-            {jobDetails?.job_name || model.job_name}
+            {jobDetails.job_name}
           </Typography>
 
           {/* Разделитель */}
@@ -280,9 +398,7 @@ function ModelsDialog({ open, onClose, model }) {
           />
 
           <Typography variant="body1" sx={{ mr: 2 }}>
-            <strong>
-              {formatDateTime(jobDetails?.created_at || model.created_at)}
-            </strong>
+            <strong>{formatDateTime(jobDetails.created_at)}</strong>
           </Typography>
           <Box
             sx={{
@@ -311,21 +427,21 @@ function ModelsDialog({ open, onClose, model }) {
               Логи
             </Button>
           </Tooltip>
-          <Box
-            sx={{
-              height: "2px",
-              flexGrow: 1,
-              minWidth: "3px",
-              maxWidth: "130px",
-              borderRadius: "5px",
-              mr: 2,
-              bgcolor: "black",
-            }}
-          />
 
           {/* URL задачи */}
-          {jobDetails?.job_url ||
-            (model.job_url && (
+          {jobDetails.job_url && (
+            <>
+              <Box
+                sx={{
+                  height: "2px",
+                  flexGrow: 1,
+                  minWidth: "3px",
+                  maxWidth: "130px",
+                  borderRadius: "5px",
+                  mr: 2,
+                  bgcolor: "black",
+                }}
+              />
               <Tooltip title="Скопировать URL">
                 <Typography
                   variant="body2"
@@ -347,13 +463,14 @@ function ModelsDialog({ open, onClose, model }) {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCopy(jobDetails?.job_url || model.job_url);
+                    handleCopy(jobDetails.job_url);
                   }}
                 >
-                  {jobDetails?.job_url || model.job_url}
+                  {jobDetails.job_url}
                 </Typography>
               </Tooltip>
-            ))}
+            </>
+          )}
 
           {/* Правая часть заголовка */}
           <Box
@@ -363,19 +480,19 @@ function ModelsDialog({ open, onClose, model }) {
               justifyContent: "flex-end",
             }}
           >
-            <Tooltip title="Запустить задачу">
+            <Tooltip title="Запустить модель">
               <span>
                 <ActionIconButton
-                  onClick={handleStartJob}
+                  onClick={handleStartModel}
                   colorvariant="success"
                   size="small"
-                  disabled={jobStatus === "running"}
-                  aria-label="Запустить задачу"
+                  disabled={modelStatus === "running"}
+                  aria-label="Запустить модель"
                 >
                   <PlayCircleFilledIcon
                     sx={{
                       color:
-                        jobStatus === "running"
+                        modelStatus === "running"
                           ? "text.disabled"
                           : "success.main",
                     }}
@@ -384,19 +501,19 @@ function ModelsDialog({ open, onClose, model }) {
               </span>
             </Tooltip>
 
-            <Tooltip title="Остановить задачу">
+            <Tooltip title="Остановить модель">
               <span>
                 <ActionIconButton
-                  onClick={handleStopJob}
+                  onClick={handleStopModel}
                   colorvariant="error"
                   size="small"
-                  disabled={jobStatus !== "running"}
-                  aria-label="Остановить задачу"
+                  disabled={modelStatus !== "running"}
+                  aria-label="Остановить модель"
                 >
                   <StopIcon
                     sx={{
                       color:
-                        jobStatus === "running"
+                        modelStatus === "running"
                           ? "error.main"
                           : "text.disabled",
                     }}
@@ -412,42 +529,186 @@ function ModelsDialog({ open, onClose, model }) {
         {/* Содержимое */}
         <DialogContent dividers>
           <Box sx={{ display: "flex", height: "100%", mt: 1 }}>
-            {/* Левая часть - Детали задачи */}
-            <Box sx={{ flex: 1, mr: 2, overflow: "auto" }}>
+            {/* Левая часть - Выполнения */}
+            <Box sx={{ flex: 1.4, mr: 2, overflow: "auto" }}>
               <Typography
                 variant="h6"
                 gutterBottom
                 sx={{ textAlign: "center", mb: 2 }}
               >
-                Детали задачи
+                Выполнения
               </Typography>
-
-              {/* Отображение деталей задачи */}
-              {jobDetails ? (
-                <>
-                  <Typography variant="subtitle1">
-                    <strong>ID:</strong> {jobDetails.job_id}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <strong>Название:</strong>{" "}
-                    {jobDetails?.job_name || model.job_name}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <strong>Тип задачи:</strong>{" "}
-                    {jobDetails.job_type || model.gpu_type?.type || "N/A"}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <strong>Статус:</strong>{" "}
-                    {jobDetails.health_status || model.health_status || "N/A"}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <strong>Последний статус выполнения:</strong>{" "}
-                    {jobDetails.last_execution_status || "N/A"}
-                  </Typography>
-                </>
+              {executionsLoading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "200px",
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              ) : executionsError ? (
+                <Typography color="error">{executionsError}</Typography>
+              ) : executions.length > 0 ? (
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    {/* Заголовки столбцов */}
+                    <Grid
+                      container
+                      spacing={1}
+                      sx={{
+                        p: 1,
+                        borderBottom: "1px solid #ccc",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Job Exec ID
+                        </Typography>
+                      </Grid>
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Создано
+                        </Typography>
+                      </Grid>
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Статус
+                        </Typography>
+                      </Grid>
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Начало
+                        </Typography>
+                      </Grid>
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Конец
+                        </Typography>
+                      </Grid>
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          GPU
+                        </Typography>
+                      </Grid>
+                      {jobDetails.job_type !== "run" && (
+                        <Grid item xs>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            Health
+                          </Typography>
+                        </Grid>
+                      )}
+                      <Grid item xs>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Действия
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  {executions.map((execution) => (
+                    <Grid
+                      item
+                      xs={12}
+                      key={execution.job_execution_id}
+                      style={{ paddingTop: "8px" }}
+                    >
+                      <Paper variant="outlined" sx={{ border: "none" }}>
+                        <Grid
+                          container
+                          spacing={1}
+                          alignItems="center"
+                          sx={{
+                            p: 0.5,
+                            textAlign: "center",
+                            borderBottom: "1px solid #ccc",
+                            "& > .MuiGrid-item": {
+                              paddingTop: 0,
+                            },
+                          }}
+                        >
+                          <Grid item xs>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Typography variant="body2">
+                                {formatJobExecutionId(
+                                  execution.job_execution_id
+                                )}
+                              </Typography>
+                              <Tooltip title="Скопировать ID выполнения">
+                                <IconButton
+                                  onClick={() =>
+                                    handleCopy(execution.job_execution_id)
+                                  }
+                                  size="small"
+                                >
+                                  <ContentCopyIcon
+                                    fontSize="small"
+                                    sx={{ fontSize: "1rem" }}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="body2">
+                              {formatDateTime(execution.created_at)}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="body2">
+                              {execution.status}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="body2">
+                              {formatDateTime(execution.start_time)}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="body2">
+                              {formatDateTime(execution.end_time)}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="body2">
+                              {execution.gpu_info?.type || "N/A"}
+                            </Typography>
+                          </Grid>
+                          {jobDetails.job_type !== "run" && (
+                            <Grid item xs>
+                              <Typography variant="body2">
+                                {execution.health_status || "N/A"}
+                              </Typography>
+                            </Grid>
+                          )}
+                          <Grid item xs>
+                            {/* Кнопки действий */}
+                            <TasksActions
+                              job={execution}
+                              onLogsClick={() => handleLogsClick(execution)}
+                              onDownloadArtifacts={() =>
+                                handleDownloadArtifacts(jobDetails, execution)
+                              }
+                              onStopClick={() => handleStopJob(execution)}
+                              showStartButton={false}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
               ) : (
-                <Typography variant="body1">
-                  Информация о задаче недоступна.
+                <Typography align="center" sx={{ mt: 2 }}>
+                  Нет выполнений для этой задачи.
                 </Typography>
               )}
             </Box>
@@ -455,7 +716,7 @@ function ModelsDialog({ open, onClose, model }) {
             {/* Разделитель */}
             <Divider orientation="vertical" flexItem />
 
-            {/* Правая часть - Конфигурация и расписание */}
+            {/* Правая часть - Конфигурация и события */}
             <Box sx={{ flex: 1, ml: 2, overflow: "auto" }}>
               <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                 <Button
@@ -469,6 +730,7 @@ function ModelsDialog({ open, onClose, model }) {
                 >
                   Расписание
                 </Button>
+
                 <Button
                   variant={"outlined"}
                   onClick={() => setActiveTab("config")}
@@ -491,64 +753,6 @@ function ModelsDialog({ open, onClose, model }) {
                   События
                 </Button>
               </Box>
-
-              {activeTab === "schedule" && (
-                <Box sx={{ height: "100%", overflow: "auto" }}>
-                  {scheduleLoading ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        height: "200px",
-                      }}
-                    >
-                      <CircularProgress />
-                    </Box>
-                  ) : scheduleData ? (
-                    <Box>
-                      <Typography variant="body1">
-                        <strong>Начало:</strong>{" "}
-                        {formatDateTime(scheduleData.start_date)}
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Конец:</strong>{" "}
-                        {formatDateTime(scheduleData.end_date)}
-                      </Typography>
-                      {scheduleData.days_of_week && (
-                        <Typography variant="body1">
-                          <strong>Дни недели:</strong>{" "}
-                          {scheduleData.days_of_week.join(", ")}
-                        </Typography>
-                      )}
-                      {scheduleData.interval && (
-                        <Typography variant="body1">
-                          <strong>Интервал:</strong> {scheduleData.interval}{" "}
-                          минут
-                        </Typography>
-                      )}
-                      {/* Добавьте отображение других данных расписания по необходимости */}
-                    </Box>
-                  ) : (
-                    <Typography>
-                      Расписание не настроено для этой задачи.
-                    </Typography>
-                  )}
-
-                  <Button
-                    variant="outlined"
-                    sx={{ mt: 2 }}
-                    onClick={() => {
-                      // Открыть диалог настройки расписания
-                      showAlert(
-                        "Функция редактирования расписания не реализована."
-                      );
-                    }}
-                  >
-                    Добавить/Изменить расписание
-                  </Button>
-                </Box>
-              )}
 
               {activeTab === "config" && (
                 <Box
@@ -581,6 +785,16 @@ function ModelsDialog({ open, onClose, model }) {
                   )}
                 </Box>
               )}
+              {activeTab === "schedule" && (
+                <Box sx={{ height: "100%", overflow: "auto" }}>
+                  <Typography>Нет расписаний для этой задачи.</Typography>
+
+                  <Button variant="outlined" sx={{ mt: 2 }}>
+                    Добавить расписание
+                  </Button>
+                </Box>
+              )}
+
               {activeTab === "events" && <JobEvents jobId={job_id} />}
             </Box>
           </Box>
@@ -591,16 +805,14 @@ function ModelsDialog({ open, onClose, model }) {
         </DialogActions>
       </Dialog>
 
-      {/* Диалоговое окно логов задачи */}
+      {/* Диалоговое окно с логами выполнения */}
       <Dialog
         open={logsModalOpen}
         onClose={() => setLogsModalOpen(false)}
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{`Логи задачи: ${
-          jobDetails?.job_name || model.job_name
-        }`}</DialogTitle>
+        <DialogTitle>{`Логи: ${jobDetails.job_name}`}</DialogTitle>
         <DialogContent dividers>
           {logsLoading ? (
             <Box
@@ -624,26 +836,58 @@ function ModelsDialog({ open, onClose, model }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
-          <Button
-            onClick={() => {
-              // Копирование логов в буфер обмена
-              handleCopy(currentLogs);
-            }}
-          >
+          <Button onClick={() => handleCopy(currentLogs)}>
             Скопировать Логи
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Оповещение */}
+      {/* Диалоговое окно с логами сборки */}
+      <Dialog
+        open={buildLogsModalOpen}
+        onClose={() => setBuildLogsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Build Логи: ${jobDetails.job_name}`}</DialogTitle>
+        <DialogContent dividers>
+          {buildLogsLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+            >
+              {currentLogs}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBuildLogsModalOpen(false)}>Закрыть</Button>
+          <Button onClick={() => handleCopy(currentLogs)}>
+            Скопировать Логи
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Оповещения */}
       <Snackbar
         open={alertOpen}
-        autoHideDuration={6000}
-        onClose={handleAlertClose}
+        autoHideDuration={10000}
+        onClose={() => setAlertOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
-          onClose={handleAlertClose}
+          onClose={() => setAlertOpen(false)}
           severity={alertSeverity}
           sx={{ width: "100%" }}
         >

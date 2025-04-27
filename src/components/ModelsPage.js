@@ -35,7 +35,6 @@ function ModelsPage() {
         });
         const data = response.data || [];
         setLaunchedModels(data);
-        console.log(data);
       } catch (error) {
         console.error("Ошибка при получении запущенных моделей:", error);
         // Обработка ошибки (отображение уведомления и т.д.)

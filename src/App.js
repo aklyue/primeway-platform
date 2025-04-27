@@ -112,15 +112,15 @@ export function Layout() {
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
     const currentTime = Date.now();
-    const thirtyMinutes = 30 * 60 * 1000;
+    const threeHours = 3 * 60 * 60 * 1000;
 
     if (
       !lastCaptchaTime ||
-      currentTime - parseInt(lastCaptchaTime, 10) >= thirtyMinutes
+      currentTime - parseInt(lastCaptchaTime, 10) >= threeHours
     ) {
-      return true;
+      return true; // Требуется показать капчу
     } else {
-      return false;
+      return false; // Капча не требуется
     }
   };
 

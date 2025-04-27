@@ -7,6 +7,11 @@ import {
   Grid,
   IconButton,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import ConfigureModelForm from "./ConfigureModelForm";
 import { AuthContext } from "../AuthContext";
@@ -31,6 +36,11 @@ function ModelCard({ model, isLast, isBasic }) {
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // **Состояния для логов**
+  const [logsModalOpen, setLogsModalOpen] = useState(false);
+  const [currentLogs, setCurrentLogs] = useState("");
+  const [logsLoading, setLogsLoading] = useState(false);
 
   // **Переменные модели**
   const isLaunched = !isBasic;
@@ -141,6 +151,7 @@ function ModelCard({ model, isLast, isBasic }) {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
+      setModelStatus("running"); // Обновляем статус модели
       alert("Модель успешно запущена.");
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
@@ -174,6 +185,41 @@ function ModelCard({ model, isLast, isBasic }) {
       alert("Произошла ошибка при остановке модели.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // **Функция для получения логов модели**
+  const handleLogsClick = async (e) => {
+    e.stopPropagation(); // Предотвращаем всплытие события
+    if (isBasic) return; // Получать логи можно только для запущенных моделей
+    setLogsModalOpen(true);
+    setLogsLoading(true);
+    setCurrentLogs(""); // Сбрасываем предыдущие логи
+
+    try {
+      if (!jobId) {
+        setCurrentLogs("Идентификатор задачи отсутствует.");
+        setLogsLoading(false);
+        return;
+      }
+
+      const response = await axiosInstance.get("/jobs/job-logs", {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      const logs = response.data.logs || "Логи отсутствуют.";
+      setCurrentLogs(logs);
+    } catch (error) {
+      console.error(`Ошибка при получении логов для задачи ${jobId}:`, error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        (error.response?.status === 404
+          ? "Логи недоступны."
+          : "Ошибка при получении логов.");
+      setCurrentLogs(errorMessage);
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -294,8 +340,17 @@ function ModelCard({ model, isLast, isBasic }) {
               <Typography variant="body2">{model.job_url || "N/A"}</Typography>
             </Grid>
 
-            {/* **Действие (Одна кнопка запуска или остановки)** */}
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            {/* **Действия (Кнопки запуска/остановки и получения логов)** */}
+            <Grid
+              item
+              xs={2}
+              sx={{
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "center",
+                gap: 1,
+              }}
+            >
               <Button
                 onClick={actionButtonHandler}
                 disabled={isActionButtonDisabled}
@@ -304,12 +359,24 @@ function ModelCard({ model, isLast, isBasic }) {
                   bgcolor: "#505156",
                   color: "#FFFFFF",
                   opacity: isActionButtonDisabled ? 0.5 : 1,
+                  padding:
+                    actionButtonText === "Остановить" ? "6px 13px" : "6px 18px",
                 }}
               >
                 {actionButtonText}
                 <RocketLaunchOutlinedIcon
                   sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
                 />
+              </Button>
+              <Button
+                onClick={handleLogsClick}
+                variant="outlined"
+                sx={{
+                  bgcolor: "#505156",
+                  color: "#FFFFFF",
+                }}
+              >
+                Логи
               </Button>
             </Grid>
           </>
@@ -358,6 +425,65 @@ function ModelCard({ model, isLast, isBasic }) {
           </Box>
         </Modal>
       )}
+
+      {/* **Диалоговое окно логов модели** */}
+      <Dialog
+        open={logsModalOpen}
+        onClose={() => setLogsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Логи модели: ${modelName}`}</DialogTitle>
+        <DialogContent dividers>
+          {logsLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+            >
+              {currentLogs}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
+          <Button
+            onClick={() => {
+              // Копирование логов в буфер обмена
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(currentLogs).catch((error) => {
+                  console.error("Ошибка при копировании:", error);
+                });
+              } else {
+                const textarea = document.createElement("textarea");
+                textarea.value = currentLogs;
+                textarea.style.position = "fixed"; // Предотвращаем прокрутку страницы
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                  document.execCommand("copy");
+                } catch (error) {
+                  console.error("Ошибка при копировании:", error);
+                }
+                document.body.removeChild(textarea);
+              }
+            }}
+          >
+            Скопировать Логи
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

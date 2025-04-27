@@ -50,9 +50,7 @@ function ModelsDialog({ open, onClose, model }) {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
   const [activeTab, setActiveTab] = useState("events");
-  const [modelStatus, setModelStatus] = useState(
-    model.health_status || "running"
-  );
+  const [modelStatus, setModelStatus] = useState(model.last_execution_status);
 
   // Функция для форматирования даты и времени
   const formatDateTime = (dateTimeString) => {
@@ -84,7 +82,7 @@ function ModelsDialog({ open, onClose, model }) {
       setConfigLoading(true);
       setModelDetails(model);
       setConfig(JSON.stringify(model.defaultConfig, null, 2));
-      setModelStatus(model.health_status || "running");
+      setModelStatus(model.last_execution_status);
       setConfigLoading(false);
     } else {
       setModelDetails(null);
@@ -103,7 +101,7 @@ function ModelsDialog({ open, onClose, model }) {
         params: { job_id: model.job_id },
       });
       showAlert("Модель успешно запущена.", "success");
-      setModelStatus("running");
+      setModelStatus(model.last_execution_status);
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
       showAlert("Ошибка при запуске модели.", "error");
@@ -111,13 +109,12 @@ function ModelsDialog({ open, onClose, model }) {
   };
 
   const handleStopModel = async () => {
-    console.log();
     try {
       await axiosInstance.post("/jobs/job-stop", null, {
         params: { job_id: model.job_id },
       });
       showAlert("Модель успешно остановлена.", "success");
-      setModelStatus("stopped");
+      setModelStatus(model.last_execution_status);
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
       showAlert("Ошибка при остановке модели.", "error");
@@ -239,6 +236,7 @@ function ModelsDialog({ open, onClose, model }) {
                 </ActionIconButton>
               </span>
             </Tooltip>
+
             <Tooltip title="Остановить модель">
               <span>
                 <ActionIconButton
@@ -301,7 +299,11 @@ function ModelsDialog({ open, onClose, model }) {
                     <strong>Тип:</strong> {model.gpu_type?.type || "N/A"}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Статус:</strong> {modelStatus}
+                    <strong>Статус:</strong> {model.health_status}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    <strong>Execution статус:</strong>{" "}
+                    {model.last_execution_status}
                   </Typography>
                   {/* Дополнительные параметры модели */}
                 </Box>

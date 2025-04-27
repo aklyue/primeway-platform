@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Box, Button, Divider, Grid, Modal, Typography } from "@mui/material";
 import ModelCard from "./ModelCard";
 import { modelsData } from "../data/modelsData";
@@ -18,31 +18,49 @@ function ModelsPage() {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
 
-  // **Получение запущенных моделей**
-  useEffect(() => {
-    const fetchLaunchedModels = async () => {
-      if (currentOrganization && authToken) {
-        try {
-          const response = await axiosInstance.get(
-            "/jobs/get-vllm-deploy-jobs",
-            {
-              params: {
-                organization_id: currentOrganization.id,
-              },
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
-            }
-          );
-          const data = response.data || [];
-          setLaunchedModels(data);
-        } catch (error) {
-          console.error("Ошибка при получении запущенных моделей:", error);
-          // Обработка ошибки (отображение уведомления и т.д.)
-        }
+  // **Ссылка на интервал**
+  const intervalRef = useRef(null);
+
+  // **Функция для получения запущенных моделей**
+  const fetchLaunchedModels = async () => {
+    if (currentOrganization && authToken) {
+      try {
+        const response = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
+          params: {
+            organization_id: currentOrganization.id,
+          },
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+        const data = response.data || [];
+        setLaunchedModels(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Ошибка при получении запущенных моделей:", error);
+        // Обработка ошибки (отображение уведомления и т.д.)
       }
+    }
+  };
+
+  // **Получение запущенных моделей при монтировании и обновление каждые 5 секунд**
+  useEffect(() => {
+    fetchLaunchedModels(); // Первоначальный вызов при монтировании или изменении зависимостей
+
+    // Очищаем предыдущий интервал, если он существует
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // Устанавливаем новый интервал для периодического обновления
+    intervalRef.current = setInterval(() => {
+      fetchLaunchedModels();
+    }, 5000); // Интервал в 5 секунд
+
+    // Функция очистки, вызывается при размонтировании или изменении зависимостей
+    return () => {
+      clearInterval(intervalRef.current);
     };
-    fetchLaunchedModels();
   }, [currentOrganization, authToken]);
 
   // **Обработчики открытия и закрытия модального окна настройки**
@@ -89,7 +107,6 @@ function ModelsPage() {
         sx={{
           display: "flex",
           flexDirection: "column",
-
           minHeight: 0,
         }}
       >
@@ -102,10 +119,27 @@ function ModelsPage() {
             minHeight: 0,
           }}
         >
-          <Typography variant="h5" gutterBottom>
-            Запущенные модели
-          </Typography>
-
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Запущенные модели
+            </Typography>
+            <Button
+              onClick={handleConfigureOpen}
+              variant="contained"
+              color="primary"
+              sx={{ color: "white", padding: "8px 16px" }}
+            >
+              Добавить модель
+              <AddIcon sx={{ color: "#FFFFFF", fontSize: "20px", ml: 0.5 }} />
+            </Button>
+          </Box>
           <Box
             sx={{
               border: "2px solid rgba(0, 0, 0, 0.12)",
@@ -153,7 +187,6 @@ function ModelsPage() {
             <Box
               sx={{
                 overflowY: "auto",
-
                 minHeight: 0,
               }}
             >
@@ -186,27 +219,9 @@ function ModelsPage() {
             mt: 3,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 1,
-            }}
-          >
-            <Typography variant="h5" gutterBottom>
-              Базовые модели
-            </Typography>
-            <Button
-              onClick={handleConfigureOpen}
-              variant="contained"
-              color="primary"
-              sx={{ color: "white", padding: "8px 16px" }}
-            >
-              Добавить модель
-              <AddIcon sx={{ color: "#FFFFFF", fontSize: "20px", ml: 0.5 }} />
-            </Button>
-          </Box>
+          <Typography variant="h5" gutterBottom>
+            Базовые модели
+          </Typography>
 
           <Box
             sx={{
@@ -215,7 +230,6 @@ function ModelsPage() {
               pt: 2,
               display: "flex",
               flexDirection: "column",
-
               minHeight: 0,
             }}
           >
@@ -244,7 +258,6 @@ function ModelsPage() {
             <Box
               sx={{
                 overflowY: "auto",
-
                 minHeight: 0,
               }}
             >

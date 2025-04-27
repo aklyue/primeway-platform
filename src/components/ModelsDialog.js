@@ -50,10 +50,10 @@ const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
 
 function ModelsDialog({ open, onClose, model }) {
   const { authToken } = useContext(AuthContext); // Получаем токен авторизации
-  const { currentOrganization } = useContext(OrganizationContext); // Добавлено для получения текущей организации
+  const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию
 
   // Состояния
-  const [jobDetails, setJobDetails] = useState({ ...model }); // Инициализируем с моделью
+  const [jobDetails, setJobDetails] = useState(); // Инициализируем с моделью
   const [configLoading, setConfigLoading] = useState(true);
   const [config, setConfig] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
@@ -113,6 +113,7 @@ function ModelsDialog({ open, onClose, model }) {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       const jobs = response.data;
+
       const jobData = jobs.find((job) => job.job_id === job_id);
 
       if (jobData) {
@@ -121,6 +122,7 @@ function ModelsDialog({ open, onClose, model }) {
       } else {
         console.error("Задача не найдена в списке задач организации.");
         showAlert("Задача не найдена в организации.", "error");
+        // Мы не сбрасываем jobDetails, чтобы сохранить исходные данные модели
       }
     } catch (error) {
       console.error("Ошибка при получении деталей задачи:", error);
@@ -130,21 +132,7 @@ function ModelsDialog({ open, onClose, model }) {
 
   // Функция для загрузки расписания задачи
   const fetchSchedule = async () => {
-    // setScheduleLoading(true);
-    // try {
-    //   const response = await axiosInstance.get("/jobs/get-schedule", {
-    //     params: { job_id },
-    //     headers: { Authorization: `Bearer ${authToken}` },
-    //   });
-    //   setScheduleData(response.data);
-    // } catch (error) {
-    //   console.error("Ошибка при получении расписания:", error);
-    //   showAlert("Ошибка при получении расписания.", "error");
-    //   setScheduleData(null);
-    // } finally {
-    //   setScheduleLoading(false);
-    // }
-    console.log(1);
+    // Если вы не планируете использовать расписание сейчас, можно оставить функцию пустой
   };
 
   // Получение деталей задачи, конфигурации и расписания при открытии диалогового окна
@@ -155,7 +143,7 @@ function ModelsDialog({ open, onClose, model }) {
       fetchConfig();
       fetchSchedule(); // Вызываем функцию для загрузки расписания
     } else {
-      setJobDetails(null);
+      // Мы не сбрасываем jobDetails, чтобы сохранить исходные данные модели
       setConfig("");
       setScheduleData(null);
     }
@@ -247,26 +235,6 @@ function ModelsDialog({ open, onClose, model }) {
     }
   };
 
-  if (!jobDetails) {
-    // Пока данные задачи не загружены, показываем загрузчик
-    return (
-      <Dialog open={open} onClose={onClose}>
-        <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "200px",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <>
       <Dialog
@@ -295,7 +263,7 @@ function ModelsDialog({ open, onClose, model }) {
         >
           {/* Левая часть заголовка */}
           <Typography variant="h6" sx={{ fontWeight: "bold", mr: 2 }}>
-            {jobDetails.job_name}
+            {jobDetails?.job_name || model.job_name}
           </Typography>
 
           {/* Разделитель */}
@@ -312,7 +280,9 @@ function ModelsDialog({ open, onClose, model }) {
           />
 
           <Typography variant="body1" sx={{ mr: 2 }}>
-            <strong>{formatDateTime(jobDetails.created_at)}</strong>
+            <strong>
+              {formatDateTime(jobDetails?.created_at || model.created_at)}
+            </strong>
           </Typography>
           <Box
             sx={{
@@ -354,35 +324,36 @@ function ModelsDialog({ open, onClose, model }) {
           />
 
           {/* URL задачи */}
-          {jobDetails.job_url && (
-            <Tooltip title="Скопировать URL">
-              <Typography
-                variant="body2"
-                sx={{
-                  padding: "3px 8px",
-                  borderRadius: "12px",
-                  border: "1px solid #5282ff",
-                  backgroundColor: "none",
-                  color: "secondary.main",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  maxWidth: "200px",
-                  "&:hover": {
-                    backgroundColor: "#8fa8ea",
-                    color: "white",
-                  },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCopy(jobDetails.job_url);
-                }}
-              >
-                {jobDetails.job_url}
-              </Typography>
-            </Tooltip>
-          )}
+          {jobDetails?.job_url ||
+            (model.job_url && (
+              <Tooltip title="Скопировать URL">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    padding: "3px 8px",
+                    borderRadius: "12px",
+                    border: "1px solid #5282ff",
+                    backgroundColor: "none",
+                    color: "secondary.main",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "200px",
+                    "&:hover": {
+                      backgroundColor: "#8fa8ea",
+                      color: "white",
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopy(jobDetails?.job_url || model.job_url);
+                  }}
+                >
+                  {jobDetails?.job_url || model.job_url}
+                </Typography>
+              </Tooltip>
+            ))}
 
           {/* Правая часть заголовка */}
           <Box
@@ -458,14 +429,16 @@ function ModelsDialog({ open, onClose, model }) {
                     <strong>ID:</strong> {jobDetails.job_id}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Название:</strong> {jobDetails.job_name}
+                    <strong>Название:</strong>{" "}
+                    {jobDetails?.job_name || model.job_name}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Тип задачи:</strong> {jobDetails.job_type || "N/A"}
+                    <strong>Тип задачи:</strong>{" "}
+                    {jobDetails.job_type || model.gpu_type?.type || "N/A"}
                   </Typography>
                   <Typography variant="subtitle1">
-                    <strong>Статус сборки:</strong>{" "}
-                    {jobDetails.build_status || "N/A"}
+                    <strong>Статус:</strong>{" "}
+                    {jobDetails.health_status || model.health_status || "N/A"}
                   </Typography>
                   <Typography variant="subtitle1">
                     <strong>Последний статус выполнения:</strong>{" "}
@@ -473,9 +446,10 @@ function ModelsDialog({ open, onClose, model }) {
                   </Typography>
                 </>
               ) : (
-                "Нет задачи"
+                <Typography variant="body1">
+                  Информация о задаче недоступна.
+                </Typography>
               )}
-              {/* Дополнительно можно добавить другие параметры задачи */}
             </Box>
 
             {/* Разделитель */}
@@ -624,7 +598,9 @@ function ModelsDialog({ open, onClose, model }) {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{`Логи задачи: ${jobDetails.job_name}`}</DialogTitle>
+        <DialogTitle>{`Логи задачи: ${
+          jobDetails?.job_name || model.job_name
+        }`}</DialogTitle>
         <DialogContent dividers>
           {logsLoading ? (
             <Box

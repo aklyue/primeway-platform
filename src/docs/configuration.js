@@ -378,7 +378,17 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
           </p>
           <CodeBlock
             code={`schedule:
-  cron: "0 * * * *"  # Ежечасный запуск`}
+  workdays:
+    - start: "09:00:00"
+      end: "17:00:00"
+  weekends:
+    - start: "10:00:00"
+      end: "16:00:00"
+  specific_days:
+    - day: 5
+      windows:
+        - start: "00:00:00"
+          end: "23:59:59"`}
             language="yaml"
           />
           <p>

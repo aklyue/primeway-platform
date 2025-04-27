@@ -274,51 +274,51 @@ const Quickstart = () => {
         <h3>Пример файла конфигурации для обучающей задачи</h3>
         <CodeBlock
           code={`# Обязательные поля
-        docker_image: python:3.10-slim
+docker_image: python:3.10-slim
 
-        job_name: train_sklearn_model
+job_name: train_sklearn_model
 
-        job_type: run
+job_type: run
 
-        # Опциональные поля
-        primeway_api_token: YOUR_API_KEY  # Включите эту строку, если не используете файл .env или переменную окружения
+# Опциональные поля
+primeway_api_token: YOUR_API_KEY  # Включите эту строку, если не используете файл .env или переменную окружения
 
-        context: .  # Директория с вашим кодом
+context: .  # Директория с вашим кодом
 
-        command: ["python", "train.py"]
+command: ["python", "train.py"]
 
-        request_input_dir: /custom-data
+request_input_dir: /custom-data
 
-        disk_space: 25  # в ГБ
+disk_space: 25  # в ГБ
 
-        gpu_types:
-          - type: NVIDIA A100
-            count: 1
+gpu_types:
+  - type: NVIDIA A100
+    count: 1
 
-        env:
-          - name: ENVIRONMENT
-            value: production
+env:
+  - name: ENVIRONMENT
+    value: production
 
-        requirements:
-          - numpy
-          - joblib
-          - scikit-learn
-          - pandas
+requirements:
+  - numpy
+  - joblib
+  - scikit-learn
+  - pandas
 
-        apt_packages:
-          - libssl-dev
-          - libffi-dev
+apt_packages:
+  - libssl-dev
+  - libffi-dev
 
-        ignore_patterns:
-          - '*.pyc'
-          - __pycache__
-          - venv
-          - build
-          - primeway
-          - '*.egg-info'
+ignore_patterns:
+  - '*.pyc'
+  - __pycache__
+  - venv
+  - build
+  - primeway
+  - '*.egg-info'
 
-        job_timeout: 7200  # Таймаут задачи в секундах (2 часа)
-        `}
+job_timeout: 7200  # Таймаут задачи в секундах (2 часа)
+`}
           language="yaml"
         />
         <p>
@@ -365,7 +365,7 @@ const Quickstart = () => {
             <code>ignore_patterns</code>: Шаблоны файлов, которые нужно исключить при загрузке.
           </li>
           <li>
-            <code>job_timeout</code>: Максимальное время выполнения задачи в секундах.
+            <code>job_timeout</code>: Максимальное время выполнения задачи в секундах (для <code>run</code> типа).
           </li>
         </ul>
 

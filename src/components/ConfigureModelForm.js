@@ -66,12 +66,17 @@ function ConfigureModelForm({ initialConfig, onClose }) {
   const [modelConfig, setModelConfig] = useState(
     initialConfig?.modelConfig || {
       job_name: "",
-      gpu_types: [{ type: "", count: 1 }],
+      gpu_types: [{ type: "A40", count: 1 }],
       health_check_timeout: 3500,
       disk_space: 80,
       port: 8000,
       autoscaler_timeout: 600,
-      env: [{ name: "", value: "" }],
+      env: [
+        {
+          name: "HUGGING_FACE_HUB_TOKEN",
+          value: "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",
+        },
+      ],
       schedule: {
         workdays: [],
         weekends: [],
@@ -87,7 +92,55 @@ function ConfigureModelForm({ initialConfig, onClose }) {
   const [alertSeverity, setAlertSeverity] = useState("info");
   const [alertMessage, setAlertMessage] = useState("");
 
+  const [modelNameError, setModelNameError] = useState(false);
+  const [deploymentNameError, setDeploymentNameError] = useState(false);
+  const [gpuTypesError, setGpuTypesError] = useState(false);
+  const [diskSpaceError, setDiskSpaceError] = useState(false);
+
+  const [modelNameErrorText, setModelNameErrorText] = useState("");
+  const [deploymentNameErrorText, setDeploymentNameErrorText] = useState("");
+  const [gpuTypesErrorText, setGpuTypesErrorText] = useState("");
+  const [diskSpaceErrorText, setDiskSpaceErrorText] = useState("");
+
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+
+  const handleModelNameChange = (e) => {
+    setModelName(e.target.value);
+    if (e.target.value) {
+      setModelNameError(false);
+      setModelNameErrorText("");
+    }
+  };
+
+  const handleDeploymentNameChange = (e) => {
+    setModelConfig({
+      ...modelConfig,
+      job_name: e.target.value,
+    });
+    if (e.target.value) {
+      setDeploymentNameError(false);
+      setDeploymentNameErrorText("");
+    }
+  };
+
+  const handleGpuTypeChange = (index, field, value) => {
+    const newGpuTypes = [...modelConfig.gpu_types];
+    newGpuTypes[index][field] = value;
+    setModelConfig({ ...modelConfig, gpu_types: newGpuTypes });
+
+    if (value && field === "type") {
+      setGpuTypesError(false);
+      setGpuTypesErrorText("");
+    }
+  };
+
+  const handleDiskSpaceChange = (e) => {
+    setModelConfig({ ...modelConfig, disk_space: e.target.value });
+    if (e.target.value) {
+      setDiskSpaceError(false);
+      setDiskSpaceErrorText("");
+    }
+  };
 
   // Handlers for args
   const handleAddArg = () => {
@@ -154,12 +207,6 @@ function ConfigureModelForm({ initialConfig, onClose }) {
   const handleRemoveGpuType = (index) => {
     const newGpuTypes = [...modelConfig.gpu_types];
     newGpuTypes.splice(index, 1);
-    setModelConfig({ ...modelConfig, gpu_types: newGpuTypes });
-  };
-
-  const handleGpuTypeChange = (index, field, value) => {
-    const newGpuTypes = [...modelConfig.gpu_types];
-    newGpuTypes[index][field] = value;
     setModelConfig({ ...modelConfig, gpu_types: newGpuTypes });
   };
 
@@ -293,6 +340,57 @@ function ConfigureModelForm({ initialConfig, onClose }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Сброс ошибок перед проверкой
+    setModelNameError(false);
+    setDeploymentNameError(false);
+    setGpuTypesError(false);
+    setDiskSpaceError(false);
+
+    // Флаг для определения, есть ли ошибки
+    let hasErrors = false;
+
+    // Проверяем modelName
+    if (!modelName) {
+      setModelNameError(true);
+      setModelNameErrorText("Поле 'Model Name' обязательно для заполнения.");
+      hasErrors = true;
+    }
+
+    // Проверяем deployment_name (job_name)
+    if (!modelConfig.job_name) {
+      setDeploymentNameError(true);
+      setDeploymentNameErrorText(
+        "Поле 'Unique Deployment Name' обязательно для заполнения."
+      );
+      hasErrors = true;
+    }
+
+    // Проверяем gpu_types
+    if (
+      !modelConfig.gpu_types ||
+      modelConfig.gpu_types.length === 0 ||
+      modelConfig.gpu_types.some((gpu) => !gpu.type)
+    ) {
+      setGpuTypesError(true);
+      setGpuTypesErrorText("Необходимо выбрать хотя бы один GPU тип.");
+      hasErrors = true;
+    }
+
+    // Проверяем disk_space
+    if (!modelConfig.disk_space || modelConfig.disk_space <= 0) {
+      setDiskSpaceError(true);
+      setDiskSpaceErrorText("Поле 'Disk Space' обязательно для заполнения.");
+      hasErrors = true;
+    }
+
+    // Если есть ошибки, прекращаем выполнение
+    if (hasErrors) {
+      setAlertMessage("Пожалуйста, заполните все обязательные поля.");
+      setAlertSeverity("error");
+      setAlertOpen(true);
+      return;
+    }
+
     setLoading(true);
 
     const vllmConfig = {
@@ -313,7 +411,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
       }
     });
 
-    // Prepare form data
+    // Подготовка данных формы
     const formData = new FormData();
     formData.append("organization_id", currentOrganization?.id || "");
     formData.append("vllm_config_str", JSON.stringify(vllmConfig));
@@ -326,25 +424,25 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           Authorization: `Bearer ${authToken}`,
         },
       });
-      // Handle success
+      // Обработка успешного ответа
       const message =
         response.data.message ||
-        "Model started successfully! You can view it in the 'tasks' section.";
+        "Модель успешно запущена! Вы можете просмотреть ее в разделе 'Задачи'.";
       setAlertMessage(message);
       setAlertSeverity("success");
       setAlertOpen(true);
 
-      // Close the modal
+      // Закрываем модальное окно
       onClose();
     } catch (error) {
-      // Handle error
+      // Обработка ошибки
       console.error(error);
-      let errorMessage = "An error occurred while starting the model.";
+      let errorMessage = "Произошла ошибка при запуске модели.";
       if (error.response && error.response.data) {
         if (typeof error.response.data.detail === "string") {
           errorMessage = error.response.data.detail;
         } else if (Array.isArray(error.response.data.detail)) {
-          // Extract the 'msg' from each error detail and join them
+          // Извлекаем 'msg' из каждой детали ошибки и объединяем их
           errorMessage = error.response.data.detail
             .map((d) => d.msg)
             .join(", ");
@@ -375,23 +473,24 @@ function ConfigureModelForm({ initialConfig, onClose }) {
     >
       <form onSubmit={handleSubmit} style={{ paddingBottom: "16px" }}>
         {/* VLLM Configuration */}
-        <Typography variant="h6">VLLM Configuration</Typography>
+        <Typography variant="h6">VLLM конфигурация</Typography>
 
         {/* Model Name */}
         <TextField
-          label="Model Name (Hugging Face)"
+          label="Имя модели (Hugging Face)"
           value={modelName}
-          onChange={(e) => setModelName(e.target.value)}
+          onChange={handleModelNameChange}
           fullWidth
           required
           margin="normal"
           disabled={loading}
-          helperText="Name of the model from Hugging Face"
+          helperText={modelNameErrorText || "Имя модели из Hugging Face"}
+          error={modelNameError}
         />
 
         {/* Args */}
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          Arguments
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Аргументы
         </Typography>
         {args.map((arg, index) => (
           <Box
@@ -431,18 +530,18 @@ function ConfigureModelForm({ initialConfig, onClose }) {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Key"
+                  label="Ключ"
                   disabled={loading}
-                  helperText="Argument key"
+                  helperText="Ключ аргумента"
                 />
               )}
             />
             <TextField
-              label="Value"
+              label="Значение"
               value={arg.value}
               onChange={(e) => handleArgChange(index, "value", e.target.value)}
               disabled={loading}
-              helperText="Argument value"
+              helperText="Значение аргумента"
               sx={{ flex: 1 }}
             />
             <IconButton
@@ -460,12 +559,12 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           sx={{ mt: 1 }}
           disabled={loading}
         >
-          Add Argument
+          Добавить аргумент
         </Button>
 
         {/* Flags */}
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          Flags
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Флаги
         </Typography>
         {flags.map((flag, index) => (
           <Box
@@ -505,15 +604,15 @@ function ConfigureModelForm({ initialConfig, onClose }) {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Key"
+                  label="Ключ"
                   disabled={loading}
-                  helperText="Flag key"
+                  helperText="Ключ флага"
                 />
               )}
             />
             <FormControl sx={{ flex: 1 }}>
               <InputLabel id={`flag-value-label-${index}`}>
-                Value (True/False)
+                Значение (True/False)
               </InputLabel>
               <Select
                 labelId={`flag-value-label-${index}`}
@@ -522,13 +621,13 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                   handleFlagChange(index, "value", e.target.value)
                 }
                 disabled={loading}
-                label="Value (True/False)"
+                label="Значение (True/False)"
               >
                 <MenuItem value="True">True</MenuItem>
                 <MenuItem value="False">False</MenuItem>
               </Select>
               <Typography variant="caption" color="textSecondary">
-                Flag value (True/False)
+                Значение флага (True/False)
               </Typography>
             </FormControl>
             <IconButton
@@ -546,34 +645,33 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           sx={{ mt: 1 }}
           disabled={loading}
         >
-          Add Flag
+          Добавить флаг
         </Button>
 
         <Divider sx={{ my: 3 }} />
 
         {/* Deployment Configuration */}
-        <Typography variant="h6">Deployment Configuration</Typography>
+        <Typography variant="h6">Конфигурация развертывания</Typography>
 
         {/* Job Name */}
         <TextField
-          label="Unique Deployment Name"
+          label="Уникальное имя развертывания"
           value={modelConfig.job_name}
-          onChange={(e) =>
-            setModelConfig({
-              ...modelConfig,
-              job_name: e.target.value,
-            })
-          }
+          onChange={handleDeploymentNameChange}
           fullWidth
           required
           margin="normal"
           disabled={loading}
-          helperText="Provide a unique name for this deployment"
+          helperText={
+            deploymentNameErrorText ||
+            "Укажите уникальное имя для этого развертывания"
+          }
+          error={deploymentNameError}
         />
 
         {/* GPU Types */}
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          GPU Types
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Тип GPU
         </Typography>
         {modelConfig.gpu_types.map((gpuType, index) => (
           <Box
@@ -585,11 +683,15 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             }}
             key={index}
           >
-            <FormControl sx={{ flex: 1 }}>
-              <InputLabel id={`gpu-select-label-${index}`}>GPU Name</InputLabel>
+            <FormControl
+              sx={{ flex: 1 }}
+              error={gpuTypesError && !gpuType.type}
+              required
+            >
+              <InputLabel id={`gpu-select-label-${index}`}>Имя GPU</InputLabel>
               <Select
                 labelId={`gpu-select-label-${index}`}
-                label="GPU Name"
+                label="Имя GPU"
                 value={gpuType.type}
                 onChange={(e) =>
                   handleGpuTypeChange(index, "type", e.target.value)
@@ -603,7 +705,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 ))}
               </Select>
               <Typography variant="caption" color="textSecondary">
-                Choose GPU from the list
+                {gpuTypesErrorText || "Выберите GPU из списка"}
               </Typography>
             </FormControl>
             <TextField
@@ -614,7 +716,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 handleGpuTypeChange(index, "count", e.target.value)
               }
               disabled={loading}
-              helperText="Number of GPUs of this type"
+              helperText="Количество GPU этого типа"
               sx={{ flex: 1 }}
             />
 
@@ -633,7 +735,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           sx={{ mt: 1 }}
           disabled={loading}
         >
-          Add GPU Type
+          Добавить тип GPU
         </Button>
 
         {/* Display GPU RAM and Cost */}
@@ -646,10 +748,10 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 sx={{ mt: 1, mb: 2, pl: 2, borderLeft: "4px solid #ccc" }}
               >
                 <Typography variant="body2">
-                  GPU Memory: {gpuDetails.memoryInGb} GB
+                  Память GPU: {gpuDetails.memoryInGb} GB
                 </Typography>
                 <Typography variant="body2">
-                  Cost: {gpuDetails.costPerHour} currency units per hour
+                  Стоимость: {gpuDetails.costPerHour} рублей в час
                 </Typography>
               </Box>
             );
@@ -659,7 +761,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
 
         {/* Health Check Timeout */}
         <TextField
-          label="Health Check Timeout (ms)"
+          label="Health Check Timeout"
           type="number"
           value={modelConfig.health_check_timeout}
           onChange={(e) =>
@@ -671,12 +773,12 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           fullWidth
           margin="normal"
           disabled={loading}
-          helperText="Time to wait for model response in milliseconds"
+          helperText="Время ожидания ответа модели в миллисекундах"
         />
 
         {/* Port */}
         <TextField
-          label="Port"
+          label="Порт"
           type="number"
           value={modelConfig.port}
           onChange={(e) =>
@@ -685,26 +787,28 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           fullWidth
           margin="normal"
           disabled={loading}
-          helperText="Port on which the model operates"
+          helperText="Порт, на котором работает модель"
         />
 
         {/* Disk Space */}
         <TextField
-          label="Disk Space (GB)"
+          label="Свободное место на диске (GB)"
           type="number"
           value={modelConfig.disk_space}
-          onChange={(e) =>
-            setModelConfig({ ...modelConfig, disk_space: e.target.value })
-          }
+          onChange={handleDiskSpaceChange}
           fullWidth
+          required
           margin="normal"
           disabled={loading}
-          helperText="Required disk space in GB"
+          helperText={
+            diskSpaceErrorText || "Требуемое дисковое пространство в GB"
+          }
+          error={diskSpaceError}
         />
 
         {/* Autoscaler Timeout */}
         <TextField
-          label="Autoscaler Timeout (sec)"
+          label="Время ожидания автоматического масштабирования (сек)"
           type="number"
           value={modelConfig.autoscaler_timeout}
           onChange={(e) =>
@@ -716,12 +820,12 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           fullWidth
           margin="normal"
           disabled={loading}
-          helperText="Idle time before scaling down"
+          helperText="Время простоя перед уменьшением масштаба"
         />
 
         {/* Schedule */}
         <Typography variant="h6" sx={{ mt: 3 }}>
-          Schedule
+          График
         </Typography>
 
         {/* Workdays */}
@@ -735,7 +839,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             onClick={() => toggleScheduleSection("workdays")}
           >
             {scheduleOpen.workdays ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Workdays</Typography>
+            <Typography variant="subtitle1">Будни</Typography>
           </Box>
           {scheduleOpen.workdays &&
             (modelConfig.schedule.workdays || []).map((timeWindow, index) => (
@@ -749,7 +853,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 }}
               >
                 <TextField
-                  label="Start"
+                  label="Начало"
                   type="time"
                   value={timeWindow.start}
                   onChange={(e) =>
@@ -767,7 +871,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                   }}
                 />
                 <TextField
-                  label="End (optional)"
+                  label="Конец (необязательно)"
                   type="time"
                   value={timeWindow.end}
                   onChange={(e) =>
@@ -800,7 +904,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
               sx={{ mt: 1 }}
               disabled={loading}
             >
-              Add Time Window
+              Добавить временное окно
             </Button>
           )}
         </Box>
@@ -816,7 +920,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             onClick={() => toggleScheduleSection("weekends")}
           >
             {scheduleOpen.weekends ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Weekends</Typography>
+            <Typography variant="subtitle1">Выходные</Typography>
           </Box>
           {scheduleOpen.weekends &&
             (modelConfig.schedule.weekends || []).map((timeWindow, index) => (
@@ -830,7 +934,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 }}
               >
                 <TextField
-                  label="Start"
+                  label="Начало"
                   type="time"
                   value={timeWindow.start}
                   onChange={(e) =>
@@ -848,7 +952,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                   }}
                 />
                 <TextField
-                  label="End (optional)"
+                  label="Конец (необязательно)"
                   type="time"
                   value={timeWindow.end}
                   onChange={(e) =>
@@ -881,7 +985,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
               sx={{ mt: 1 }}
               disabled={loading}
             >
-              Add Time Window
+              Добавить временное окно
             </Button>
           )}
         </Box>
@@ -897,7 +1001,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             onClick={() => toggleScheduleSection("specific_days")}
           >
             {scheduleOpen.specific_days ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Specific Dates</Typography>
+            <Typography variant="subtitle1">Конкретные даты</Typography>
           </Box>
           {scheduleOpen.specific_days &&
             (modelConfig.schedule.specific_days || []).map(
@@ -913,7 +1017,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <TextField
-                      label="Date"
+                      label="Дата"
                       type="date"
                       value={specificDay.date}
                       onChange={(e) =>
@@ -948,7 +1052,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                         }}
                       >
                         <TextField
-                          label="Start"
+                          label="Начало"
                           type="time"
                           value={timeWindow.start}
                           onChange={(e) =>
@@ -966,7 +1070,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                           }}
                         />
                         <TextField
-                          label="End (optional)"
+                          label="Коннец (необязательно)"
                           type="time"
                           value={timeWindow.end}
                           onChange={(e) =>
@@ -1004,7 +1108,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
                     sx={{ mt: 1 }}
                     disabled={loading}
                   >
-                    Add Time Window
+                    Добавить временное окно
                   </Button>
                 </Box>
               )
@@ -1017,7 +1121,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
               sx={{ mt: 1 }}
               disabled={loading}
             >
-              Add Date
+              Добавить дату
             </Button>
           )}
         </Box>
@@ -1025,8 +1129,8 @@ function ConfigureModelForm({ initialConfig, onClose }) {
         <Divider sx={{ my: 3 }} />
 
         {/* Environment Variables */}
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-          Environment Variables
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Переменные среды
         </Typography>
         {modelConfig.env.map((envVar, index) => (
           <Box
@@ -1039,23 +1143,23 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             key={index}
           >
             <TextField
-              label="Variable Name"
+              label="Имя переменной"
               value={envVar.name}
               onChange={(e) =>
                 handleEnvVarChange(index, "name", e.target.value)
               }
               disabled={loading}
-              helperText="For example, 'ENV_VAR_NAME'"
+              helperText="Например, 'ENV_VAR_NAME'"
               sx={{ flex: 1 }}
             />
             <TextField
-              label="Variable Value"
+              label="Переменное значение"
               value={envVar.value}
               onChange={(e) =>
                 handleEnvVarChange(index, "value", e.target.value)
               }
               disabled={loading}
-              helperText="Environment variable value"
+              helperText="Значение переменной среды"
               sx={{ flex: 1 }}
             />
             <IconButton
@@ -1074,7 +1178,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           sx={{ mt: 1 }}
           disabled={loading}
         >
-          Add Environment Variable
+          Добавить переменную окружения
         </Button>
 
         <Divider sx={{ my: 2 }} />
@@ -1094,7 +1198,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             )}
           </Button>
           <Button variant="text" onClick={onClose} sx={{ mt: 2, ml: 2 }}>
-            Cancel
+            Отмена
           </Button>
         </Box>
       </form>

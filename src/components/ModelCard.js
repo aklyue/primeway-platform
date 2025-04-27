@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Typography,
   Button,
@@ -7,6 +7,11 @@ import {
   Grid,
   IconButton,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import ConfigureModelForm from "./ConfigureModelForm";
 import { AuthContext } from "../AuthContext";
@@ -32,12 +37,25 @@ function ModelCard({ model, isLast, isBasic }) {
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // **Состояния для логов**
+  const [logsModalOpen, setLogsModalOpen] = useState(false);
+  const [currentLogs, setCurrentLogs] = useState("");
+  const [logsLoading, setLogsLoading] = useState(false);
+
   // **Переменные модели**
   const isLaunched = !isBasic;
   const jobId = isLaunched ? model.job_id : null;
 
   const modelName = isBasic ? model.name : model.job_name || "N/A";
   const modelType = isBasic ? model.type : model.author || "N/A";
+
+  // **Состояние статуса модели**
+  const [modelStatus, setModelStatus] = useState(model.last_execution_status);
+
+  // Синхронизация modelStatus с props
+  useEffect(() => {
+    setModelStatus(model.last_execution_status);
+  }, [model.last_execution_status]);
 
   // Получаем имя модели в нижнем регистре
   const modelNameImg = (model.name || model.job_name || "")
@@ -116,6 +134,33 @@ function ModelCard({ model, isLast, isBasic }) {
     }
   };
 
+  // **Функция запуска запущенной модели**
+  const handleStart = async () => {
+    if (isBasic) return; // Запускать можно только запущенные модели
+    setLoading(true);
+
+    try {
+      if (!jobId) {
+        alert("Идентификатор задачи отсутствует.");
+        setLoading(false);
+        return;
+      }
+
+      await axiosInstance.post("/jobs/job-start", null, {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      setModelStatus("running"); // Обновляем статус модели
+      alert("Модель успешно запущена.");
+    } catch (error) {
+      console.error("Ошибка при запуске модели:", error);
+      alert("Произошла ошибка при запуске модели.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // **Функция остановки запущенной модели**
   const handleStop = async () => {
     if (isBasic) return; // Останавливать можно только запущенные модели
@@ -133,6 +178,7 @@ function ModelCard({ model, isLast, isBasic }) {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
+      setModelStatus("stopped"); // Обновляем статус модели
       alert("Модель успешно остановлена.");
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
@@ -141,6 +187,82 @@ function ModelCard({ model, isLast, isBasic }) {
       setLoading(false);
     }
   };
+
+  // **Функция для получения логов модели**
+  const handleLogsClick = async (e) => {
+    e.stopPropagation(); // Предотвращаем всплытие события
+    if (isBasic) return; // Получать логи можно только для запущенных моделей
+    setLogsModalOpen(true);
+    setLogsLoading(true);
+    setCurrentLogs(""); // Сбрасываем предыдущие логи
+
+    try {
+      if (!jobId) {
+        setCurrentLogs("Идентификатор задачи отсутствует.");
+        setLogsLoading(false);
+        return;
+      }
+
+      const response = await axiosInstance.get("/jobs/job-logs", {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      const logs = response.data.logs || "Логи отсутствуют.";
+      setCurrentLogs(logs);
+    } catch (error) {
+      console.error(`Ошибка при получении логов для задачи ${jobId}:`, error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        (error.response?.status === 404
+          ? "Логи недоступны."
+          : "Ошибка при получении логов.");
+      setCurrentLogs(errorMessage);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  // **Определяем текст и действие кнопки в зависимости от статуса модели**
+  let actionButtonText = "";
+  let actionButtonHandler = null;
+  let isActionButtonDisabled = false;
+
+  if (isBasic) {
+    // Для базовых моделей кнопка запуска
+    actionButtonText = "Запустить";
+    actionButtonHandler = (e) => {
+      e.stopPropagation();
+      handleRun();
+    };
+    isActionButtonDisabled = loading;
+  } else {
+    // Для запущенных моделей
+    if (modelStatus === "running") {
+      actionButtonText = "Остановить";
+      actionButtonHandler = (e) => {
+        e.stopPropagation();
+        handleStop();
+      };
+      isActionButtonDisabled = loading;
+    } else if (
+      modelStatus === "failed" ||
+      modelStatus === "stopped" ||
+      modelStatus === undefined
+    ) {
+      actionButtonText = "Запустить";
+      actionButtonHandler = (e) => {
+        e.stopPropagation();
+        handleStart();
+      };
+      isActionButtonDisabled = loading;
+    } else {
+      // Если статус модели неизвестен или в непредусмотренном состоянии
+      actionButtonText = "Остановить";
+      actionButtonHandler = null;
+      isActionButtonDisabled = true;
+    }
+  }
 
   return (
     <>
@@ -186,15 +308,12 @@ function ModelCard({ model, isLast, isBasic }) {
             {/* **Действие (Кнопка запуска)** */}
             <Grid item xs={2} sx={{ textAlign: "center" }}>
               <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRun();
-                }}
-                disabled={loading}
+                onClick={actionButtonHandler}
+                disabled={isActionButtonDisabled}
                 variant="outlined"
                 sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
               >
-                Запустить
+                {actionButtonText}
                 <RocketLaunchOutlinedIcon
                   sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
                 />
@@ -213,9 +332,7 @@ function ModelCard({ model, isLast, isBasic }) {
 
             {/* **Состояние** */}
             <Grid item xs={2} sx={{ textAlign: "center" }}>
-              <Typography variant="body2">
-                {model.last_execution_status || "N/A"}
-              </Typography>
+              <Typography variant="body2">{modelStatus || "N/A"}</Typography>
             </Grid>
 
             {/* **URL** */}
@@ -223,21 +340,43 @@ function ModelCard({ model, isLast, isBasic }) {
               <Typography variant="body2">{model.job_url || "N/A"}</Typography>
             </Grid>
 
-            {/* **Действие (Кнопка остановки)** */}
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            {/* **Действия (Кнопки запуска/остановки и получения логов)** */}
+            <Grid
+              item
+              xs={2}
+              sx={{
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "center",
+                gap: 1,
+              }}
+            >
               <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStop();
-                }}
-                disabled={loading}
+                onClick={actionButtonHandler}
+                disabled={isActionButtonDisabled}
                 variant="outlined"
-                sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+                sx={{
+                  bgcolor: "#505156",
+                  color: "#FFFFFF",
+                  opacity: isActionButtonDisabled ? 0.5 : 1,
+                  padding:
+                    actionButtonText === "Остановить" ? "6px 13px" : "6px 18px",
+                }}
               >
-                Остановить
+                {actionButtonText}
                 <RocketLaunchOutlinedIcon
                   sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
                 />
+              </Button>
+              <Button
+                onClick={handleLogsClick}
+                variant="outlined"
+                sx={{
+                  bgcolor: "#505156",
+                  color: "#FFFFFF",
+                }}
+              >
+                Логи
               </Button>
             </Grid>
           </>
@@ -286,6 +425,65 @@ function ModelCard({ model, isLast, isBasic }) {
           </Box>
         </Modal>
       )}
+
+      {/* **Диалоговое окно логов модели** */}
+      <Dialog
+        open={logsModalOpen}
+        onClose={() => setLogsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Логи модели: ${modelName}`}</DialogTitle>
+        <DialogContent dividers>
+          {logsLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+            >
+              {currentLogs}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
+          <Button
+            onClick={() => {
+              // Копирование логов в буфер обмена
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(currentLogs).catch((error) => {
+                  console.error("Ошибка при копировании:", error);
+                });
+              } else {
+                const textarea = document.createElement("textarea");
+                textarea.value = currentLogs;
+                textarea.style.position = "fixed"; // Предотвращаем прокрутку страницы
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                  document.execCommand("copy");
+                } catch (error) {
+                  console.error("Ошибка при копировании:", error);
+                }
+                document.body.removeChild(textarea);
+              }
+            }}
+          >
+            Скопировать Логи
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

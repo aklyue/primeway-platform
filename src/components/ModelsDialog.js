@@ -28,7 +28,6 @@ import {
   PlayCircleFilled as PlayCircleFilledIcon,
   Stop as StopIcon,
   ContentCopy as ContentCopyIcon,
-  BugReport as BugReportIcon,
 } from "@mui/icons-material";
 import JobEvents from "./Tasks/JobEvents";
 import { AuthContext } from "../AuthContext";

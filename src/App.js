@@ -26,7 +26,6 @@ import {
   CircularProgress,
   IconButton,
   Button,
-  ListItemIcon,
   Popover,
   Stack,
 } from "@mui/material";
@@ -68,6 +67,10 @@ import OrganizationEvents from "./components/Organization/OrganizationEvents";
 import ModelsPage from "./components/ModelsPage";
 import { ReactComponent as Logo } from "./assets/favicon2.svg";
 import MenuItem from "./components/MenuItem";
+import NoCodeLayout from "./components/NoCode/NoCodeLayout";
+import DatasetsPage from "./components/NoCode/DatasetsPage";
+import TrainPage from "./components/NoCode/TrainPage";
+import DeployPage from "./components/NoCode/DeployPage";
 
 export function Layout() {
   const {
@@ -204,8 +207,8 @@ export function Layout() {
       icon: <AssignmentIcon fontSize="medium" />,
     },
     {
-      name: "Модели",
-      to: "/models",
+      name: "No-Code",
+      to: "/no-code/datasets",
       icon: <ModelTrainingIcon fontSize="medium" />,
     },
     {
@@ -987,13 +990,22 @@ export function Layout() {
                         }
                       />
                       <Route
-                        path="/models"
+                        path="/no-code"
                         element={
                           <ProtectedRoute>
-                            <ModelsPage />
+                            <NoCodeLayout />
                           </ProtectedRoute>
                         }
-                      />
+                      >
+                        <Route
+                          index
+                          element={<Navigate to="datasets" replace />}
+                        />
+                        <Route path="datasets" element={<DatasetsPage />} />
+                        <Route path="train" element={<TrainPage />} />
+                        <Route path="deploy" element={<DeployPage />} />
+                        <Route path="models" element={<ModelsPage />} />
+                      </Route>
                       <Route
                         path="/billing"
                         element={

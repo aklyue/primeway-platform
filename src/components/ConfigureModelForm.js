@@ -1183,11 +1183,14 @@ function ConfigureModelForm({ initialConfig, onClose }) {
 
         <Divider sx={{ my: 2 }} />
         <Box sx={{ textAlign: "end" }}>
+          <Button variant="text" onClick={onClose} sx={{ mt: 2, ml: 2 }}>
+            Отмена
+          </Button>
           {/* Submit Button */}
           <Button
             type="submit"
             variant="contained"
-            color="primary"
+            color="secondary"
             disabled={loading}
             sx={{ mt: 2, color: "white", padding: "7px 18px" }}
           >
@@ -1196,9 +1199,6 @@ function ConfigureModelForm({ initialConfig, onClose }) {
             ) : (
               "Деплой"
             )}
-          </Button>
-          <Button variant="text" onClick={onClose} sx={{ mt: 2, ml: 2 }}>
-            Отмена
           </Button>
         </Box>
       </form>

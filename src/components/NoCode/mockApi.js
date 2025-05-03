@@ -46,11 +46,12 @@ const deleteDataset = (id) => {
 const startFineTune = ({ baseModel, datasetId, params }) => {
   const ft = {
     id: `ft${Date.now()}`,
-    name: `${baseModel}-${datasetId}`,
+    name: `${baseModel}-${datasetId}`.replace(/-$/, ""),
     created: new Date().toLocaleDateString(),
     status: "queued",
     artifact: "-",
-    logs: `job queued with params=${params}\n`,
+    // просто сохраняем YAML/JSON как строку
+    logs: `job queued with params:\n${params}\n`,
   };
   _fineTunes.push(ft);
   return Promise.resolve(ft);

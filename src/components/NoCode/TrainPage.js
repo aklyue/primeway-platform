@@ -1,8 +1,10 @@
+// TrainPage.js
 import { useState, useEffect } from "react";
 import { api } from "./mockApi";
-import { Box, Button, TextField, MenuItem } from "@mui/material";
+import { Box, Button, TextField, MenuItem, Typography } from "@mui/material";
 import { modelsData } from "../../data/modelsData";
-import FineTuneTasks from "./FineTuneTasks";
+import FineTuneTasksList from "./FineTuneTasksList";
+import FineTuneFormModal from "./FineTuneFormModal";
 
 export default function TrainPage() {
   const [datasets, setDatasets] = useState([]);
@@ -10,21 +12,32 @@ export default function TrainPage() {
   const [ds, setDs] = useState("");
   const [params, setParams] = useState('{"lr":1e-5,"epochs":3}');
 
-  // Исправленный useEffect
+  const [openRetrain, setOpenRetrain] = useState(false);
+  const [rowForRetrain, setRowForRetrain] = useState(null);
+
   useEffect(() => {
     api.getDatasets().then(setDatasets);
   }, []);
 
-  const handleSubmit = () => {
-    api
-      .startFineTune({ baseModel: base, datasetId: ds, params })
-      .then(() =>
-        alert("Fine-tune started (mock). Перейдите во вкладку Deploy.")
-      );
+  const handleSubmit = async () => {
+    await api.startFineTune({
+      baseModel: base,
+      datasetId: ds,
+      params,
+    });
+    alert("Fine-tune started (mock). Перейдите во вкладку Deploy.");
+  };
+
+  const handleRetrainOpen = (row) => {
+    setRowForRetrain(row);
+    setOpenRetrain(true);
   };
 
   return (
     <Box>
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        Train
+      </Typography>
       <Box sx={{ maxWidth: "400px" }}>
         <TextField
           select
@@ -73,7 +86,16 @@ export default function TrainPage() {
           Start fine-tune
         </Button>
       </Box>
-      <FineTuneTasks />
+
+      <FineTuneTasksList mode="train" onRetrain={handleRetrainOpen} />
+
+      <FineTuneFormModal
+        open={openRetrain}
+        onClose={() => setOpenRetrain(false)}
+        datasets={datasets}
+        baseModel={rowForRetrain?.name || ""}
+        onSuccess={() => {}}
+      />
     </Box>
   );
 }

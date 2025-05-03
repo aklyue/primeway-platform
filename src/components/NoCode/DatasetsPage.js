@@ -8,6 +8,7 @@ import {
   TableCell,
   TableHead,
   IconButton,
+  Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -31,6 +32,9 @@ export default function DatasetsPage() {
 
   return (
     <Box>
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        DataSet
+      </Typography>
       <input id="ds-upload" type="file" hidden onChange={handleUpload} />
       <label htmlFor="ds-upload">
         <Button variant="contained" component="span" sx={{ color: "white" }}>

@@ -32,6 +32,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
+import DatasetIcon from "@mui/icons-material/Folder";
 import AuthProvider, { AuthContext } from "./AuthContext";
 import {
   OrganizationContext,
@@ -67,10 +68,9 @@ import OrganizationEvents from "./components/Organization/OrganizationEvents";
 import ModelsPage from "./components/ModelsPage";
 import { ReactComponent as Logo } from "./assets/favicon2.svg";
 import MenuItem from "./components/MenuItem";
-import NoCodeLayout from "./components/NoCode/NoCodeLayout";
 import DatasetsPage from "./components/NoCode/DatasetsPage";
 import TrainPage from "./components/NoCode/TrainPage";
-import DeployPage from "./components/NoCode/DeployPage";
+import PsychologyIcon from "@mui/icons-material/Psychology";
 
 export function Layout() {
   const {
@@ -87,6 +87,7 @@ export function Layout() {
   const navigate = useNavigate();
   const theme = useTheme();
   const [authenticating, setAuthenticating] = useState(false);
+  const isSmallDesktop = useMediaQuery(theme.breakpoints.down(1200));
 
   // Телефоны: до 600px
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -96,7 +97,7 @@ export function Layout() {
 
   // Ноутбуки/Компьютеры: от 960px и выше
   const isMinDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
-  const drawerWidth = isTablet || isMinDesktop ? "8%" : "4%";
+  const drawerWidth = isMinDesktop ? "6%" : isTablet ? "9%" : "14%";
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -206,11 +207,9 @@ export function Layout() {
       to: "/tasks",
       icon: <AssignmentIcon fontSize="medium" />,
     },
-    {
-      name: "No-Code",
-      to: "/no-code/datasets",
-      icon: <ModelTrainingIcon fontSize="medium" />,
-    },
+    { name: "Модели", to: "/models", icon: <ModelTrainingIcon /> },
+    { name: "Датасеты", to: "/datasets", icon: <DatasetIcon /> },
+    { name: "Обучение", to: "/train", icon: <PsychologyIcon /> },
     {
       name: "Биллинг",
       to: "/billing",
@@ -622,6 +621,9 @@ export function Layout() {
             name={item.name}
             icon={item.icon}
             isMobile={isMobile}
+            isSmallDesktop={isSmallDesktop}
+            isTablet={isTablet}
+            isDocsPage={isDocsPage}
             handleDrawerToggle={handleDrawerToggle}
           />
         ))}
@@ -990,22 +992,29 @@ export function Layout() {
                         }
                       />
                       <Route
-                        path="/no-code"
+                        path="/datasets"
                         element={
                           <ProtectedRoute>
-                            <NoCodeLayout />
+                            <DatasetsPage />
                           </ProtectedRoute>
                         }
-                      >
-                        <Route
-                          index
-                          element={<Navigate to="datasets" replace />}
-                        />
-                        <Route path="datasets" element={<DatasetsPage />} />
-                        <Route path="train" element={<TrainPage />} />
-                        <Route path="deploy" element={<DeployPage />} />
-                        <Route path="models" element={<ModelsPage />} />
-                      </Route>
+                      />
+                      <Route
+                        path="/train"
+                        element={
+                          <ProtectedRoute>
+                            <TrainPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/models"
+                        element={
+                          <ProtectedRoute>
+                            <ModelsPage />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route
                         path="/billing"
                         element={

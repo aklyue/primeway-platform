@@ -25,7 +25,7 @@ export default function TrainPage() {
       datasetId: ds,
       params,
     });
-    alert("Fine-tune started (mock). Перейдите во вкладку Deploy.");
+    alert("Fine-tune started (mock). Перейдите во вкладку Модели.");
   };
 
   const handleRetrainOpen = (row) => {
@@ -93,7 +93,7 @@ export default function TrainPage() {
         open={openRetrain}
         onClose={() => setOpenRetrain(false)}
         datasets={datasets}
-        baseModel={rowForRetrain?.name || ""}
+        baseModel={rowForRetrain?.name || base}
         onSuccess={() => {}}
       />
     </Box>

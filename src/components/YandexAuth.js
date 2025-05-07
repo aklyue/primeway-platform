@@ -77,7 +77,7 @@ const YandexAuth = ({ setAuthenticating }) => {
           // Инициализируем YaAuthSuggest и скрываем индикатор загрузки после инициализации
           window.YaAuthSuggest.init(
             {
-              client_id: "3094a8cdff0241eeac709ffdd7585aad",
+              client_id: "2bd62af38e644a86968d1b791431d881",
               response_type: "token",
               redirect_uri: "https://platform.primeway.io/auth/callback",
             },

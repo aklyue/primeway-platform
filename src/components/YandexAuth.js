@@ -77,11 +77,11 @@ const YandexAuth = ({ setAuthenticating }) => {
           // Инициализируем YaAuthSuggest и скрываем индикатор загрузки после инициализации
           window.YaAuthSuggest.init(
             {
-              client_id: "2bd62af38e644a86968d1b791431d881",
+              client_id: "3094a8cdff0241eeac709ffdd7585aad",
               response_type: "token",
-              redirect_uri: "https://platform.primeway.io/auth/callback",
+              redirect_uri: "https://dev.platform.primeway.io/auth/callback",
             },
-            "https://platform.primeway.io",
+            "https://dev.platform.primeway.io",
             {
               view: "button",
               parentId: "yandex-auth-container",
@@ -103,7 +103,7 @@ const YandexAuth = ({ setAuthenticating }) => {
               console.log("Auth data:", data);
               if (data.access_token) {
                 setAuthenticating(true);
-                fetch("https://api.primeway.io/auth/yandex", {
+                fetch("https://dev.api.primeway.io/auth/yandex", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",

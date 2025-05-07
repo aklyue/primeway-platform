@@ -465,7 +465,7 @@ export function Layout() {
 
                       left: "72%",
                       transform: "translateX(-72%)",
-                      maxWidth: "1500px",
+                      maxWidth: "92%",
                       width: "100%",
                       top: "15px",
                       zIndex: 1,

@@ -4,7 +4,9 @@ import axiosInstance from "../../api";
 // Fetch list of datasets
 export const getDatasets = (organizationId) =>
   axiosInstance
-    .get("/datasets/get-datasets", { params: { organization_id: organizationId } })
+    .get("/datasets/get-datasets", {
+      params: { organization_id: organizationId },
+    })
     .then((res) => res.data);
 
 // Upload a new dataset (server generates dataset_id internally)
@@ -17,14 +19,10 @@ export const uploadDataset = (file, organizationId) => {
   // We can pass any placeholder for dataset_id in path; FastAPI ignores it and generates its own
 
   return axiosInstance
-    .post(
-      `/datasets/upload`,
-      formData,
-      {
-        params: { organization_id: organizationId },
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    )
+    .post(`/datasets/upload`, formData, {
+      params: { organization_id: organizationId },
+      headers: { "Content-Type": "multipart/form-data" },
+    })
     .then((res) => res.data);
 };
 

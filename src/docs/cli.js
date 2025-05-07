@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import "./docs.css"; 
+import "./docs.css";
 
 const CLI = () => {
   const CodeBlock = ({ code, language }) => {
@@ -17,11 +17,14 @@ const CLI = () => {
     };
 
     return (
-      <div className="code-block-container" style={{ position: "relative", marginBottom: "20px" }}>
+      <div
+        className="code-block-container"
+        style={{ position: "relative", marginBottom: "20px" }}
+      >
         <SyntaxHighlighter
           language={language}
           style={coldarkCold}
-          customStyle={{ margin: 0, padding: '8px', borderRadius: "7px" }}
+          customStyle={{ margin: 0, padding: "8px", borderRadius: "7px" }}
           showLineNumbers
         >
           {code}
@@ -49,16 +52,25 @@ const CLI = () => {
     { id: "command-reference", label: "Справочник команд" },
     { id: "job-commands", label: "Команды задач" },
     { id: "pipeline-commands", label: "Команды конвейеров" },
-    { id: "using-the-cli-interactively", label: "Интерактивное использование CLI" },
+    {
+      id: "using-the-cli-interactively",
+      label: "Интерактивное использование CLI",
+    },
   ];
 
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:1200px)');
+  const isMobile = useMediaQuery("(max-width:1200px)");
 
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "20px" }}>
-        <h1 style={{ marginBottom: "25px", fontSize: isMobile ? "1.7rem" : "2rem", lineHeight: 1.2 }}>
+        <h1
+          style={{
+            marginBottom: "25px",
+            fontSize: isMobile ? "1.7rem" : "2rem",
+            lineHeight: 1.2,
+          }}
+        >
           CLI
         </h1>
 
@@ -66,20 +78,18 @@ const CLI = () => {
         <section id="overview">
           <h2>Обзор</h2>
           <p>
-            CLI PrimeWay предоставляет полный набор команд для управления задачами и конвейерами, позволяя вам взаимодействовать с платформой прямо из вашего терминала.
+            CLI PrimeWay предоставляет полный набор команд для управления
+            задачами и конвейерами, позволяя вам взаимодействовать с платформой
+            прямо из вашего терминала.
           </p>
         </section>
 
         {/* Установка и настройка */}
         <section id="installation-and-setup">
           <h2>Установка и настройка</h2>
-          <p>
-            Установите CLI PrimeWay:
-          </p>
+          <p>Установите CLI PrimeWay:</p>
           <CodeBlock code={`pip install primeway`} language="bash" />
-          <p>
-            Проверьте установку:
-          </p>
+          <p>Проверьте установку:</p>
           <CodeBlock code={`primeway --version`} language="bash" />
         </section>
 
@@ -89,24 +99,34 @@ const CLI = () => {
           <p>
             Установите ваш API-токен PrimeWay в качестве переменной окружения:
           </p>
-          <CodeBlock code={`export PRIMEWAY_API_TOKEN=your_api_token_here`} language="bash" />
-          <p>
-            Альтернативно, вы можете передать токен в конфигурации:
-          </p>
-          <CodeBlock code={`primeway_api_token: primeway-nlOm2e3vwv_rjakw286mzg`} language="yaml" />
+          <CodeBlock
+            code={`export PRIMEWAY_API_TOKEN=your_api_token_here`}
+            language="bash"
+          />
+          <p>Альтернативно, вы можете передать токен в конфигурации:</p>
+          <CodeBlock
+            code={`primeway_api_token: primeway-nlOm2e3vwv_rjakw286mzg`}
+            language="yaml"
+          />
         </section>
 
         {/* Структура команд */}
         <section id="command-structure">
           <h2>Структура команд</h2>
-          <p>
-            Команды CLI организованы в группы на основе функциональности:
-          </p>
+          <p>Команды CLI организованы в группы на основе функциональности:</p>
           <ul>
-            <li><code>primeway create</code>: Создание новых задач или конвейеров.</li>
-            <li><code>primeway run</code>: Выполнение задач или конвейеров.</li>
-            <li><code>primeway job</code>: Управление отдельными задачами.</li>
-            <li><code>primeway stop</code>: Остановка выполняющихся задач.</li>
+            <li>
+              <code>primeway create</code>: Создание новых задач или конвейеров.
+            </li>
+            <li>
+              <code>primeway run</code>: Выполнение задач или конвейеров.
+            </li>
+            <li>
+              <code>primeway job</code>: Управление отдельными задачами.
+            </li>
+            <li>
+              <code>primeway stop</code>: Остановка выполняющихся задач.
+            </li>
           </ul>
         </section>
 
@@ -117,20 +137,43 @@ const CLI = () => {
           {/* Команды задач */}
           <section id="job-commands">
             <h3>Команды задач</h3>
-            <p><strong>Создать задачу:</strong></p>
-            <CodeBlock code={`primeway create job --config job_config.yaml`} language="bash" />
-            <p><strong>Запустить задачу:</strong></p>
+            <p>
+              <strong>Создать задачу:</strong>
+            </p>
+            <CodeBlock
+              code={`primeway create job --config job_config.yaml`}
+              language="bash"
+            />
+            <p>
+              <strong>Запустить задачу:</strong>
+            </p>
             <CodeBlock code={`primeway run job JOB_ID`} language="bash" />
-            <p><strong>Список задач:</strong></p>
+            <p>
+              <strong>Список задач:</strong>
+            </p>
             <CodeBlock code={`primeway job list`} language="bash" />
-            <p><strong>Получить детали задачи:</strong></p>
+            <p>
+              <strong>Получить детали задачи:</strong>
+            </p>
             <CodeBlock code={`primeway job info JOB_ID`} language="bash" />
-            <p><strong>Получить логи задачи:</strong></p>
+            <p>
+              <strong>Получить логи задачи:</strong>
+            </p>
             <CodeBlock code={`primeway job logs JOB_ID`} language="bash" />
-            <p><strong>Получить артефакты задачи:</strong></p>
-            <CodeBlock code={`primeway job artifacts JOB_ID --output-dir ./artifacts`} language="bash" />
-            <p><strong>Остановить задачу:</strong></p>
-            <CodeBlock code={`primeway stop job --job-id JOB_ID`} language="bash" />
+            <p>
+              <strong>Получить артефакты задачи:</strong>
+            </p>
+            <CodeBlock
+              code={`primeway job artifacts JOB_ID --output-dir ./artifacts`}
+              language="bash"
+            />
+            <p>
+              <strong>Остановить задачу:</strong>
+            </p>
+            <CodeBlock
+              code={`primeway stop job --job-id JOB_ID`}
+              language="bash"
+            />
           </section>
         </section>
 
@@ -138,9 +181,13 @@ const CLI = () => {
         <section id="using-the-cli-interactively">
           <h2>Интерактивное использование CLI</h2>
           <p>
-            Некоторые команды могут запрашивать дополнительный ввод, если информации недостаточно. Используйте флаг <code>--help</code> с любой командой, чтобы получить подробную информацию о использовании.
+            Некоторые команды могут запрашивать дополнительный ввод, если
+            информации недостаточно. Используйте флаг <code>--help</code> с
+            любой командой, чтобы получить подробную информацию о использовании.
           </p>
-          <p><strong>Пример:</strong></p>
+          <p>
+            <strong>Пример:</strong>
+          </p>
           <CodeBlock code={`primeway run job --help`} language="bash" />
         </section>
       </Box>
@@ -154,7 +201,7 @@ const CLI = () => {
             position: "sticky",
             top: "40px",
             alignSelf: "flex-start",
-            marginLeft: '25px',
+            marginLeft: "25px",
           }}
         >
           <Scrollspy

@@ -1,92 +1,169 @@
-// TrainPage.js
 import { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Typography,
+  Modal,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
 import { api } from "./mockApi";
-import { Box, Button, TextField, MenuItem, Typography } from "@mui/material";
-import { modelsData } from "../../data/modelsData";
 import FineTuneTasksList from "./FineTuneTasksList";
+import TrainForm from "./TrainForm";
+import CloseIcon from "@mui/icons-material/Close";
 import FineTuneFormModal from "./FineTuneFormModal";
+import { modelsData } from "../../data/modelsData";
 
 export default function TrainPage() {
   const [datasets, setDatasets] = useState([]);
-  const [base, setBase] = useState(modelsData[0]?.name || "");
-  const [ds, setDs] = useState("");
-  const [params, setParams] = useState('{"lr":1e-5,"epochs":3}');
-
+  const [customTasks, setCustomTasks] = useState([]);
   const [openRetrain, setOpenRetrain] = useState(false);
   const [rowForRetrain, setRowForRetrain] = useState(null);
+  const [base, setBase] = useState(modelsData[0]?.name || "");
 
   useEffect(() => {
     api.getDatasets().then(setDatasets);
+    refreshCustomTasks();
   }, []);
 
-  const handleSubmit = async () => {
-    await api.startFineTune({
-      baseModel: base,
-      datasetId: ds,
-      params,
-    });
-    alert("Fine-tune started (mock). Перейдите во вкладку Модели.");
+  const refreshCustomTasks = () => {
+    api.getCustomFineTunes().then(setCustomTasks);
   };
+
+  const [openTrainModal, setOpenTrainModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [baseModel, setBaseModel] = useState("unsloth/gemma-3-4b-it");
+  const [datasetName, setDatasetName] = useState("mlabonne/FineTome-100k");
+  const [maxSeqLen, setMaxSeqLen] = useState("2048");
+  const [batchSize, setBatchSize] = useState("2");
+  const [gradAccum, setGradAccum] = useState("4");
+  const [epochs, setEpochs] = useState("1");
+  const [learningRate, setLearningRate] = useState("0.0002");
+  const [weightDecay, setWeightDecay] = useState("0.01");
+  const [seed, setSeed] = useState("42");
+  const [loraR, setLoraR] = useState("16");
+  const [loraAlpha, setLoraAlpha] = useState("16");
+  const [loraDropout, setLoraDropout] = useState("0");
+  const [hfToken, setHfToken] = useState("");
 
   const handleRetrainOpen = (row) => {
     setRowForRetrain(row);
     setOpenRetrain(true);
   };
 
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const envVars = [
+        { name: "MAX_SEQ_LEN", value: maxSeqLen },
+        { name: "BATCH_SIZE", value: batchSize },
+        { name: "GRADIENT_ACCUMULATION", value: gradAccum },
+        { name: "NUM_EPOCHS", value: epochs },
+        { name: "LEARNING_RATE", value: learningRate },
+        { name: "WEIGHT_DECAY", value: weightDecay },
+        { name: "SEED", value: seed },
+        { name: "LORA_R", value: loraR },
+        { name: "LORA_ALPHA", value: loraAlpha },
+        { name: "LORA_DROPOUT", value: loraDropout },
+        { name: "HF_TOKEN", value: hfToken },
+        { name: "BASE_MODEL", value: baseModel },
+        { name: "DATASET_NAME", value: datasetName },
+      ];
+
+      const finetuneConfig = {
+        job_name: "finetune-" + Date.now(),
+        gpu_types: ["A100"],
+        base_model: baseModel,
+        dataset_name: datasetName,
+        disk_space: 10,
+        creation_timeout: 600,
+        schedule: null,
+        env: envVars,
+      };
+
+      await api.startFineTune(finetuneConfig);
+      await api.startCustomFineTune(finetuneConfig);
+      refreshCustomTasks();
+
+      alert("Fine-tune started. Проверьте список задач ниже.");
+    } catch (error) {
+      console.error("Error starting fine-tune:", error);
+    } finally {
+      setIsLoading(false);
+      setOpenTrainModal(false);
+    }
+  };
+
   return (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Train
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        {" "}
+        Train Page{" "}
       </Typography>
-      <Box sx={{ maxWidth: "400px" }}>
-        <TextField
-          select
-          fullWidth
-          label="Base model"
-          sx={{ mb: 2 }}
-          value={base}
-          onChange={(e) => setBase(e.target.value)}
+
+      <Button
+        variant="contained"
+        onClick={() => setOpenTrainModal(true)}
+        sx={{ mb: 4, color: "white" }}
+      >
+        Открыть форму дообучения
+      </Button>
+
+      <Modal open={openTrainModal} onClose={() => setOpenTrainModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 480,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 4,
+          }}
         >
-          {modelsData.map((m) => (
-            <MenuItem key={m.name} value={m.name}>
-              {m.name}
-            </MenuItem>
-          ))}
-        </TextField>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => setOpenTrainModal(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-        <TextField
-          select
-          fullWidth
-          label="Dataset"
-          sx={{ mb: 2 }}
-          value={ds}
-          onChange={(e) => setDs(e.target.value)}
-        >
-          {datasets.map((d) => (
-            <MenuItem key={d.id} value={d.id}>
-              {d.name}
-            </MenuItem>
-          ))}
-        </TextField>
+          <TrainForm
+            baseModel={baseModel}
+            datasetName={datasetName}
+            maxSeqLen={maxSeqLen}
+            batchSize={batchSize}
+            gradAccum={gradAccum}
+            epochs={epochs}
+            learningRate={learningRate}
+            weightDecay={weightDecay}
+            seed={seed}
+            loraR={loraR}
+            loraAlpha={loraAlpha}
+            loraDropout={loraDropout}
+            hfToken={hfToken}
+            isLoading={isLoading}
+            setBaseModel={setBaseModel}
+            setDatasetName={setDatasetName}
+            setMaxSeqLen={setMaxSeqLen}
+            setBatchSize={setBatchSize}
+            setGradAccum={setGradAccum}
+            setEpochs={setEpochs}
+            setLearningRate={setLearningRate}
+            setWeightDecay={setWeightDecay}
+            setSeed={setSeed}
+            setLoraR={setLoraR}
+            setLoraAlpha={setLoraAlpha}
+            setLoraDropout={setLoraDropout}
+            setHfToken={setHfToken}
+            handleSubmit={handleSubmit}
+          />
+        </Box>
+      </Modal>
 
-        <TextField
-          fullWidth
-          label="Params (JSON)"
-          sx={{ mb: 2 }}
-          value={params}
-          onChange={(e) => setParams(e.target.value)}
-        />
-
-        <Button
-          variant="contained"
-          sx={{ color: "white" }}
-          disabled={!ds}
-          onClick={handleSubmit}
-        >
-          Start fine-tune
-        </Button>
-      </Box>
-
+      {/* Добавьте список задач ниже */}
       <FineTuneTasksList mode="train" onRetrain={handleRetrainOpen} />
 
       <FineTuneFormModal

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -7,7 +8,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Modal,
   Typography,
   Menu,
   MenuItem,
@@ -15,23 +15,64 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import { api } from "./mockApi";
+import { OrganizationContext } from "../Organization/OrganizationContext";
+import axiosInstance from "../../api";
+import FineTuneFormModal from "./FineTuneFormModal";
 
 export default function FineTuneTasksList({ mode, onRetrain }) {
   const [rows, setRows] = useState([]);
-  const [logs, setLogs] = useState("");
-  const [openLogs, setOpenLogs] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [openModal, setOpenModal] = useState(false); // Состояние для открытия модального окна
+  const { currentOrganization } = useContext(OrganizationContext);
 
-  const refresh = () => api.getFineTunes().then(setRows);
+  // Функция для обновления списка задач
+  const refresh = async () => {
+    try {
+      const response = await axiosInstance.get("/finetuning/get-running-jobs", {
+        params: {
+          organization_id: currentOrganization.id,
+          status: "running",
+        },
+      });
+      console.log(response.data);
+
+      const backendJobs = response.data.map((job) => ({
+        id: job.job_id,
+        name: job.job_name,
+        status: job.build_status.toLowerCase(),
+        created: new Date(job.created_at).toLocaleString(),
+        artifact: job.job_url || "-",
+      }));
+
+      const mockJobs = [
+        {
+          id: "ft-mock-1",
+          name: "gemma-wiki",
+          status: "ready",
+          created: "01.05.25",
+          artifact: "gemma-wiki:latest",
+        },
+        {
+          id: "ft-mock-2",
+          name: "mistral-code",
+          status: "running",
+          created: "01.05.25",
+          artifact: "-",
+        },
+      ];
+
+      setRows([...mockJobs, ...backendJobs]);
+    } catch (error) {
+      console.error("Ошибка при получении задач дообучения:", error);
+    }
+  };
 
   useEffect(() => {
     refresh();
     const id = setInterval(refresh, 3000);
     return () => clearInterval(id);
-  }, []);
+  }, [currentOrganization]);
 
   const open = Boolean(anchorEl);
 
@@ -46,33 +87,25 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
     setAnchorEl(null);
   };
 
-  const showLogs = (id) =>
-    api.getFineTuneLogs(id).then((l) => {
-      setLogs(l);
-      setOpenLogs(true);
-    });
-
-  const start = (id, status) => {
-    if (status === "stopped") api.restartFineTune(id).then(refresh);
-    else alert("Job уже завершён");
-  };
-
-  const stop = (id) => api.stopFineTune(id).then(refresh);
-  const deploy = (id) =>
-    api.deployModel(id).then(() => alert(`Deploy started for ${id} (mock)`));
-
   const handleRowClick = (row) => {
     if (mode === "train") {
       onRetrain(row);
     } else {
-      showLogs(row.id);
+      setSelectedRow(row); // Сохраняем выбранную задачу
+      setOpenModal(true); // Открываем модальное окно
     }
+  };
+
+  // Закрытие модального окна
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRow(null);
   };
 
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ mb: 1 }}>
-        {mode === "train" ? "Fine-tune tasks" : "Deploy"}
+        {mode === "train" ? "Запущенные задачи дообучения" : "Deploy"}
       </Typography>
 
       <Table size="small">
@@ -98,49 +131,28 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
               <TableCell>{j.created}</TableCell>
               <TableCell>{j.status}</TableCell>
               <TableCell>{j.artifact}</TableCell>
-              <TableCell sx={{ whiteSpace: "nowrap" }}>
-                {j.status === "stopped" && (
-                  <Button
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      start(j.id, j.status);
-                    }}
-                  >
-                    Start
-                  </Button>
+              <TableCell
+                sx={{
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  disabled={!(j.status !== "running" || j.status !== "ready")}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Остановка задачи
+                  }}
+                >
+                  Stop
+                </Button>
+                {j.status !== "running" && j.status !== "ready" && (
+                  <Typography>Завершена</Typography>
                 )}
 
-                {(j.status === "running" || j.status === "queued") && (
-                  <Button
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      stop(j.id);
-                    }}
-                  >
-                    Stop
-                  </Button>
-                )}
-
-                {mode === "train" && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      bgcolor: "#505156",
-                      color: "#FFFFFF",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRetrain(j);
-                    }}
-                  >
-                    Дообучить
-                  </Button>
-                )}
-
-                {mode === "deploy" && (
+                {/* {mode === "deploy" && (
                   <>
                     <IconButton
                       size="small"
@@ -152,30 +164,13 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
                     <Menu
                       anchorEl={anchorEl}
                       open={open && selectedRow?.id === j.id}
-                      onClose={(e) => handleClose(e)}
-                      sx={{
-                        "& .MuiPaper-root": {
-                          borderRadius: "8px",
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                          minWidth: "200px",
-
-                          "& .MuiMenuItem-root": {
-                            transition: "all 0.2s ease",
-                            "&:hover": {
-                              transform: "translateX(4px)",
-                            },
-                            "& .MuiListItemIcon-root": {
-                              minWidth: "36px",
-                            },
-                          },
-                        },
-                      }}
+                      onClose={handleClose}
                     >
                       <MenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleClose();
-                          deploy(j.id);
+                          handleClose(e);
+                          // Запуск деплоя
                         }}
                         disabled={j.status !== "ready"}
                       >
@@ -184,48 +179,21 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
                         />
                         Deploy
                       </MenuItem>
-                      <MenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClose();
-                          showLogs(j.id);
-                        }}
-                      >
-                        <AssignmentIcon sx={{ mr: 1, color: "info.main" }} />
-                        Logs
-                      </MenuItem>
                     </Menu>
                   </>
-                )}
+                )} */}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <Modal open={openLogs} onClose={() => setOpenLogs(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            p: 3,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Логи
-          </Typography>
-          <Typography component="pre" sx={{ whiteSpace: "pre-wrap" }}>
-            {logs}
-          </Typography>
-          <Button onClick={() => setOpenLogs(false)}>Закрыть</Button>
-        </Box>
-      </Modal>
+      {/* Модальное окно для выбранной задачи */}
+      <FineTuneFormModal
+        open={openModal}
+        onClose={handleCloseModal}
+        row={selectedRow}
+      />
     </Box>
   );
 }

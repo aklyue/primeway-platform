@@ -8,11 +8,74 @@ let _datasets = [
   { id: "ds2", name: "code.json", size: "3 MB", created: "02.05.25" },
 ];
 
+let _jupyterSessions = [
+  {
+    id: "jupyter-1",
+    gpuType: "gpu-t4",
+    diskSpace: 20,
+    status: "running",
+    createdAt: new Date().toLocaleString(),
+    url: "https://jupyter.example.com/session-1",
+  },
+  {
+    id: "jupyter-2",
+    gpuType: "gpu-a10g",
+    diskSpace: 50,
+    status: "stopped",
+    createdAt: new Date(Date.now() - 86400000).toLocaleString(),
+    url: "https://jupyter.example.com/session-2",
+  },
+];
+
+// ──────────────────────────
+// JUPYTERLAB SESSIONS
+// ──────────────────────────
+const getJupyterSessions = () => Promise.resolve([..._jupyterSessions]);
+
+const createJupyterSession = ({ gpuType, diskSpace }) => {
+  const newSession = {
+    id: `jupyter-${Date.now()}`,
+    gpuType,
+    diskSpace: parseInt(diskSpace),
+    status: "starting",
+    createdAt: new Date().toLocaleString(),
+    url: `https://jupyter.example.com/session-${_jupyterSessions.length + 1}`,
+  };
+  _jupyterSessions.push(newSession);
+  return Promise.resolve(newSession);
+};
+
+const startJupyterSession = (sessionId) => {
+  _jupyterSessions = _jupyterSessions.map((session) =>
+    session.id === sessionId ? { ...session, status: "starting" } : session
+  );
+  return Promise.resolve();
+};
+
+const stopJupyterSession = (sessionId) => {
+  _jupyterSessions = _jupyterSessions.map((session) =>
+    session.id === sessionId ? { ...session, status: "stopped" } : session
+  );
+  return Promise.resolve();
+};
+
+// ──────────────────────────
+// ИМИТАЦИЯ ПРОГРЕССА starting→running
+// ──────────────────────────
+setInterval(() => {
+  _jupyterSessions = _jupyterSessions.map((session) => {
+    if (session.status === "starting" && Math.random() < 0.4) {
+      return { ...session, status: "running" };
+    }
+    return session;
+  });
+}, 3000);
+
 let _fineTunes = [
   {
     id: "ft1",
     name: "gemma-wiki",
-    created: "01.05.25",
+    url: "ghg.ss.com",
     status: "ready", // queued | running | ready | stopped
     artifact: "gemma-wiki:latest",
     logs: "epoch 1/3 …\nepoch 2/3 …\n",
@@ -106,6 +169,51 @@ setInterval(() => {
   });
 }, 4000);
 
+let _customFineTunes = [];
+
+// Добавьте новые методы API
+const startCustomFineTune = ({ baseModel, datasetId, params }) => {
+  const task = {
+    id: `custom-${Date.now()}`,
+    baseModel,
+    datasetId,
+    params: JSON.stringify(params),
+    status: "queued",
+    createdAt: new Date().toLocaleString(),
+  };
+  _customFineTunes.push(task);
+  return Promise.resolve(task);
+};
+
+const getCustomFineTunes = () => Promise.resolve([..._customFineTunes]);
+
+const stopCustomFineTune = (taskId) => {
+  _customFineTunes = _customFineTunes.map((task) =>
+    task.id === taskId ? { ...task, status: "stopped" } : task
+  );
+  return Promise.resolve();
+};
+
+const restartCustomFineTune = (taskId) => {
+  _customFineTunes = _customFineTunes.map((task) =>
+    task.id === taskId ? { ...task, status: "queued" } : task
+  );
+  return Promise.resolve();
+};
+
+// Имитация прогресса для кастомных задач
+setInterval(() => {
+  _customFineTunes = _customFineTunes.map((task) => {
+    if (task.status === "queued" && Math.random() < 0.3) {
+      return { ...task, status: "running" };
+    }
+    if (task.status === "running" && Math.random() < 0.3) {
+      return { ...task, status: "ready" };
+    }
+    return task;
+  });
+}, 3000);
+
 // ──────────────────────────
 // ЭКСПОРТ «API»
 // ──────────────────────────
@@ -118,6 +226,11 @@ export const api = {
   // train
   startFineTune,
 
+  startCustomFineTune,
+  getCustomFineTunes,
+  stopCustomFineTune,
+  restartCustomFineTune,
+
   // fine-tune tasks
   getFineTunes,
   getFineTuneLogs,
@@ -126,4 +239,10 @@ export const api = {
 
   // deploy
   deployModel,
+
+  // jupyterlab sessions
+  getJupyterSessions,
+  createJupyterSession,
+  startJupyterSession,
+  stopJupyterSession,
 };

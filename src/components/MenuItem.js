@@ -24,12 +24,7 @@ const MenuItem = ({
   const isSelected = location.pathname === to;
 
   return (
-    <Tooltip
-      title={name}
-      placement="right"
-      // тултип нужен только когда подписи нет (tablet или mobile)
-      disableHoverListener={!isTablet && !isMobile}
-    >
+    <Tooltip title={name} placement="right">
       <ListItem disablePadding>
         <ListItemButton
           component={Link}
@@ -37,15 +32,13 @@ const MenuItem = ({
           selected={isSelected}
           onClick={isMobile ? handleDrawerToggle : undefined}
           sx={{
-            justifyContent:
-              isTablet || isSmallDesktop ? "center" : "flex-start",
-            px: 2, // внутренний отступ
-            gap: isTablet ? 0 : 1.5,
+            justifyContent: "center",
+            padding: "10px 0",
           }}
         >
           <ListItemIcon
             sx={{
-              minWidth: isTablet ? 0 : 32,
+              minWidth: 0,
               color: isSelected
                 ? theme.palette.primary.main
                 : theme.palette.primary.icon,
@@ -53,13 +46,12 @@ const MenuItem = ({
           >
             {icon}
           </ListItemIcon>
-
-          {/* подпись показываем только, если это НЕ tablet */}
-          {!(isTablet || isSmallDesktop) && (
+          {isMobile && (
             <ListItemText
               primary={name}
               primaryTypographyProps={{
                 fontSize: 14,
+                ml: 1,
                 color: isDocsPage ? "#F5F5F5" : "inherit",
               }}
             />

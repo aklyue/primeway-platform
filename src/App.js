@@ -28,6 +28,10 @@ import {
   Button,
   Popover,
   Stack,
+  Grid,
+  Card,
+  CardActionArea,
+  CardContent,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -48,7 +52,7 @@ import YandexAuth from "./components/YandexAuth";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
 import { keyframes, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import Docs from "./components/Docs"; // Компонент для документации
+import Docs from "./components/Docs";
 import HomeIcon from "@mui/icons-material/Home";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import WorkIcon from "@mui/icons-material/Work";
@@ -62,7 +66,6 @@ import CodeIcon from "@mui/icons-material/Code";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
-import axiosInstance from "./api";
 import Tasks from "./components/Tasks/Tasks";
 import OrganizationEvents from "./components/Organization/OrganizationEvents";
 import ModelsPage from "./components/ModelsPage";
@@ -71,6 +74,7 @@ import MenuItem from "./components/MenuItem";
 import DatasetsPage from "./components/NoCode/DatasetsPage";
 import TrainPage from "./components/NoCode/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
+import JupyterLabSessions from "./components/NoCode/JupyterLab";
 
 export function Layout() {
   const {
@@ -82,36 +86,24 @@ export function Layout() {
     setOpenRegistrationModal,
     loading,
   } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию из контекста
+  const { currentOrganization } = useContext(OrganizationContext);
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const [authenticating, setAuthenticating] = useState(false);
   const isSmallDesktop = useMediaQuery(theme.breakpoints.down(1200));
-
-  // Телефоны: до 600px
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // Планшеты: от 600px до 960px
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-
-  // Ноутбуки/Компьютеры: от 960px и выше
   const isMinDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
-  const drawerWidth = isMinDesktop ? "6%" : isTablet ? "9%" : "14%";
-
+  const drawerWidth = isTablet || isMinDesktop ? "8%" : "4%";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const pulse = keyframes`
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.15);
-  }
-  100% {
-    transform: scale(1);
-  }
-`;
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  `;
 
   const checkCaptcha = () => {
     const lastCaptchaTime = localStorage.getItem("lastCaptchaTime");
@@ -122,16 +114,15 @@ export function Layout() {
       !lastCaptchaTime ||
       currentTime - parseInt(lastCaptchaTime, 10) >= threeHours
     ) {
-      return true; // Требуется показать капчу
+      return true;
     } else {
-      return false; // Капча не требуется
+      return false;
     }
   };
 
   useEffect(() => {
     if (!loading) {
       const captchaRequired = checkCaptcha();
-
       setOpenCaptchaModal(captchaRequired);
 
       if (!isLoggedIn) {
@@ -143,14 +134,16 @@ export function Layout() {
       } else {
         setOpenRegistrationModal(false);
       }
+
+      // Скрываем меню на главной странице
+      setShowMenu(location.pathname !== "/");
     }
   }, [isLoggedIn, loading, location]);
 
   const handleAvatarClick = () => {
-    navigate("/billing");
+    navigate("/");
   };
 
-  // Обработчик успешного прохождения капчи
   const handleCaptchaSuccess = () => {
     setOpenCaptchaModal(false);
     const currentTime = Date.now();
@@ -161,11 +154,6 @@ export function Layout() {
     }
   };
 
-  // Определяем, должен ли отображаться основной контент
-  const shouldRenderContent =
-    openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
-
-  // Блокируем скроллинг при открытых модальных окнах
   useEffect(() => {
     if (openCaptchaModal || openRegistrationModal) {
       document.body.style.overflow = "hidden";
@@ -180,10 +168,8 @@ export function Layout() {
 
   const isDocsPage = location.pathname.startsWith("/docs");
 
-  // Создаем ключ для анимации переходов
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
-  // Состояния для иконки и списка событий
   const [eventsAnchorEl, setEventsAnchorEl] = useState(null);
 
   const handleEventsClick = (event) => {
@@ -198,37 +184,58 @@ export function Layout() {
 
   const dashboardMenuItems = [
     {
-      name: "GPU",
-      to: "/gpu-list",
-      icon: <MemoryIcon fontSize="medium" />,
+      name: "JupyterLab",
+      to: "/jupyter",
+      icon: <CodeIcon fontSize="medium" />,
+      description: "Интерактивная среда разработки JupyterLab",
     },
     {
       name: "Задачи",
       to: "/tasks",
       icon: <AssignmentIcon fontSize="medium" />,
+      description: "Просмотр и управление задачами",
     },
-    { name: "Модели", to: "/models", icon: <ModelTrainingIcon /> },
-    { name: "Датасеты", to: "/datasets", icon: <DatasetIcon /> },
-    { name: "Обучение", to: "/train", icon: <PsychologyIcon /> },
+    {
+      name: "Модели",
+      to: "/models",
+      icon: <ModelTrainingIcon />,
+      description: "Работа с моделями машинного обучения",
+    },
+    {
+      name: "Датасеты",
+      to: "/datasets",
+      icon: <DatasetIcon />,
+      description: "Управление наборами данных",
+    },
+    {
+      name: "Обучение",
+      to: "/train",
+      icon: <PsychologyIcon />,
+      description: "Обучение моделей",
+    },
     {
       name: "Биллинг",
       to: "/billing",
       icon: <PriceChangeIcon fontSize="medium" />,
+      description: "Управление платежами и балансом",
     },
     {
       name: "API Ключи",
       to: "/api-keys",
       icon: <KeyIcon fontSize="medium" />,
+      description: "Управление API ключами",
     },
     {
       name: "Настройки",
       to: "/settings",
       icon: <SettingsIcon fontSize="medium" />,
+      description: "Настройки аккаунта",
     },
     {
       name: "Организации",
       to: "/organization-settings",
       icon: <RecentActorsIcon fontSize="medium" />,
+      description: "Управление организациями",
     },
   ];
 
@@ -287,300 +294,6 @@ export function Layout() {
 
   const menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
 
-  // Содержимое Drawer
-  // const drawer = (
-  //   <div>
-  //     <Toolbar />
-  //     <List>
-  //       {isMobile && (
-  //         <List sx={{ display: "flex" }}>
-  //           <ListItem disablePadding>
-  //             <ListItemButton
-  //               component={Link}
-  //               to="/gpu-list"
-  //               selected={!location.pathname.startsWith("/docs")}
-  //               onClick={handleDrawerToggle}
-  //             >
-  //               <ListItemText primary="Дашборд" />
-  //             </ListItemButton>
-  //           </ListItem>
-  //           <ListItem disablePadding>
-  //             <ListItemButton
-  //               component={Link}
-  //               to="/docs"
-  //               selected={location.pathname.startsWith("/docs")}
-  //               onClick={handleDrawerToggle}
-  //             >
-  //               <ListItemText primary="Доки" />
-  //             </ListItemButton>
-  //           </ListItem>
-  //         </List>
-  //       )}
-  //       {!isDocsPage ? (
-  //         <>
-  //           {/* Список элементов меню для дашборда */}
-  //           <Tooltip title="GPU" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/gpu-list"
-  //                 selected={location.pathname === "/gpu-list"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <MemoryIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Задачи */}
-  //           <Tooltip title="Задачи" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/tasks"
-  //                 selected={location.pathname === "/tasks"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <AssignmentIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Модели */}
-  //           <Tooltip title="Модели" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/models"
-  //                 selected={location.pathname === "/models"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <ModelTrainingIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Биллинг */}
-  //           <Tooltip title="Биллинг" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/billing"
-  //                 selected={location.pathname === "/billing"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <PriceChangeIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* API Ключи */}
-  //           <Tooltip title="API Ключи" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/api-keys"
-  //                 selected={location.pathname === "/api-keys"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <KeyIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Настройки */}
-  //           <Tooltip title="Настройки" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/settings"
-  //                 selected={location.pathname === "/settings"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <SettingsIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Организация */}
-  //           <Tooltip title="Организация" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/organization-settings"
-  //                 selected={location.pathname === "/organization-settings"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <RecentActorsIcon fontSize="medium" />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-  //         </>
-  //       ) : (
-  //         <>
-  //           {/* Список элементов меню для документации */}
-  //           {/* Добро Пожаловать */}
-  //           <Tooltip title="Добро Пожаловать" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/docs/welcome"
-  //                 selected={location.pathname === "/docs/welcome"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <HomeIcon
-  //                     fontSize="medium"
-  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
-  //                   />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Начало работы */}
-  //           <Tooltip title="Начало работы" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/docs/quickstart"
-  //                 selected={location.pathname === "/docs/quickstart"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <FlashOnIcon
-  //                     fontSize="medium"
-  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
-  //                   />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Jobs */}
-  //           <Tooltip title="Задачи" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/docs/jobs"
-  //                 selected={location.pathname === "/docs/jobs"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <WorkIcon
-  //                     fontSize="medium"
-  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
-  //                   />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* Configuration */}
-  //           <Tooltip title="Конфигурация" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/docs/configuration"
-  //                 selected={location.pathname === "/docs/configuration"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <SettingsIcon
-  //                     fontSize="medium"
-  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
-  //                   />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-
-  //           {/* CLI */}
-  //           <Tooltip title="CLI" placement="right">
-  //             <ListItem disablePadding>
-  //               <ListItemButton
-  //                 component={Link}
-  //                 to="/docs/cli"
-  //                 selected={location.pathname === "/docs/cli"}
-  //                 onClick={isMobile ? handleDrawerToggle : undefined}
-  //                 sx={{
-  //                   justifyContent: "center",
-  //                   padding: "10px 0",
-  //                 }}
-  //               >
-  //                 <ListItemIcon sx={{ minWidth: 0 }}>
-  //                   <CodeIcon
-  //                     fontSize="medium"
-  //                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
-  //                   />
-  //                 </ListItemIcon>
-  //               </ListItemButton>
-  //             </ListItem>
-  //           </Tooltip>
-  //         </>
-  //       )}
-  //     </List>
-  //   </div>
-  // );
-
   const drawer = (
     <div>
       <Toolbar />
@@ -589,7 +302,7 @@ export function Layout() {
           <ListItem disablePadding>
             <ListItemButton
               component={Link}
-              to="/gpu-list"
+              to="/"
               selected={!location.pathname.startsWith("/docs")}
               onClick={handleDrawerToggle}
             >
@@ -612,6 +325,7 @@ export function Layout() {
         spacing={1}
         sx={{
           alignItems: "center",
+          mt: 2,
         }}
       >
         {menuItems.map((item) => (
@@ -631,8 +345,10 @@ export function Layout() {
     </div>
   );
 
+  const shouldRenderContent =
+    openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
+
   if (loading) {
-    // Отображаем плейсхолдер или спиннер на всю страницу
     return (
       <Box
         sx={{
@@ -652,6 +368,67 @@ export function Layout() {
       </Box>
     );
   }
+
+  const HomePage = () => {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          p: 3,
+        }}
+      >
+        <Typography variant="h3" gutterBottom sx={{ mb: 5 }}>
+          Добро пожаловать в платформу
+        </Typography>
+
+        <Grid container spacing={3} sx={{ maxWidth: "1200px" }}>
+          {dashboardMenuItems.map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item.to}>
+              <Card
+                component={Link}
+                to={item.to}
+                onClick={() => setShowMenu(true)}
+                sx={{
+                  height: "100%",
+                  textDecoration: "none",
+                  transition: "transform 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                <CardActionArea sx={{ height: "100%" }}>
+                  <CardContent
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      textAlign: "center",
+                      p: 3,
+                      backgroundColor: "#F5F5F5",
+                    }}
+                  >
+                    <Box sx={{ mb: 2 }}>{item.icon}</Box>
+                    <Typography variant="h5" component="div" sx={{ mb: 1 }}>
+                      {item.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.description}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  };
 
   return (
     <>
@@ -676,36 +453,40 @@ export function Layout() {
               sx={{
                 display: "flex",
                 width: "100%",
-                height: "100vh",
-                backgroundColor: isDocsPage
-                  ? "rgb(21 21 21)"
-                  : !shouldRenderContent
-                  ? "#FFFFFF"
-                  : "#F5F5F5",
+                backgroundColor: isDocsPage ? "rgb(21 21 21)" : "#FFFFFF",
               }}
             >
               <CssBaseline />
               {shouldRenderContent && (
                 <>
-                  <AppBar
-                    position="fixed"
-                    sx={{
-                      zIndex: (theme) => theme.zIndex.drawer + 1,
-                      backgroundColor: isDocsPage
-                        ? "rgb(21 21 21)"
-                        : !shouldRenderContent
-                        ? "#FFFFFF"
-                        : "#F5F5F5",
+                  <header
+                    style={{
+                      position: "fixed",
+
+                      left: "72%",
+                      transform: "translateX(-72%)",
+                      maxWidth: "1500px",
+                      width: "100%",
+                      top: "15px",
+                      zIndex: 1,
                     }}
                   >
-                    <Toolbar style={{ paddingLeft: "16px" }}>
+                    <Toolbar
+                      style={{
+                        borderRadius: "20px",
+                        width: "100%",
+                        backgroundColor: isDocsPage
+                          ? "rgb(204 204 230)"
+                          : "rgb(21 22 25)",
+                      }}
+                    >
                       {isMobile && (
                         <IconButton
                           color="#202123"
                           aria-label="open drawer"
                           edge="start"
                           onClick={handleDrawerToggle}
-                          sx={{ mr: "4px", padding: "6px" }}
+                          sx={{ mr: "4px", padding: "6px", color: "#F5F5F5" }}
                         >
                           <MenuIcon />
                         </IconButton>
@@ -752,16 +533,26 @@ export function Layout() {
                             {isDocsPage ? (
                               "Документация"
                             ) : (
-                              <OrganizationSwitcher />
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <OrganizationSwitcher />
+                                <Button
+                                  component={Link}
+                                  to="/gpu-list"
+                                  variant="outlined"
+                                  sx={{ ml: 2, padding: "3px 5px" }}
+                                >
+                                  GPU
+                                </Button>
+                              </Box>
                             )}
                           </Typography>
                         </Box>
                       </Box>
 
-                      {/* Растягивающий элемент */}
                       <Box sx={{ flexGrow: 1 }} />
 
-                      {/* Кнопки переключения между дашбордом и документацией */}
                       {!isMobile && (
                         <Box
                           sx={{
@@ -772,7 +563,7 @@ export function Layout() {
                         >
                           <Button
                             component={Link}
-                            to="/gpu-list"
+                            to="/"
                             color="inherit"
                             sx={{
                               fontWeight: 700,
@@ -815,14 +606,13 @@ export function Layout() {
                             Доки
                           </Button>
 
-                          {/* Добавляем иконку событий */}
                           <IconButton
                             aria-label="Открыть события"
                             onClick={handleEventsClick}
                             sx={{
                               color: isEventsOpen
                                 ? "secondary.main"
-                                : "#202123",
+                                : "#F5F5F5",
                               backgroundColor: isDocsPage
                                 ? "rgba(255, 255, 255, 0.04)"
                                 : "rgba(0, 0, 0, 0.04);",
@@ -860,8 +650,8 @@ export function Layout() {
                                 <Box
                                   sx={{
                                     backgroundColor: isDocsPage
-                                      ? "rgb(21 21 21)"
-                                      : "#F5F5F5",
+                                      ? "rgb(204 204 230)"
+                                      : "rgb(21 22 25)",
                                     borderRadius: "50%",
                                     padding: "2.6px",
                                     display: "inline-flex",
@@ -884,75 +674,72 @@ export function Layout() {
                         </>
                       )}
                     </Toolbar>
-                  </AppBar>
+                  </header>
 
-                  {/* Drawer */}
-                  <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
-                    {/* Мобильный Drawer */}
-                    {isMobile && (
-                      <Drawer
-                        variant="temporary"
-                        open={mobileOpen}
-                        onClose={handleDrawerToggle}
-                        ModalProps={{
-                          keepMounted: true, // Better open performance on mobile.
-                        }}
-                        sx={{
-                          "& .MuiDrawer-paper": {
-                            width: "150px",
-                            ackgroundColor: isDocsPage
-                              ? "rgb(21 21 21)"
-                              : "#F5F5F5",
-                          },
-                        }}
-                      >
-                        {drawer}
-                      </Drawer>
-                    )}
-                    {/* Десктопный Drawer */}
-                    {!isMobile && (
-                      <Drawer
-                        variant="permanent"
-                        sx={{
-                          width: drawerWidth,
-                          flexShrink: 0,
-                          "& .MuiDrawer-paper": {
+                  {/* Drawer - показываем только если не на главной странице или если showMenu=true */}
+                  {(showMenu || location.pathname !== "/") && (
+                    <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
+                      {isMobile && (
+                        <Drawer
+                          variant="temporary"
+                          open={mobileOpen}
+                          onClose={handleDrawerToggle}
+                          ModalProps={{
+                            keepMounted: true,
+                          }}
+                          sx={{
+                            "& .MuiDrawer-paper": {
+                              width: "180px",
+                              ackgroundColor: isDocsPage
+                                ? "rgb(21 21 21)"
+                                : "#F5F5F5",
+                            },
+                          }}
+                        >
+                          {drawer}
+                        </Drawer>
+                      )}
+                      {!isMobile && (
+                        <Drawer
+                          variant="permanent"
+                          sx={{
                             width: drawerWidth,
-                            boxSizing: "border-box",
-                            backgroundColor: isDocsPage
-                              ? "rgb(21 21 21)"
-                              : !shouldRenderContent
-                              ? "#FFFFFF"
-                              : "#F5F5F5",
-                            border: "none",
-                          },
-                        }}
-                        open
-                      >
-                        {drawer}
-                      </Drawer>
-                    )}
-                  </Box>
+                            flexShrink: 0,
+                            "& .MuiDrawer-paper": {
+                              width: drawerWidth,
+                              boxSizing: "border-box",
+                              backgroundColor: isDocsPage
+                                ? "rgb(21 21 21)"
+                                : "#FFFFFF",
+                              border: "none",
+                            },
+                          }}
+                          open
+                        >
+                          {drawer}
+                        </Drawer>
+                      )}
+                    </Box>
+                  )}
                 </>
               )}
-
-              {/* Основной контент с отдельной анимацией */}
 
               <Box
                 id="main-content"
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  width: "100%",
-                  marginLeft: isMobile ? "" : drawerWidth,
-
+                  width: "calc(100% - 40px)",
+                  marginLeft:
+                    (showMenu || location.pathname !== "/") && !isMobile
+                      ? drawerWidth
+                      : "",
                   minHeight: "90vh",
+                  height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",
                   padding: { lg: "25px", xl: "35px", xs: "20px" },
                   marginTop: { xs: "56px", sm: "64px" },
                   borderRadius: { xs: "0px", sm: "20px" },
-                  border: "1px solid #ececf1",
-                  height: "calc(100vh - 64px)",
                   overflowY: "auto",
                   overflowX: "none",
                 }}
@@ -970,11 +757,7 @@ export function Layout() {
                     }}
                   >
                     <Routes location={location}>
-                      <Route
-                        path="/"
-                        element={<Navigate to="/gpu-list" replace />}
-                      />
-
+                      <Route path="/" element={<HomePage />} />
                       <Route
                         path="/gpu-list"
                         element={
@@ -996,6 +779,14 @@ export function Layout() {
                         element={
                           <ProtectedRoute>
                             <DatasetsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/jupyter"
+                        element={
+                          <ProtectedRoute>
+                            <JupyterLabSessions />
                           </ProtectedRoute>
                         }
                       />
@@ -1047,8 +838,6 @@ export function Layout() {
                           </ProtectedRoute>
                         }
                       />
-
-                      {/* Маршруты документации */}
                       <Route
                         path="/docs"
                         element={<Navigate to="/docs/welcome" replace />}
@@ -1061,8 +850,6 @@ export function Layout() {
                           </ProtectedRoute>
                         }
                       />
-
-                      {/* Маршрут для обработки колбэка аутентификации */}
                       <Route path="/auth/callback" element={<AuthCallback />} />
                     </Routes>
                   </motion.div>
@@ -1073,7 +860,6 @@ export function Layout() {
         )}
       </AnimatePresence>
 
-      {/* Модальные окна вынесены за пределы AnimatePresence и motion.div */}
       {!loading && (
         <Modal
           open={openRegistrationModal}
@@ -1145,7 +931,6 @@ export function Layout() {
         />
       )}
 
-      {/* Поповер для событий организации */}
       <Popover
         open={isEventsOpen}
         anchorEl={eventsAnchorEl}
@@ -1173,7 +958,7 @@ export function Layout() {
         {currentOrganization ? (
           <OrganizationEvents
             organizationId={currentOrganization.id}
-            amount={5} // Передаем amount={5}
+            amount={5}
           />
         ) : (
           <Box sx={{ p: 2 }}>

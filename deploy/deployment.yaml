@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: prime-platform-container
-          image: cr.yandex/crpa3u3frrtfcv7iqaan/prime-platform-image:20250315-112408
+          image: cr.yandex/crpa3u3frrtfcv7iqaan/dev-platform-image:35g3r34
           ports:
             - containerPort: 80
           env:

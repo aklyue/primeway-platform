@@ -66,7 +66,10 @@ function ModelCard({ model, isLast, isBasic }) {
   let ModelImageComponent;
   if (modelNameImg.includes("deepseek")) {
     ModelImageComponent = DeepSeek;
-  } else if (modelNameImg.includes("google")) {
+  } else if (
+    modelNameImg.includes("google") ||
+    modelNameImg.includes("gemma")
+  ) {
     ModelImageComponent = Google;
   } else {
     ModelImageComponent = HuggingFace;

@@ -8,11 +8,17 @@ import AddIcon from "@mui/icons-material/Add";
 import { AuthContext } from "../AuthContext";
 import axiosInstance from "../api";
 import { OrganizationContext } from "./Organization/OrganizationContext";
+import { getFineTuned, subscribeFineTuned } from "./NoCode/fineTuneStorage";
 
 function ModelsPage() {
   // **Состояния**
   const [launchedModels, setLaunchedModels] = useState([]);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+
+  const [fine, setFine] = useState(getFineTuned());
+  useEffect(() => subscribeFineTuned(setFine), []);
+
+  const all = [...modelsData, ...fine];
 
   // **Контексты**
   const { authToken } = useContext(AuthContext);
@@ -261,11 +267,11 @@ function ModelsPage() {
               }}
             >
               {/* **Список "Базовых моделей"** */}
-              {modelsData.map((model, index) => (
+              {all.map((model, index) => (
                 <ModelCard
                   key={model.id || index}
                   model={model}
-                  isLast={index === modelsData.length - 1}
+                  isLast={index === all.length - 1}
                   isBasic={true} // Базовые модели
                 />
               ))}

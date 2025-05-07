@@ -3,17 +3,17 @@ kind: Ingress
 metadata:
   name: ingress-prime-platform
   annotations:
-    ingress.alb.yc.io/external-ipv4-address: "89.169.138.161"
+    ingress.alb.yc.io/external-ipv4-address: "51.250.92.221"
     ingress.alb.yc.io/subnets: e9bp6vdetvhibbqfbjf2
     ingress.alb.yc.io/security-groups: enp8ej5q6novd5krvk1u
-    ingress.alb.yc.io/group-name: ui-platform-ingress-group
+    ingress.alb.yc.io/group-name: dev-ingress-group
 spec:
   tls:
     - hosts:
-      - platform.primeway.io
-      secretName: yc-certmgr-cert-id-fpqtu2v7j8bh060udn4a
+      - dev.platform.primeway.io
+      secretName: yc-certmgr-cert-id-fpqhj2r7rfpoft1o6ca2
   rules:
-    - host: "platform.primeway.io"
+    - host: "dev.platform.primeway.io"
       http:
         paths:
           - path: "/"

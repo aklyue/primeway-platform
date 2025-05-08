@@ -18,13 +18,16 @@ import {
   Paper,
   CircularProgress,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 import StopIcon from "@mui/icons-material/Stop";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 
 import axiosInstance from "../../api";
 import { OrganizationContext } from "../Organization/OrganizationContext";
+import { AuthContext } from "../../AuthContext";
 
 // Данные о доступных GPU с полем name для передачи на сервер
 const AVAILABLE_GPUS = {
@@ -52,8 +55,21 @@ export default function JupyterLabSessions() {
   const [jobName, setJobName] = useState(""); // Для имени задачи
   const [isCreating, setIsCreating] = useState(false);
   const [gpuQuantity, setGpuQuantity] = useState(1);
+  const [loadingId, setLoadingId] = useState(null);
 
   const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию из контекста
+  const { authToken } = useContext(AuthContext);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success", // "success" | "error" | "info" | "warning"
+  });
+
+  const handleSnackbarClose = (_, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar((s) => ({ ...s, open: false }));
+  };
 
   const availableGpus = Object.keys(AVAILABLE_GPUS).map((gpuKey) => ({
     id: gpuKey,
@@ -72,7 +88,6 @@ export default function JupyterLabSessions() {
         }
       );
       setSessions(response.data); // Обновляем список сессий
-      console.log(sessions);
     } catch (error) {
       console.error("Ошибка при получении проектов:", error);
     }
@@ -116,35 +131,97 @@ export default function JupyterLabSessions() {
         },
       });
 
-      console.log("Session created:", response.data);
       refreshSessions();
       setOpenCreateModal(false);
+      setSnackbar({
+        open: true,
+        message: "Сессия создана",
+        severity: "success",
+      });
     } catch (error) {
       console.error(
         "Error creating session:",
         error.response?.data || error.message
       );
-      alert(
-        "Ошибка при создании сессии: " +
-          (error.response?.data?.detail || error.message)
-      );
+      setSnackbar({
+        open: true,
+        message: "Ошибка при создании проекта",
+        severity: "error",
+      });
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleStartSession = (sessionId) => {
-    axiosInstance.post(`/jupyter/start/${sessionId}`).then(refreshSessions);
+  const handleStartSession = async (jobId) => {
+    if (!jobId)
+      return setSnackbar({
+        open: true,
+        message: "ID задачи отсутствует",
+        severity: "error",
+      });
+
+    setLoadingId(jobId);
+    try {
+      await axiosInstance.post("/jobs/job-start", null, {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Задача запущена",
+        severity: "success",
+      });
+      refreshSessions();
+    } catch (e) {
+      console.error(e);
+      setSnackbar({
+        open: true,
+        message: "Ошибка при запуске задачи",
+        severity: "error",
+      });
+    } finally {
+      setLoadingId(null);
+    }
   };
 
-  const handleStopSession = (sessionId) => {
-    axiosInstance.post(`/jupyter/stop/${sessionId}`).then(refreshSessions);
+  const handleStopSession = async (jobId) => {
+    if (!jobId)
+      return setSnackbar({
+        open: true,
+        message: "ID задачи отсутствует",
+        severity: "error",
+      });
+
+    setLoadingId(jobId);
+    try {
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      refreshSessions();
+      setSnackbar({
+        open: true,
+        message: "Задача остановлена",
+        severity: "success",
+      });
+    } catch (e) {
+      console.error("Ошибка при остановке:", e);
+      setSnackbar({
+        open: true,
+        message: "Ошибка при остановке задачи",
+        severity: "error",
+      });
+    } finally {
+      setLoadingId(null);
+    }
   };
 
   return (
     <Box sx={{ mt: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h6">JupyterLab Project</Typography>
+        <Typography variant="h6">Проекты JupyterLab</Typography>
         <Button
           variant="contained"
           color="primary"
@@ -168,55 +245,61 @@ export default function JupyterLabSessions() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sessions.map((session) => (
-              <TableRow key={session.job_id} hover>
-                <TableCell>{session.job_name}</TableCell>
-                <TableCell>{session.gpu_type || "N/A"}</TableCell>
+            {sessions.map((session) => {
+              const startDisabled =
+                loadingId === session.job_id || // идёт POST
+                ["running", "starting", "queued", "creating"].includes(
+                  session.last_execution_status
+                ); // статус ещё не «idle»
 
-                <TableCell>
-                  <Box
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      color:
-                        session.status === "running"
-                          ? "success.main"
-                          : session.status === "stopped"
-                          ? "error.main"
-                          : "warning.main",
-                    }}
-                  >
-                    {session.last_execution_status === "starting" && (
-                      <CircularProgress size={14} sx={{ mr: 1 }} />
-                    )}
-                    {session.last_execution_status}
-                  </Box>
-                </TableCell>
-                <TableCell>{session.job_url || "N/A"}</TableCell>
-                <TableCell>
-                  <>
+              const stopDisabled =
+                session.last_execution_status !== "running" ||
+                loadingId === session.job_id;
+              // ────────────────────────────────────────────────────────
+
+              return (
+                <TableRow key={session.job_id} hover>
+                  <TableCell>{session.job_name}</TableCell>
+                  <TableCell>{session.gpu_type?.type || "N/A"}</TableCell>
+
+                  <TableCell>
+                    <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                      {loadingId === session.job_id ||
+                        (session.last_execution_status === "creating" && (
+                          <CircularProgress size={14} sx={{ mr: 1 }} />
+                        ))}
+                      {session.last_execution_status}
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>{session.job_url || "N/A"}</TableCell>
+
+                  <TableCell>
+                    {/* START */}
                     <IconButton
-                      disabled={session.last_execution_status === "running"}
                       size="small"
-                      onClick={() => handleStartSession(session.id)}
-                      color="primary"
-                      title="Start session"
+                      disabled={startDisabled}
+                      onClick={() => handleStartSession(session.job_id)}
+                      color="success.main"
+                      title="Запустить"
                     >
-                      <PlayArrowIcon fontSize="small" />
+                      <PlayCircleFilledIcon fontSize="small" />
                     </IconButton>
+
+                    {/* STOP */}
                     <IconButton
                       size="small"
-                      disabled={session.last_execution_status !== "running"}
-                      onClick={() => handleStopSession(session.id)}
+                      disabled={stopDisabled}
+                      onClick={() => handleStopSession(session.job_id)}
                       color="error"
-                      title="Stop session"
+                      title="Остановить"
                     >
                       <StopIcon fontSize="small" />
                     </IconButton>
-                  </>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Paper>
@@ -255,7 +338,7 @@ export default function JupyterLabSessions() {
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="gpu-select-label">GPU Type</InputLabel>
+                <InputLabel id="gpu-select-label">Тип GPU</InputLabel>
                 <Select
                   labelId="gpu-select-label"
                   label="Имя GPU"
@@ -275,7 +358,7 @@ export default function JupyterLabSessions() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Disk Space (GB)"
+                label="Свободное место на диске (GB)"
                 type="number"
                 value={diskSpace}
                 onChange={(e) => setDiskSpace(e.target.value)}
@@ -304,6 +387,7 @@ export default function JupyterLabSessions() {
                 </Button>
                 <Button
                   variant="contained"
+                  sx={{ color: "white" }}
                   onClick={handleCreateSession}
                   disabled={isCreating || !selectedGpu || !jobName}
                 >
@@ -321,6 +405,21 @@ export default function JupyterLabSessions() {
           </Grid>
         </Box>
       </Modal>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

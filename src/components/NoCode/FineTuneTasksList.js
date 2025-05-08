@@ -18,12 +18,13 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
 import FineTuneFormModal from "./FineTuneFormModal";
+import ModelsDialog from "../ModelsDialog";
 
 export default function FineTuneTasksList({ mode, onRetrain }) {
   const [rows, setRows] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [openModal, setOpenModal] = useState(false); // Состояние для открытия модального окна
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { currentOrganization } = useContext(OrganizationContext);
 
   // Функция для обновления списка задач
@@ -32,10 +33,8 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
       const response = await axiosInstance.get("/finetuning/get-running-jobs", {
         params: {
           organization_id: currentOrganization.id,
-          status: "running",
         },
       });
-      console.log(response.data);
 
       const backendJobs = response.data.map((job) => ({
         id: job.job_id,
@@ -49,7 +48,7 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
         {
           id: "ft-mock-1",
           name: "gemma-wiki",
-          status: "ready",
+          status: "stopped",
           created: "01.05.25",
           artifact: "gemma-wiki:latest",
         },
@@ -63,6 +62,7 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
       ];
 
       setRows([...mockJobs, ...backendJobs]);
+      console.log(backendJobs);
     } catch (error) {
       console.error("Ошибка при получении задач дообучения:", error);
     }
@@ -74,38 +74,44 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
     return () => clearInterval(id);
   }, [currentOrganization]);
 
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event, row) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setSelectedRow(row);
-  };
-
-  const handleClose = (e) => {
+  const handleStopClick = async (e, row) => {
     e.stopPropagation();
-    setAnchorEl(null);
-  };
-
-  const handleRowClick = (row) => {
-    if (mode === "train") {
-      onRetrain(row);
-    } else {
-      setSelectedRow(row); // Сохраняем выбранную задачу
-      setOpenModal(true); // Открываем модальное окно
+    try {
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params: { job_id: row.id },
+      });
+      refresh(); // перечитать список
+    } catch (err) {
+      console.error("Ошибка при остановке задачи:", err);
+      alert("Не удалось остановить задачу");
     }
   };
 
-  // Закрытие модального окна
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedRow(null);
+  const handleLogsClick = async (e, row) => {
+    e.stopPropagation();
+    // пример: показываем логи во всплывающем окне alert
+    try {
+      const { data } = await axiosInstance.get("/jobs/job-logs", {
+        params: { job_id: row.id },
+      });
+      alert(data.logs || "Логи отсутствуют");
+    } catch (err) {
+      alert("Ошибка при получении логов");
+    }
   };
 
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    setDialogOpen(true);
+  };
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setSelectedRow(null);
+  };
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ mb: 1 }}>
-        {mode === "train" ? "Запущенные задачи дообучения" : "Deploy"}
+        Задачи дообучения
       </Typography>
 
       <Table size="small">
@@ -114,7 +120,7 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
             <TableCell>Имя</TableCell>
             <TableCell>Создано</TableCell>
             <TableCell>Статус</TableCell>
-            <TableCell>Artifact</TableCell>
+            <TableCell></TableCell>
             <TableCell>Действие</TableCell>
           </TableRow>
         </TableHead>
@@ -125,75 +131,43 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
               key={j.id}
               hover
               sx={{ cursor: "pointer" }}
-              onClick={() => handleRowClick(j)}
+              // onClick={() => handleRowClick(j)}
             >
               <TableCell>{j.name}</TableCell>
               <TableCell>{j.created}</TableCell>
               <TableCell>{j.status}</TableCell>
-              <TableCell>{j.artifact}</TableCell>
-              <TableCell
-                sx={{
-                  whiteSpace: "nowrap",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
+              <TableCell></TableCell>
+              <TableCell sx={{ display: "flex", alignItems: "center" }}>
+                {/* LOGS */}
                 <Button
-                  disabled={!(j.status !== "running" || j.status !== "ready")}
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Остановка задачи
-                  }}
+                  variant="contained"
+                  sx={{ ml: 1, mr: 1, color: "white" }}
+                  onClick={(e) => handleLogsClick(e, j)}
                 >
-                  Stop
+                  Logs
                 </Button>
-                {j.status !== "running" && j.status !== "ready" && (
-                  <Typography>Завершена</Typography>
+                {j.status !== "stopped" && j.status !== "failed" ? (
+                  <Button color="error" onClick={(e) => handleStopClick(e, j)}>
+                    Stop
+                  </Button>
+                ) : (
+                  <Typography sx={{ color: "text.secondary" }}>
+                    Завершена
+                  </Typography>
                 )}
-
-                {/* {mode === "deploy" && (
-                  <>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleClick(e, j)}
-                      sx={{ ml: 1 }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={open && selectedRow?.id === j.id}
-                      onClose={handleClose}
-                    >
-                      <MenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClose(e);
-                          // Запуск деплоя
-                        }}
-                        disabled={j.status !== "ready"}
-                      >
-                        <RocketLaunchOutlinedIcon
-                          sx={{ mr: 1, fontSize: 22, color: "primary.main" }}
-                        />
-                        Deploy
-                      </MenuItem>
-                    </Menu>
-                  </>
-                )} */}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      {/* Модальное окно для выбранной задачи */}
-      <FineTuneFormModal
-        open={openModal}
-        onClose={handleCloseModal}
-        row={selectedRow}
-      />
+      {/* {selectedRow && (
+        <ModelsDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          model={selectedRow}
+        />
+      )} */}
     </Box>
   );
 }

@@ -61,34 +61,39 @@ export default function TrainForm({
   setHfToken,
 }) {
   const [datasets, setDatasets] = useState([]); // Хранение списка датасетов
-  const [customDataset, setCustomDataset] = useState(false); // Устанавливаем, был ли выбран свой датасет
   const [selectedGpu, setSelectedGpu] = useState("A100 PCIe"); // Состояние для выбранного GPU
   const { currentOrganization } = useContext(OrganizationContext);
 
+  const [datasetOption, setDatasetOption] = useState("hf"); // значение в <Select>
+  const [hfDatasetId, setHfDatasetId] = useState(""); // ввод из HF
+  const [hfMode, setHfMode] = useState(true);
+
+  // 1. грузим датасеты
   useEffect(() => {
-    // Загружаем список датасетов при монтировании компонента
-    getDatasets(currentOrganization.id) // Передайте правильный organization_id
+    getDatasets(currentOrganization.id)
       .then(setDatasets)
       .catch((err) => console.error("Ошибка загрузки датасетов:", err));
   }, [currentOrganization.id]);
 
   const handleDatasetChange = (event) => {
-    const selectedDataset = event.target.value;
-    setDatasetName(selectedDataset); // Обновляем имя датасета в родительском компоненте
+    const value = event.target.value;
+    setDatasetOption(value);
 
-    if (selectedDataset === "custom") {
-      setCustomDataset(true); // Устанавливаем, что выбран свой ID
-      setDatasetName(""); // Очищаем выбранное значение для кастомного ID
+    if (value === "hf") {
+      setHfMode(true);
+      setDatasetName("");
     } else {
-      setCustomDataset(false); // Если выбран датасет из списка
+      setHfMode(false);
+      setHfDatasetId("");
+      setDatasetName(value);
     }
   };
-
   const handleGpuChange = (event) => {
     setSelectedGpu(event.target.value); // Обновляем выбранный GPU
   };
 
   const handleSubmit = async () => {
+    const isHf = hfMode;
     const config = {
       job_name: baseModel,
       gpu_types: [
@@ -98,8 +103,8 @@ export default function TrainForm({
         },
       ],
       base_model: baseModel,
-      custom_dataset: datasetName === "custom", // Если выбран кастомный датасет
-      dataset_name: datasetName, // Здесь передаем ID датасета
+      custom_dataset: !hfMode, // Если выбран кастомный датасет
+      dataset_name: isHf ? hfDatasetId : datasetName, // Здесь передаем ID датасета
       disk_space: 30,
       creation_timeout: 600,
       env: [
@@ -170,34 +175,37 @@ export default function TrainForm({
 
       {/* Выбор датасета */}
       <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Dataset Name (DATASET_NAME)</InputLabel>
+        <InputLabel>Набор Данных</InputLabel>
         <Select
-          value={datasetName}
+          value={datasetOption}
           onChange={handleDatasetChange}
-          label="Dataset Name (DATASET_NAME)"
+          label="(Набор Данных)"
         >
-          {datasets.map((dataset) => (
-            <MenuItem key={dataset.id} value={dataset.dataset_id}>
-              {dataset.name}
+          {/* сначала ваши датасеты */}
+          {datasets.map((ds) => (
+            <MenuItem key={ds.id} value={ds.dataset_id}>
+              {ds.name}
             </MenuItem>
           ))}
-          <MenuItem value="custom">Ввести свой ID</MenuItem>
+
+          {/* последний пункт – из HuggingFace */}
+          <MenuItem value="hf">Из HuggingFace</MenuItem>
         </Select>
       </FormControl>
 
-      {customDataset && (
+      {hfMode && (
         <TextField
-          label="Custom Dataset ID"
+          label="Название набора данных из HuggingFace"
           fullWidth
           sx={{ mb: 2 }}
-          value={datasetName}
-          onChange={(e) => setDatasetName(e.target.value)}
+          value={hfDatasetId}
+          onChange={(e) => setHfDatasetId(e.target.value)}
         />
       )}
 
       {/* Остальные параметры формы */}
       <TextField
-        label="Base Model (BASE_MODEL)"
+        label="Базовая модель"
         fullWidth
         sx={{ mb: 2 }}
         value={baseModel}

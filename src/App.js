@@ -202,7 +202,7 @@ export function Layout() {
       description: "Работа с моделями машинного обучения",
     },
     {
-      name: "Датасеты",
+      name: "Наборы Данных",
       to: "/datasets",
       icon: <DatasetIcon />,
       description: "Управление наборами данных",
@@ -378,14 +378,13 @@ export function Layout() {
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          p: 3,
         }}
       >
-        <Typography variant="h3" gutterBottom sx={{ mb: 5 }}>
-          Добро пожаловать в платформу
+        <Typography variant="h3" gutterBottom sx={{ mb: 5, mt: 2 }}>
+          Добро пожаловать в PrimeWay
         </Typography>
 
-        <Grid container spacing={3} sx={{ maxWidth: "1200px" }}>
+        <Grid container spacing={4} sx={{ maxWidth: "1500px" }}>
           {dashboardMenuItems.map((item) => (
             <Grid item xs={12} sm={6} md={4} key={item.to}>
               <Card
@@ -409,11 +408,13 @@ export function Layout() {
                       flexDirection: "column",
                       alignItems: "center",
                       textAlign: "center",
-                      p: 3,
+                      p: 4.5,
                       backgroundColor: "#F5F5F5",
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>{item.icon}</Box>
+                    <Box sx={{ mb: 2, transform: "scale(1.3)" }}>
+                      {item.icon}
+                    </Box>
                     <Typography variant="h5" component="div" sx={{ mb: 1 }}>
                       {item.name}
                     </Typography>
@@ -463,9 +464,9 @@ export function Layout() {
                     style={{
                       position: "fixed",
 
-                      left: "72%",
-                      transform: "translateX(-72%)",
-                      maxWidth: "92%",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      maxWidth: "1410px",
                       width: "100%",
                       top: "15px",
                       zIndex: 1,
@@ -729,11 +730,9 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  width: "calc(100% - 40px)",
-                  marginLeft:
-                    (showMenu || location.pathname !== "/") && !isMobile
-                      ? drawerWidth
-                      : "",
+
+                  marginLeft: drawerWidth,
+                  marginRight: drawerWidth,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",

@@ -62,7 +62,9 @@ function ModelsDialog({ open, onClose, model }) {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
   const [activeTab, setActiveTab] = useState("events");
-  const [jobStatus, setJobStatus] = useState(model.last_execution_status);
+  const [jobStatus, setJobStatus] = useState(
+    model.last_execution_status || model.created
+  );
   const [modelStatus, setModelStatus] = useState(model?.last_execution_status);
 
   // Состояния для выполнений

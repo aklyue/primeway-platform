@@ -35,7 +35,6 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
           status: "running",
         },
       });
-      console.log(response.data);
 
       const backendJobs = response.data.map((job) => ({
         id: job.job_id,

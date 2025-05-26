@@ -1,20 +1,22 @@
-import { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import { useEffect, useState, useContext, useMemo } from "react";
 import {
   Box,
   Button,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Typography,
-  Menu,
-  MenuItem,
   IconButton,
+  InputAdornment,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Toolbar,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
 import FineTuneFormModal from "./FineTuneFormModal";
@@ -27,78 +29,52 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { currentOrganization } = useContext(OrganizationContext);
 
-  // Функция для обновления списка задач
-  const refresh = async () => {
+  // jobs
+  const [jobs, setJobs] = useState([]);
+  const refreshJobs = async () => {
     try {
-      const response = await axiosInstance.get("/finetuning/get-running-jobs", {
+      const { data } = await axiosInstance.get("/finetuning/get-running-jobs", {
         params: {
           organization_id: currentOrganization.id,
         },
       });
 
-      const backendJobs = response.data.map((job) => ({
-        id: job.job_id,
-        name: job.job_name,
-        status: job.build_status.toLowerCase(),
-        created: new Date(job.created_at).toLocaleString(),
-        artifact: job.job_url || "-",
-      }));
-
-      const mockJobs = [
-        {
-          id: "ft-mock-1",
-          name: "gemma-wiki",
-          status: "stopped",
-          created: "01.05.25",
-          artifact: "gemma-wiki:latest",
-        },
-        {
-          id: "ft-mock-2",
-          name: "mistral-code",
-          status: "running",
-          created: "01.05.25",
-          artifact: "-",
-        },
-      ];
-
-      setRows([...mockJobs, ...backendJobs]);
-      console.log(backendJobs);
-    } catch (error) {
-      console.error("Ошибка при получении задач дообучения:", error);
+      setJobs(
+        data.map((j) => ({
+          id: j.job_id,
+          baseModel: j.base_model,
+          suffix: j.job_name,
+          type: j.build_type,
+          status: j.build_status.toLowerCase(),
+          runTime: j.run_time ?? "-",
+          createdAt: new Date(j.created_at).toLocaleString(),
+        }))
+      );
+    } catch (e) {
+      console.error(e);
     }
   };
 
+  /* poll every 3 s */
   useEffect(() => {
-    refresh();
-    const id = setInterval(refresh, 3000);
+    refreshJobs();
+    const id = setInterval(refreshJobs, 3_000);
     return () => clearInterval(id);
   }, [currentOrganization]);
 
-  const handleStopClick = async (e, row) => {
-    e.stopPropagation();
-    try {
-      await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: row.id },
-      });
-      refresh(); // перечитать список
-    } catch (err) {
-      console.error("Ошибка при остановке задачи:", err);
-      alert("Не удалось остановить задачу");
-    }
-  };
+  // search
+  const [query, setQuery] = useState("");
+  const filteredJobs = useMemo(() => {
+    if (!query.trim()) return jobs;
+    return jobs.filter((j) =>
+      Object.values(j).some((v) =>
+        String(v).toLowerCase().includes(query.toLowerCase())
+      )
+    );
+  }, [query, jobs]);
 
-  const handleLogsClick = async (e, row) => {
-    e.stopPropagation();
-    // пример: показываем логи во всплывающем окне alert
-    try {
-      const { data } = await axiosInstance.get("/jobs/job-logs", {
-        params: { job_id: row.id },
-      });
-      alert(data.logs || "Логи отсутствуют");
-    } catch (err) {
-      alert("Ошибка при получении логов");
-    }
-  };
+  // modal
+  const [openModal, setOpenModal] = useState(false);
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
@@ -109,65 +85,88 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
     setSelectedRow(null);
   };
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Задачи дообучения
-      </Typography>
+    <>
+      {/* HEADER */}
+      <Toolbar disableGutters sx={{ mb: 2 }}>
+        <Typography variant="h5" sx={{ flexGrow: 1 }}>
+          Fine-tuning jobs
+        </Typography>
 
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Имя</TableCell>
-            <TableCell>Создано</TableCell>
-            <TableCell>Статус</TableCell>
-            <TableCell></TableCell>
-            <TableCell>Действие</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {rows.map((j) => (
-            <TableRow
-              key={j.id}
-              hover
-              sx={{ cursor: "pointer" }}
-              // onClick={() => handleRowClick(j)}
-            >
-              <TableCell>{j.name}</TableCell>
-              <TableCell>{j.created}</TableCell>
-              <TableCell>{j.status}</TableCell>
-              <TableCell></TableCell>
-              <TableCell sx={{ display: "flex", alignItems: "center" }}>
-                {/* LOGS */}
-                <Button
-                  variant="contained"
-                  sx={{ ml: 1, mr: 1, color: "white" }}
-                  onClick={(e) => handleLogsClick(e, j)}
-                >
-                  Logs
-                </Button>
-                {j.status !== "stopped" && j.status !== "failed" ? (
-                  <Button color="error" onClick={(e) => handleStopClick(e, j)}>
-                    Stop
-                  </Button>
-                ) : (
-                  <Typography sx={{ color: "text.secondary" }}>
-                    Завершена
-                  </Typography>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {/* {selectedRow && (
-        <ModelsDialog
-          open={dialogOpen}
-          onClose={handleDialogClose}
-          model={selectedRow}
+        <TextField
+          size="small"
+          placeholder="Search job"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          sx={{ width: 280, mr: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
         />
-      )} */}
-    </Box>
+
+        <Tooltip title="New fine-tuning job">
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenModal(true)}
+            sx={{ color: "#fff" }}
+          >
+            New fine-tuning job
+          </Button>
+        </Tooltip>
+      </Toolbar>
+
+      {/* TABLE */}
+      <Paper elevation={0} variant="outlined">
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
+              <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>
+              <TableCell>АДАПТЕР</TableCell>
+              <TableCell>СТАТУС</TableCell>
+              <TableCell>ВРЕМЯ РАБОТЫ</TableCell>
+              <TableCell sortDirection="desc">СОЗДАНО</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {filteredJobs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No finetune job available.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredJobs.map((j) => (
+                <TableRow
+                  key={j.id}
+                  hover
+                  onClick={() => mode === "train" && onRetrain?.(j)}
+                  sx={{ cursor: mode === "train" ? "pointer" : "default" }}
+                >
+                  <TableCell>{j.id}</TableCell>
+                  <TableCell>{j.base_model}</TableCell>
+                  <TableCell>{j.suffix}</TableCell>
+                  <TableCell>{j.last_execution_status}</TableCell>
+                  <TableCell>{j.run_time}</TableCell>
+                  <TableCell>{j.created_at}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Paper>
+
+      {/* CREATE-JOB MODAL  */}
+      <FineTuneFormModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        baseModel="" /* or pass selected base model */
+      />
+    </>
   );
 }

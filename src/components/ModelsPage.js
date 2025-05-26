@@ -1,85 +1,98 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Box, Button, Divider, Grid, Modal, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Modal,
+  Typography,
+} from "@mui/material";
 import ModelCard from "./ModelCard";
-import { modelsData } from "../data/modelsData";
 import ConfigureModelForm from "./ConfigureModelForm";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import { modelsData } from "../data/modelsData";
 import { AuthContext } from "../AuthContext";
-import axiosInstance from "../api";
 import { OrganizationContext } from "./Organization/OrganizationContext";
-import { getFineTuned, subscribeFineTuned } from "./NoCode/fineTuneStorage";
+import axiosInstance from "../api";
+import {
+  getFineTuned,
+  subscribeFineTuned, // (you can delete these two lines if local storage is no longer needed)
+} from "./NoCode/fineTuneStorage";
 
 function ModelsPage() {
-  // **Состояния**
+  /* ---------------- state ------------------------------------------------ */
   const [launchedModels, setLaunchedModels] = useState([]);
+  const [fineTunedModels, setFineTunedModels] = useState([]);          /* 💡 */
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
 
-  const [fine, setFine] = useState(getFineTuned());
-  useEffect(() => subscribeFineTuned(setFine), []);
+  // If you still want to keep the local-storage fallback, leave this in:
+  // const [fine, setFine] = useState(getFineTuned());
+  // useEffect(() => subscribeFineTuned(setFine), []);
+  // const allBasic = [...modelsData, ...fine];
+  const allBasic = modelsData;                                         /* 💡 */
 
-  const all = [...modelsData, ...fine];
-
-  // **Контексты**
+  /* ---------------- context --------------------------------------------- */
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
 
-  // **Ссылка на интервал**
-  const intervalRef = useRef(null);
+  /* ---------------- polling refs ---------------------------------------- */
+  const launchedIntervalRef = useRef(null);   // ref to window.setInterval timer
+  const finetuneIntervalRef = useRef(null);     /* 💡 */
 
-  // **Функция для получения запущенных моделей**
+  /* ---------------- fetch helpers --------------------------------------- */
   const fetchLaunchedModels = async () => {
-    if (currentOrganization && authToken) {
-      try {
-        const response = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
-          params: {
-            organization_id: currentOrganization.id,
-          },
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
-        const data = response.data || [];
-        setLaunchedModels(data);
-      } catch (error) {
-        console.error("Ошибка при получении запущенных моделей:", error);
-        // Обработка ошибки (отображение уведомления и т.д.)
-      }
+    if (!currentOrganization || !authToken) return;
+    try {
+      const { data = [] } = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
+        params: { organization_id: currentOrganization.id },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setLaunchedModels(data);
+    } catch (err) {
+      console.error("Ошибка при получении запущенных моделей:", err);
     }
   };
 
-  // **Получение запущенных моделей при монтировании и обновление каждые 5 секунд**
-  useEffect(() => {
-    fetchLaunchedModels(); // Первоначальный вызов при монтировании или изменении зависимостей
-
-    // Очищаем предыдущий интервал, если он существует
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+  /* 💡 fetch fine-tuned models */
+  const fetchFineTunedModels = async () => {
+    if (!currentOrganization || !authToken) return;
+    try {
+      const { data = [] } = await axiosInstance.get("/models/finetuned", {
+        params: { organization_id: currentOrganization.id },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setFineTunedModels(data);
+    } catch (err) {
+      console.error("Ошибка при получении fine-tune моделей:", err);
     }
+  };
 
-    // Устанавливаем новый интервал для периодического обновления
-    intervalRef.current = setInterval(() => {
-      fetchLaunchedModels();
-    }, 5000); // Интервал в 5 секунд
+  /* ---------------- effects --------------------------------------------- */
+  useEffect(() => {
+    /* launched */
+    fetchLaunchedModels();
+    if (launchedIntervalRef.current) clearInterval(launchedIntervalRef.current);
+    launchedIntervalRef.current = setInterval(fetchLaunchedModels, 5000);
 
-    // Функция очистки, вызывается при размонтировании или изменении зависимостей
+    /* fine-tuned 💡 */
+    fetchFineTunedModels();
+    if (finetuneIntervalRef.current) clearInterval(finetuneIntervalRef.current);
+    finetuneIntervalRef.current = setInterval(fetchFineTunedModels, 5000);
+
     return () => {
-      clearInterval(intervalRef.current);
+      if (launchedIntervalRef.current) clearInterval(launchedIntervalRef.current);
+      if (finetuneIntervalRef.current) clearInterval(finetuneIntervalRef.current);
     };
   }, [currentOrganization, authToken]);
 
-  // **Обработчики открытия и закрытия модального окна настройки**
-  const handleConfigureOpen = () => {
-    setIsConfigureOpen(true);
-  };
-
-  const handleConfigureClose = () => {
-    setIsConfigureOpen(false);
-  };
+  /* ---------------- ui --------------------------------------------------- */
+  const handleConfigureOpen = () => setIsConfigureOpen(true);
+  const handleConfigureClose = () => setIsConfigureOpen(false);
 
   return (
     <Box sx={{ boxSizing: "border-box" }}>
-      {/* **Модальное окно для настройки новой модели** */}
+      {/* ---------- modal configure -------------------------------------- */}
       <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
         <Box
           sx={{
@@ -107,34 +120,12 @@ function ModelsPage() {
         </Box>
       </Modal>
 
-      {/* **Контейнер для двух секций** */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
-        {/* **Верхняя секция - "Запущенные модели"** */}
-        <Box
-          sx={{
-            maxHeight: "50vh",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-            }}
-          >
-            <Typography variant="h5" gutterBottom>
-              Запущенные модели
-            </Typography>
+      {/* ---------- container for sections -------------------------------- */}
+      <Box sx={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+        {/* ============ Запущенные модели ================================= */}
+        <Box sx={{ maxHeight: "50vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="h5" gutterBottom>Запущенные модели</Typography>
             <Button
               onClick={handleConfigureOpen}
               variant="contained"
@@ -157,77 +148,35 @@ function ModelsPage() {
               maxHeight: "90%",
             }}
           >
-            {/* **Заголовки колонок** */}
+            {/* column headers */}
             <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={3}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Название
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Дата создания
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Состояние
-                </Typography>
-              </Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  URL
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Действие
-                </Typography>
-              </Grid>
+              <Grid item xs={3}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Дата создания</Typography></Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Состояние</Typography></Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">URL</Typography></Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
             </Grid>
-
             <Divider sx={{ my: 1 }} />
-
-            {/* **Область с прокруткой** */}
-            <Box
-              sx={{
-                overflowY: "auto",
-                minHeight: 0,
-              }}
-            >
-              {/* **Список "Запущенных моделей"** */}
-              {launchedModels.length > 0 ? (
-                launchedModels.map((model, index) => (
+            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
+              {launchedModels.length ? (
+                launchedModels.map((model, idx) => (
                   <ModelCard
-                    key={model.job_id || index}
+                    key={model.job_id || idx}
                     model={model}
-                    isLast={index === launchedModels.length - 1}
-                    isBasic={false} // Запущенные модели не базовые
+                    isLast={idx === launchedModels.length - 1}
+                    isBasic={false}
                   />
                 ))
               ) : (
-                <Typography align="center" sx={{ mt: 2, mb: 2 }}>
-                  Нет запущенных моделей.
-                </Typography>
+                <Typography align="center" sx={{ my: 2 }}>Нет запущенных моделей.</Typography>
               )}
             </Box>
           </Box>
         </Box>
 
-        {/* **Нижняя секция - "Базовые модели"** */}
-        <Box
-          sx={{
-            maxHeight: "40vh",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
-            mt: 3,
-          }}
-        >
-          <Typography variant="h5" gutterBottom>
-            Базовые модели
-          </Typography>
-
+        {/* ============ Дообученные модели 💡 ================================= */}
+        <Box sx={{ maxHeight: "40vh", display: "flex", flexDirection: "column", minHeight: 0, mt: 3 }}>
+          <Typography variant="h5" gutterBottom>Дообученные модели</Typography>
           <Box
             sx={{
               border: "2px solid rgba(0, 0, 0, 0.12)",
@@ -238,41 +187,68 @@ function ModelsPage() {
               minHeight: 0,
             }}
           >
-            {/* **Заголовки колонок** */}
+            {/* column headers */}
             <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Название
-                </Typography>
-              </Grid>
-              <Grid item xs={4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Тип модели
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Действие
-                </Typography>
-              </Grid>
+              <Grid item xs={3}><Typography variant="subtitle2" fontWeight="bold">Название модели</Typography></Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Базовая модель</Typography></Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Датасет</Typography></Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Дата создания</Typography></Grid>
             </Grid>
-
             <Divider sx={{ my: 1 }} />
+            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
+              {fineTunedModels.length ? (
+                fineTunedModels.map((ft, idx) => (
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    key={ft.job_id || idx}
+                    sx={{ pl: 2, pb: 1 }}
+                  >
+                    <Grid item xs={3}><Typography>{ft.model_artifact_name}</Typography></Grid>
+                    <Grid item xs={3} sx={{ textAlign: "center" }}><Typography>{ft.base_model || "—"}</Typography></Grid>
+                    <Grid item xs={3} sx={{ textAlign: "center" }}><Typography>{ft.dataset_name || "—"}</Typography></Grid>
+                    <Grid item xs={3} sx={{ textAlign: "center" }}>
+                      <Typography>
+                        {new Date(ft.created_at).toLocaleString("ru-RU")}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                ))
+              ) : (
+                <Typography align="center" sx={{ my: 2 }}>Нет fine-tune моделей.</Typography>
+              )}
+            </Box>
+          </Box>
+        </Box>
 
-            {/* **Область с прокруткой** */}
-            <Box
-              sx={{
-                overflowY: "auto",
-                minHeight: 0,
-              }}
-            >
-              {/* **Список "Базовых моделей"** */}
-              {all.map((model, index) => (
+        {/* ============ Базовые модели ===================================== */}
+        <Box sx={{ maxHeight: "40vh", display: "flex", flexDirection: "column", minHeight: 0, mt: 3 }}>
+          <Typography variant="h5" gutterBottom>Базовые модели</Typography>
+          <Box
+            sx={{
+              border: "2px solid rgba(0, 0, 0, 0.12)",
+              borderRadius: "16px",
+              pt: 2,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
+            {/* column headers */}
+            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+              <Grid item xs={6}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
+              <Grid item xs={4} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Тип модели</Typography></Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
+              {allBasic.map((model, idx) => (
                 <ModelCard
-                  key={model.id || index}
+                  key={model.id || idx}
                   model={model}
-                  isLast={index === all.length - 1}
-                  isBasic={true} // Базовые модели
+                  isLast={idx === allBasic.length - 1}
+                  isBasic
                 />
               ))}
             </Box>

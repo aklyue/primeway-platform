@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
-  Modal,
-  TextField,
-  MenuItem,
   Box,
   Button,
-  IconButton,
-  Typography,
   CircularProgress,
+  FormControl,
+  IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Modal,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
@@ -16,78 +19,81 @@ import axiosInstance from "../../api";
 import { getDatasets, uploadDataset } from "./datasetsApi";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 
-/* ------------------ defaults sent to the backend ---------------- */
-const DEFAULTS = {
-  adapter: "lora",
-  lora_alpha: 64,
-  lora_dropout: 0.05,
-  lora_target_linear: true,
-  sequence_len: 8192,
-  optimizer: "adamw_bnb_8bit",
-  lr_scheduler: "cosine",
-  load_in_8bit: false,
-  strict: false,
-  bf16: true,
-  fp16: false,
-  tf32: true,
-  gradient_checkpointing: true,
-  logging_steps: 1,
-  warmup_ratio: 0.1,
-  output_dir: "./outputs/out",
+/* ───────────────────────── CONSTANTS ───────────────────────── */
+const AVAILABLE_GPUS = {
+  "A100 PCIe": { name: "A100 PCIe", memoryInGb: 80, costPerHour: 260 },
+  "A100 SXM": { name: "A100 SXM", memoryInGb: 80, costPerHour: 299 },
+  A40: { name: "A40", memoryInGb: 48, costPerHour: 90 },
+  "RTX 4090": { name: "RTX 4090", memoryInGb: 24, costPerHour: 130 },
+  "H100 SXM": { name: "H100 SXM", memoryInGb: 80, costPerHour: 399 },
+  "H100 NVL": { name: "H100 NVL", memoryInGb: 94, costPerHour: 355 },
+  "H100 PCIe": { name: "H100 PCIe", memoryInGb: 80, costPerHour: 335 },
+  "H200 SXM": { name: "H200 SXM", memoryInGb: 143, costPerHour: 460 },
+  L4: { name: "L4", memoryInGb: 24, costPerHour: 90 },
+  L40: { name: "L40", memoryInGb: 48, costPerHour: 170 },
+  L40S: { name: "L40S", memoryInGb: 48, costPerHour: 175 },
+  "RTX 2000 Ada": { name: "RTX 2000 Ada", memoryInGb: 16, costPerHour: 55 },
+  "RTX 6000 Ada": { name: "RTX 6000 Ada", memoryInGb: 48, costPerHour: 140 },
+  "RTX A6000": { name: "RTX A6000", memoryInGb: 48, costPerHour: 130 },
 };
 
-/* ----------------------------------------------------------------- */
-export default function FineTuneFormModal({ open, onClose, baseModel = "" }) {
+/* ───────────────────────── COMPONENT ───────────────────────── */
+export default function FineTuningJobFormModal({ open, onClose }) {
   const { currentOrganization } = useContext(OrganizationContext);
 
-  /* ---------------- form state ---------------- */
-  const [name, setName] = useState(""); // internal model title shown to the user later
-  const [adapterName, setAdapterName] = useState(""); // goes straight to backend as artifact name
-  const [datasetId, setDatasetId] = useState("");
-  const [epochs, setEpochs] = useState(5);
-  const [batch, setBatch] = useState(1);
-  const [lr, setLr] = useState(0.0002);
-  const [loraR, setLoraR] = useState(64);
-
-  /* --------------- dataset state -------------- */
+  /* dataset state */
   const [datasets, setDatasets] = useState([]);
   const [loadingDS, setLoadingDS] = useState(false);
+  const [datasetOption, setDatasetOption] = useState(""); // 'hf' | datasetId
+  const [hfDatasetId, setHfDatasetId] = useState("");
+  const hfMode = datasetOption === "hf";
 
-  const fetchDatasets = async () => {
-    try {
-      setLoadingDS(true);
-      const list = await getDatasets(currentOrganization.id);
-      setDatasets(list);
-    } finally {
-      setLoadingDS(false);
-    }
-  };
+  /* form state */
+  const [selectedGpu, setSelectedGpu] = useState("A100 PCIe");
+  const [baseModel, setBaseModel] = useState("");
+  const [artifactName, setArtifactName] = useState("");
+  const [maxSeqLen, setMaxSeqLen] = useState(8192);
+  const [batchSize, setBatchSize] = useState(1);
+  const [gradAccum, setGradAccum] = useState(1);
+  const [epochs, setEpochs] = useState(5);
+  const [learningRate, setLearningRate] = useState(2e-4);
+  const [weightDecay, setWeightDecay] = useState(0);
+  const [seed, setSeed] = useState(42);
+  const [loraR, setLoraR] = useState(64);
+  const [loraAlpha, setLoraAlpha] = useState(64);
+  const [loraDropout, setLoraDropout] = useState(0.05);
+  const [hfToken, setHfToken] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  /* Load list each time the modal opens */
+  /* file input ref (for reliable click) */
+  const fileInputRef = useRef(null);
+
+  /* load datasets each open */
   useEffect(() => {
-    if (open) fetchDatasets();
-  }, [open]);
+    if (!open) return;
+    (async () => {
+      try {
+        setLoadingDS(true);
+        const list = await getDatasets(currentOrganization.id);
+        setDatasets(list);
+        if (!hfMode && !datasetOption && list.length) {
+          setDatasetOption(String(list[0].id));
+        }
+      } finally {
+        setLoadingDS(false);
+      }
+    })();
+  }, [open, currentOrganization.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Clear the form each time the modal opens */
-  useEffect(() => {
-    if (open) {
-      setName("");
-      setAdapterName("");
-      setDatasetId("");
-      setEpochs(5);
-      setBatch(1);
-      setLr(0.0002);
-      setLoraR(64);
-    }
-  }, [open]);
-
-  /* -------------- upload handler -------------- */
+  /* upload dataset */
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       await uploadDataset(file, currentOrganization.id);
-      await fetchDatasets();
+      const list = await getDatasets(currentOrganization.id);
+      setDatasets(list);
+      setDatasetOption(String(list[0].id));
       alert("Dataset uploaded");
     } catch (err) {
       console.error(err);
@@ -95,54 +101,64 @@ export default function FineTuneFormModal({ open, onClose, baseModel = "" }) {
     }
   };
 
-  /* ---------------- submit -------------------- */
+  /* handlers */
+  const handleDatasetChange = (e) => setDatasetOption(e.target.value);
+  const handleGpuChange = (e) => setSelectedGpu(e.target.value);
+
   const handleSubmit = async () => {
-    if (!name.trim()) return alert("Введите название модели");
-    if (!adapterName.trim()) return alert("Введите название адаптера / артефакта");
-    if (!datasetId) return alert("Выберите датасет");
+    if (!baseModel.trim()) return alert("Базовая модель не указана");
+    if (!artifactName.trim())
+      return alert("Укажите название артефакта / адаптера");
+    if (hfMode && !hfDatasetId.trim())
+      return alert("Укажите HF dataset ID или выберите локальный датасет");
 
-    /* Optional: validate dataset on backend */
-    try {
-      const { data: validation } = await axiosInstance.post(
-        "/datasets/validate",
-        { dataset_id: datasetId },
-        { params: { organization_id: currentOrganization.id } }
-      );
-      if (!validation.valid) {
-        return alert(`Dataset check failed: ${validation.reason}`);
-      }
-    } catch (_) {
-      // swallow — if your backend doesn't have this route just ignore
-    }
-
-    /* Build the config expected by POST /finetuning/run */
-    const finetuningConfig = {
+    const config = {
+      job_name: baseModel,
+      gpu_types: [{ type: selectedGpu, count: 1 }],
       base_model: baseModel,
-      adapter_name: adapterName.trim(), // IMPORTANT
-      dataset_name: datasetId,
-      custom_dataset: true,
-
-      ...DEFAULTS,
-      num_epochs: Number(epochs),
-      micro_batch_size: Number(batch),
-      learning_rate: Number(lr),
-      lora_r: Number(loraR),
+      artifact_name: artifactName.trim(),
+      custom_dataset: !hfMode,
+      dataset_name: hfMode ? hfDatasetId.trim() : Number(datasetOption),
+      disk_space: 30,
+      creation_timeout: 600,
+      env: [
+        { name: "EPOCHS", value: String(epochs) },
+        { name: "LR", value: String(learningRate) },
+        { name: "MAX_SEQ_LEN", value: String(maxSeqLen) },
+        { name: "BATCH_SIZE", value: String(batchSize) },
+        { name: "GRADIENT_ACCUMULATION", value: String(gradAccum) },
+        { name: "WEIGHT_DECAY", value: String(weightDecay) },
+        { name: "SEED", value: String(seed) },
+        { name: "LORA_R", value: String(loraR) },
+        { name: "LORA_ALPHA", value: String(loraAlpha) },
+        { name: "LORA_DROPOUT", value: String(loraDropout) },
+        { name: "HF_TOKEN", value: hfToken },
+      ],
     };
 
-    /* Wrap everything in multipart/form-data */
-    const formData = new FormData();
-    formData.append("finetuning_config_str", JSON.stringify(finetuningConfig));
-    formData.append("organization_id", currentOrganization.id);
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("finetuning_config_str", JSON.stringify(config));
+      formData.append("organization_id", currentOrganization.id);
 
-    await axiosInstance.post("/finetuning/run", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      await axiosInstance.post("/finetuning/run", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    alert("Дообучение запущено.");
-    onClose();
+      alert("Задача дообучения успешно запущена");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Ошибка запуска: " + (err.response?.data?.detail || err.message),
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  /* ---------------- UI ----------------------- */
+  /* ──────────────────────── RENDER ──────────────────────── */
   return (
     <Modal open={open} onClose={onClose}>
       <Box
@@ -151,113 +167,187 @@ export default function FineTuneFormModal({ open, onClose, baseModel = "" }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
+          width: 520,
           bgcolor: "background.paper",
-          p: 3,
-          width: 440,
           borderRadius: 2,
+          p: 3,
+          maxHeight: "85vh",
+          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           gap: 2,
         }}
       >
         <Typography variant="h6" textAlign="center">
-          Дообучить «{baseModel || "-"}»
+          Настройка дообучения
         </Typography>
 
-        {/* TITLE (for display in your UI later, not sent to backend) */}
-        <TextField
-          label="Название новой модели"
-          required
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        {/* GPU */}
+        <FormControl fullWidth>
+          <InputLabel>GPU</InputLabel>
+          <Select value={selectedGpu} onChange={handleGpuChange} label="GPU">
+            {Object.keys(AVAILABLE_GPUS).map((k) => (
+              <MenuItem key={k} value={k}>
+                {AVAILABLE_GPUS[k].name} – {AVAILABLE_GPUS[k].memoryInGb} GB
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        {/* ADAPTER / ARTIFACT NAME */}
-        <TextField
-          label="Adapter / artifact name"
-          required
-          fullWidth
-          value={adapterName}
-          onChange={(e) => setAdapterName(e.target.value)}
-        />
-
-        {/* DATASET SELECT WITH UPLOAD BUTTON */}
+        {/* DATASET SELECT */}
         <TextField
           select
-          label="Датасет"
-          required
           fullWidth
+          label="Набор данных"
+          value={datasetOption}
+          onChange={handleDatasetChange}
           disabled={loadingDS}
-          value={datasetId}
-          onChange={(e) => setDatasetId(e.target.value)}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 {loadingDS ? (
                   <CircularProgress size={20} />
                 ) : (
-                  <IconButton component="label">
-                    <UploadFileIcon />
+                  <>
+                    {/* hidden file input outside label to guarantee file dialog */}
                     <input
+                      ref={fileInputRef}
                       hidden
                       type="file"
-                      accept=".json,.csv,.parquet"
+                      accept=".jsonl,.jsonl.gz"
                       onChange={handleUpload}
                     />
-                  </IconButton>
+                    <IconButton
+                      tabIndex={-1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
+                    >
+                      <UploadFileIcon fontSize="small" />
+                    </IconButton>
+                  </>
                 )}
               </InputAdornment>
             ),
           }}
         >
-          {datasets.map((d) => (
-            <MenuItem key={d.id} value={d.id}>
-              {d.name}
+          {datasets.map((ds) => (
+            <MenuItem key={ds.id} value={String(ds.id)}>
+              {ds.name}
             </MenuItem>
           ))}
+          <MenuItem value="hf">Из HuggingFace</MenuItem>
         </TextField>
 
-        {/* NUMERIC FIELDS */}
+        {hfMode && (
+          <TextField
+            label="HF dataset ID"
+            fullWidth
+            value={hfDatasetId}
+            onChange={(e) => setHfDatasetId(e.target.value)}
+          />
+        )}
+
+        {/* MAIN PARAMS */}
         <TextField
-          label="Эпохи"
-          type="number"
+          label="Базовая модель"
           fullWidth
-          inputProps={{ min: 1 }}
+          value={baseModel}
+          onChange={(e) => setBaseModel(e.target.value)}
+        />
+        <TextField
+          label="Adapter / artifact name"
+          fullWidth
+          value={artifactName}
+          onChange={(e) => setArtifactName(e.target.value)}
+        />
+        <TextField
+          label="MAX_SEQ_LEN"
+          fullWidth
+          value={maxSeqLen}
+          onChange={(e) => setMaxSeqLen(e.target.value)}
+        />
+        <TextField
+          label="BATCH_SIZE"
+          fullWidth
+          value={batchSize}
+          onChange={(e) => setBatchSize(e.target.value)}
+        />
+        <TextField
+          label="GRADIENT_ACCUMULATION"
+          fullWidth
+          value={gradAccum}
+          onChange={(e) => setGradAccum(e.target.value)}
+        />
+        <TextField
+          label="NUM_EPOCHS"
+          fullWidth
           value={epochs}
           onChange={(e) => setEpochs(e.target.value)}
         />
         <TextField
-          label="Micro batch size"
-          type="number"
+          label="LEARNING_RATE"
           fullWidth
-          inputProps={{ min: 1 }}
-          value={batch}
-          onChange={(e) => setBatch(e.target.value)}
+          value={learningRate}
+          onChange={(e) => setLearningRate(e.target.value)}
         />
         <TextField
-          label="Learning rate"
-          type="number"
+          label="WEIGHT_DECAY"
           fullWidth
-          inputProps={{ step: "0.00001", min: 0 }}
-          value={lr}
-          onChange={(e) => setLr(e.target.value)}
+          value={weightDecay}
+          onChange={(e) => setWeightDecay(e.target.value)}
         />
         <TextField
-          label="LoRA r"
-          type="number"
+          label="SEED"
           fullWidth
-          inputProps={{ min: 1 }}
+          value={seed}
+          onChange={(e) => setSeed(e.target.value)}
+        />
+        <TextField
+          label="LORA_R"
+          fullWidth
           value={loraR}
-          onChange={(e) => setLoraR(e.target.value)}
+          onChange={(e) => {
+            setLoraR(e.target.value);
+            setLoraAlpha(e.target.value);
+          }}
+        />
+        <TextField
+          label="LORA_ALPHA"
+          fullWidth
+          value={loraAlpha}
+          onChange={(e) => setLoraAlpha(e.target.value)}
+        />
+        <TextField
+          label="LORA_DROPOUT"
+          fullWidth
+          value={loraDropout}
+          onChange={(e) => setLoraDropout(e.target.value)}
+        />
+        <TextField
+          label="HF_TOKEN"
+          fullWidth
+          value={hfToken}
+          onChange={(e) => setHfToken(e.target.value)}
         />
 
-        <Box sx={{ textAlign: "right", pt: 1 }}>
+        {/* ACTIONS */}
+        <Box sx={{ textAlign: "center", pt: 1 }}>
           <Button onClick={onClose} sx={{ mr: 1 }}>
             Отмена
           </Button>
-          <Button variant="contained" onClick={handleSubmit} sx={{ color: "#fff" }}>
-            Дообучить
+          <Button
+            variant="contained"
+            sx={{ color: "#fff" }}
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Запустить дообучение"
+            )}
           </Button>
         </Box>
       </Box>

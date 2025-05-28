@@ -219,28 +219,32 @@ function ModelsPage() {
           </Box>
         </Box>
 
-        {/* ============ Дообученные модели 💡 ================================= */}
-        <Box sx={{ maxHeight: "40vh", mt: 3, display: "flex", flexDirection: "column", minHeight: 0 }}>
+        {/* === Дообученные модели ============================================= */}
+        <Box sx={{ maxHeight: "40vh", mt: 3, display: "flex", flexDirection: "column" }}>
           <Typography variant="h5" gutterBottom>Дообученные модели</Typography>
 
           <Box
             sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
-              borderRadius: "16px",
-              pt: 2,
+              border: "2px solid rgba(0,0,0,.12)",
+              borderRadius: 2,
               display: "flex",
               flexDirection: "column",
+              flex: 1,
               minHeight: 0,
             }}
           >
-            {/* column headers */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={6}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
-              <Grid item xs={4} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Базовая модель</Typography></Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
+            {/* ---------- header row ---------- */}
+            <Box sx={{ display: "flex", px: 2, py: 1, fontWeight: "bold" }}>
+              <Typography sx={{ flexBasis: "25%" }}>Название</Typography>
+              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>Базовая Модель</Typography>
+              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>Набор Данных</Typography>
+              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>Дата</Typography>
+              <Typography sx={{ flexBasis: "15%", textAlign: "center" }}>Статус</Typography>
+              <Typography sx={{ flexBasis: "6%",  textAlign: "center" }}> </Typography>
+            </Box>
+            <Divider />
 
+            {/* ---------- rows ---------- */}
             <Box sx={{ overflowY: "auto", minHeight: 0 }}>
               {fineTunedModels.length ? (
                 fineTunedModels.map((ft, idx) => (
@@ -248,10 +252,13 @@ function ModelsPage() {
                     key={ft.job_id}
                     ft={ft}
                     isLast={idx === fineTunedModels.length - 1}
+                    onRun={runFineTunedModel}
                   />
                 ))
               ) : (
-                <Typography align="center" sx={{ my: 2 }}>Нет fine-tune моделей.</Typography>
+                <Typography align="center" sx={{ my: 2 }}>
+                  Нет fine-tune моделей.
+                </Typography>
               )}
             </Box>
           </Box>

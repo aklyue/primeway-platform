@@ -1,49 +1,113 @@
-import React from "react";
-import ModelCard from "./ModelCard";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Divider,
+  Modal,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
+import ConfigureModelForm from "./ConfigureModelForm";
 import { modelsData } from "../data/modelsData";
 
-export default function FineTunedModelCard({ ft, isLast }) {
-  /* -------- 1 — Pick a base model or fall back gracefully ---------- */
-  const base =
-    modelsData.find((m) => m.name === ft.base_model)    // exact match
-    || modelsData[0]                                    // first entry
-    || {};                                              // nothing at all
-
-  /* -------- 2 — Guarantee we have some kind of defaultConfig -------- */
-  const fallbackDefaultConfig = {
-    modelName: ft.base_model,
-    args: [],
-    flags: [],
+/* helper – build deploy config that points at this LoRA */
+const buildDefaultConfig = (ft) => {
+  const base = modelsData.find((m) => m.name === ft.base_model) || {};
+  const cfg  = base.defaultConfig || {};
+  return {
+    ...cfg,
+    modelName: cfg.modelName ?? ft.base_model,   // read-only in the form
     finetuned_job_id: ft.job_id,
     modelConfig: {
-      job_name: `${ft.artifact_name}-deploy`,
-      gpu_types: [{ type: "A100", count: 1 }],
-    },
-  };
-
-  const defaultConfig = {
-    // copy whatever the base model already knows …
-    ...(base.defaultConfig || {}),
-    // …but make sure we add / overwrite the bits required for LoRA
-    finetuned_job_id: ft.job_id,
-    modelName: base?.defaultConfig?.modelName ?? ft.base_model,
-    modelConfig: {
-      ...(base.defaultConfig?.modelConfig || {}),
+      ...(cfg.modelConfig || {}),
       job_name: `${ft.artifact_name}-deploy`,
     },
   };
+};
 
-  // if base.defaultConfig is missing, use our fallback
-  const safeConfig =
-    Object.keys(base.defaultConfig || {}).length ? defaultConfig : fallbackDefaultConfig;
+export default function FineTunedModelCard({ ft, isLast, onRun }) {
+  const [openCfg, setOpenCfg] = useState(false);
+  const defaultConfig = buildDefaultConfig(ft);
 
-  /* -------- 3 — Produce the pseudo-basic model for <ModelCard /> ---- */
-  const model = {
-    id: ft.job_id,
-    name: ft.artifact_name,
-    type: `LoRA → ${ft.base_model}`,
-    defaultConfig: safeConfig,
-  };
+  return (
+    <>
+      {/* ---------- list row ---------- */}
+      <Box
+        onClick={() => setOpenCfg(true)}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          px: 2,
+          py: 1,
+          cursor: "pointer",
+          "&:hover": { background: "rgba(0,0,0,.05)" },
+        }}
+      >
+        <Typography sx={{ flexBasis: "25%" }}>{ft.artifact_name}</Typography>
+        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+          {ft.base_model || "—"}
+        </Typography>
+        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+          {ft.dataset_id || "—"}
+        </Typography>
+        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+          {new Date(ft.created_at).toLocaleDateString()}
+        </Typography>
+        <Typography sx={{ flexBasis: "15%", textAlign: "center" }}>
+          {ft.status || "—"}
+        </Typography>
 
-  return <ModelCard model={model} isBasic={true} isLast={isLast} />;
+        {/* action button */}
+        <Box sx={{ flexBasis: "6%", textAlign: "center" }}>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRun(ft);
+            }}
+            variant="outlined"
+            sx={{ bgcolor: "#505156", color: "#fff" }}
+          >
+            <RocketLaunchOutlinedIcon sx={{ fontSize: 20 }} />
+          </Button>
+        </Box>
+      </Box>
+
+      {!isLast && <Divider />}
+
+      {/* ---------- configure-and-run modal ---------- */}
+      <Modal open={openCfg} onClose={() => setOpenCfg(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            maxHeight: "95vh",
+            overflowY: "auto",
+          }}
+        >
+          <Button
+            sx={{ position: "absolute", left: 8, top: 8 }}
+            onClick={() => setOpenCfg(false)}
+          >
+            <CloseIcon />
+          </Button>
+
+          {/* ⚠️ inside ConfigureModelForm, simply render the “Имя модели
+              из Hugging Face” <TextField disabled /> when you receive
+              the prop `readOnlyModelName` */}
+          <ConfigureModelForm
+            initialConfig={defaultConfig}
+            readOnlyModelName
+            onClose={() => setOpenCfg(false)}
+          />
+        </Box>
+      </Modal>
+    </>
+  );
 }

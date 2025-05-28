@@ -247,7 +247,7 @@ function ModelsPage() {
             >
               {/* **Список "Запущенных моделей"** */}
               {launchedModels.length > 0 ? (
-                launchedModels.map((model, index) => (
+                launchedModels.map((model, idx) => (
                   <ModelCard
                     key={model.job_id || idx}
                     model={model}
@@ -366,7 +366,7 @@ function ModelsPage() {
               }}
             >
               {/* **Список "Базовых моделей"** */}
-              {all.map((model, index) => (
+              {allBasic.map((model, idx) => (
                 <ModelCard
                   key={model.id || idx}
                   model={model}

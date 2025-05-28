@@ -32,12 +32,13 @@ const Welcome = () => {
       <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px" }}>
         <h1
           style={{
-            marginBottom: "25px",
             fontSize: isMobile ? "1.7rem" : "2rem",
             lineHeight: 1.2,
             display: "flex",
             alignItems: "center",
             gap: "5px",
+            paddingBottom: "25px",
+            borderBottom: "1px solid lightgray"
           }}
         >
           {

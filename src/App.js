@@ -95,7 +95,7 @@ export function Layout() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMinDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
-  const drawerWidth = isTablet || isMinDesktop ? "8%" : "4%";
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -135,8 +135,10 @@ export function Layout() {
         setOpenRegistrationModal(false);
       }
 
-      // Скрываем меню на главной странице
-      setShowMenu(location.pathname !== "/");
+      // Скрываем меню на главной странице и на странице доков
+      setShowMenu(
+        location.pathname !== "/" && !location.pathname.startsWith("/docs")
+      );
     }
   }, [isLoggedIn, loading, location]);
 
@@ -167,6 +169,12 @@ export function Layout() {
   };
 
   const isDocsPage = location.pathname.startsWith("/docs");
+  const isMainPage = location.pathname === "/";
+  const drawerWidth = isDocsPage
+    ? "20%"
+    : isTablet || isMinDesktop
+    ? "8%"
+    : "5%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -243,52 +251,27 @@ export function Layout() {
     {
       name: "Добро пожаловать",
       to: "/docs/welcome",
-      icon: (
-        <HomeIcon
-          fontSize="medium"
-          style={{ color: "rgba(255, 255, 255, 0.8)" }}
-        />
-      ),
+      icon: <HomeIcon fontSize="medium" />,
     },
     {
       name: "Быстрый старт",
       to: "/docs/quickstart",
-      icon: (
-        <FlashOnIcon
-          fontSize="medium"
-          style={{ color: "rgba(255, 255, 255, 0.8)" }}
-        />
-      ),
+      icon: <FlashOnIcon fontSize="medium" />,
     },
     {
       name: "Задачи",
       to: "/docs/jobs",
-      icon: (
-        <WorkIcon
-          fontSize="medium"
-          style={{ color: "rgba(255, 255, 255, 0.8)" }}
-        />
-      ),
+      icon: <WorkIcon fontSize="medium" />,
     },
     {
       name: "Конфигурация",
       to: "/docs/configuration",
-      icon: (
-        <SettingsIcon
-          fontSize="medium"
-          style={{ color: "rgba(255, 255, 255, 0.8)" }}
-        />
-      ),
+      icon: <SettingsIcon fontSize="medium" />,
     },
     {
       name: "CLI",
       to: "/docs/cli",
-      icon: (
-        <CodeIcon
-          fontSize="medium"
-          style={{ color: "rgba(255, 255, 255, 0.8)" }}
-        />
-      ),
+      icon: <CodeIcon fontSize="medium" />,
     },
   ];
 
@@ -296,52 +279,59 @@ export function Layout() {
 
   const drawer = (
     <div>
-      <Toolbar />
-      {isMobile && (
-        <List sx={{ display: "flex" }}>
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/"
-              selected={!location.pathname.startsWith("/docs")}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText primary="Дашборд" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/docs"
-              selected={location.pathname.startsWith("/docs")}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText primary="Доки" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      )}
-      <Stack
-        spacing={1}
+      <Box
         sx={{
-          alignItems: "center",
-          mt: 2,
+          width: isMobile ? "80px" : isDocsPage ? "240px" : "50px",
+          overflowX: "hidden",
         }}
       >
-        {menuItems.map((item) => (
-          <MenuItem
-            key={item.to}
-            to={item.to}
-            name={item.name}
-            icon={item.icon}
-            isMobile={isMobile}
-            isSmallDesktop={isSmallDesktop}
-            isTablet={isTablet}
-            isDocsPage={isDocsPage}
-            handleDrawerToggle={handleDrawerToggle}
-          />
-        ))}
-      </Stack>
+        <Toolbar />
+        {isMobile && (
+          <List sx={{ display: "flex", flexDirection: "column" }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/"
+                selected={!location.pathname.startsWith("/docs")}
+                onClick={handleDrawerToggle}
+              >
+                <ListItemText primary="Дашборд" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                to="/docs"
+                selected={location.pathname.startsWith("/docs")}
+                onClick={handleDrawerToggle}
+              >
+                <ListItemText primary="Доки" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        )}
+        <Stack
+          spacing={0}
+          sx={{
+            alignItems: "center",
+            mt: 2,
+          }}
+        >
+          {menuItems.map((item) => (
+            <MenuItem
+              key={item.to}
+              to={item.to}
+              name={item.name}
+              icon={item.icon}
+              isMobile={isMobile}
+              isSmallDesktop={isSmallDesktop}
+              isTablet={isTablet}
+              isDocsPage={isDocsPage}
+              handleDrawerToggle={handleDrawerToggle}
+            />
+          ))}
+        </Stack>
+      </Box>
     </div>
   );
 
@@ -392,6 +382,7 @@ export function Layout() {
                 to={item.to}
                 onClick={() => setShowMenu(true)}
                 sx={{
+                  flexGrow: 1,
                   height: "100%",
                   textDecoration: "none",
                   transition: "transform 0.2s",
@@ -401,9 +392,10 @@ export function Layout() {
                   },
                 }}
               >
-                <CardActionArea sx={{ height: "100%" }}>
+                <CardActionArea sx={{ flexGrow: 1, height: "100%" }}>
                   <CardContent
                     sx={{
+                      height: "100%",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -454,7 +446,7 @@ export function Layout() {
               sx={{
                 display: "flex",
                 width: "100%",
-                backgroundColor: isDocsPage ? "rgb(21 21 21)" : "#FFFFFF",
+                backgroundColor: "#FFFFFF",
               }}
             >
               <CssBaseline />
@@ -462,32 +454,32 @@ export function Layout() {
                 <>
                   <header
                     style={{
+                      backgroundColor: isDocsPage ? "white" : "rgb(21, 22, 25)",
                       position: "fixed",
-
                       left: "50%",
+                      marginTop: !isDocsPage ? "1%" : "",
                       transform: "translateX(-50%)",
-                      maxWidth: "1410px",
-                      width: "100%",
-                      top: "15px",
-                      zIndex: 1,
+                      width: isDocsPage ? "100%" : "95%",
+                      zIndex: 100000,
+                      borderRadius: !isDocsPage && "50px",
+                      boxShadow: !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                     }}
                   >
                     <Toolbar
                       style={{
-                        borderRadius: "20px",
                         width: "100%",
-                        backgroundColor: isDocsPage
-                          ? "rgb(204 204 230)"
-                          : "rgb(21 22 25)",
+                        borderBottom: isDocsPage && "1px solid lightgray",
+                        border: "1px solid lightgray",
+                        borderRadius: !isDocsPage && "50px",
                       }}
                     >
-                      {isMobile && (
+                      {isMobile && !isMainPage && (
                         <IconButton
                           color="#202123"
                           aria-label="open drawer"
                           edge="start"
                           onClick={handleDrawerToggle}
-                          sx={{ mr: "4px", padding: "6px", color: "#F5F5F5" }}
+                          sx={{ mr: "4px", padding: "6px", color: "#353740" }}
                         >
                           <MenuIcon />
                         </IconButton>
@@ -614,9 +606,7 @@ export function Layout() {
                               color: isEventsOpen
                                 ? "secondary.main"
                                 : "#F5F5F5",
-                              backgroundColor: isDocsPage
-                                ? "rgba(255, 255, 255, 0.04)"
-                                : "rgba(0, 0, 0, 0.04);",
+                              backgroundColor: "rgba(0, 0, 0, 0.04);",
                             }}
                           >
                             <NotificationsNoneIcon
@@ -650,9 +640,7 @@ export function Layout() {
                               >
                                 <Box
                                   sx={{
-                                    backgroundColor: isDocsPage
-                                      ? "rgb(204 204 230)"
-                                      : "rgb(21 22 25)",
+                                    backgroundColor: "rgb(204 204 230)",
                                     borderRadius: "50%",
                                     padding: "2.6px",
                                     display: "inline-flex",
@@ -677,8 +665,10 @@ export function Layout() {
                     </Toolbar>
                   </header>
 
-                  {/* Drawer - показываем только если не на главной странице или если showMenu=true */}
-                  {(showMenu || location.pathname !== "/") && (
+                  {/* Drawer - показываем только если не на главной странице, или если showMenu=true */}
+                  {(showMenu ||
+                    (location.pathname !== "/" &&
+                      location.pathname !== "/docs")) && (
                     <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
                       {isMobile && (
                         <Drawer
@@ -690,10 +680,11 @@ export function Layout() {
                           }}
                           sx={{
                             "& .MuiDrawer-paper": {
-                              width: "180px",
-                              ackgroundColor: isDocsPage
-                                ? "rgb(21 21 21)"
-                                : "#F5F5F5",
+                              width: isMobile
+                                ? "80px"
+                                : isDocsPage
+                                ? "180px"
+                                : "50px",
                             },
                           }}
                         >
@@ -708,11 +699,9 @@ export function Layout() {
                             flexShrink: 0,
                             "& .MuiDrawer-paper": {
                               width: drawerWidth,
+                              marginLeft: "1%",
                               boxSizing: "border-box",
-                              backgroundColor: isDocsPage
-                                ? "rgb(21 21 21)"
-                                : "#FFFFFF",
-                              border: "none",
+                              borderRight: "1px solid lightgray",
                             },
                           }}
                           open
@@ -730,12 +719,10 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-
-                  marginLeft: drawerWidth,
-                  marginRight: drawerWidth,
+                  marginLeft: isMobile ? "0" : isMainPage ? "0" : drawerWidth,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
-                  backgroundColor: isDocsPage ? "#f9faff" : "#FFFFFF",
+                  backgroundColor: "#FFFFFF",
                   padding: { lg: "25px", xl: "35px", xs: "20px" },
                   marginTop: { xs: "56px", sm: "64px" },
                   borderRadius: { xs: "0px", sm: "20px" },
@@ -839,7 +826,7 @@ export function Layout() {
                       />
                       <Route
                         path="/docs"
-                        element={<Navigate to="/docs/welcome" replace />}
+                        element={<Navigate to="/docs/welcome" />}
                       />
                       <Route
                         path="/docs/:docName"

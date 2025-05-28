@@ -90,7 +90,8 @@ const Quickstart = () => {
         {/* Заголовок */}
         <h1
           style={{
-            marginBottom: "25px",
+            paddingBottom: "25px",
+            borderBottom: "1px solid lightgray",
             fontSize: isMobile ? "1.7rem" : "2rem",
             lineHeight: 1.2,
           }}

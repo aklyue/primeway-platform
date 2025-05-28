@@ -103,6 +103,8 @@ function Docs() {
       {!loading && (
         <Box
           sx={{
+            borderTop: "1px solid lightgray",
+            paddingTop: "25px",
             display: "flex",
             flexDirection: isMobile ? "column" : "row",
             alignItems: isMobile ? "stretch" : "center",

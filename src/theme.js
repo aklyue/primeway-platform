@@ -9,6 +9,7 @@ let theme = createTheme({
     },
     primary: {
       main: "#353740",
+      selected: "#605cd0",
       icon: "#a2a2a2",
     },
     secondary: {
@@ -111,13 +112,13 @@ let theme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: "15px",
+          borderRadius: "5px",
           "&:hover": {
             backgroundColor: "rgba(131, 131, 131, 0.1)",
           },
           "&.Mui-selected": {
-            backgroundColor: "rgba(131, 131, 131, 0.2)",
-
+            backgroundColor: "rgba(102, 179, 238, 0.2)",
+            color: "rgb(96, 92, 208)",
             "&:hover": {
               backgroundColor: "rgba(131, 131, 131, 0.3)",
             },

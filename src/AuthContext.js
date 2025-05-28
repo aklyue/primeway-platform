@@ -27,6 +27,16 @@ const AuthProvider = ({ children }) => {
         setAuthToken(token);
         setIsLoggedIn(true);
       } else {
+        // const mockUser = {
+        //   id: 1,
+        //   username: "DevUser",
+        //   avatar_url: "https://via.placeholder.com/150",
+        //   email: "dev@example.com",
+        // };
+        // setUser(mockUser);
+        // setIsLoggedIn(true);
+        // setAuthToken("dev_token");
+
         setUser(null);
         setAuthToken(null);
         setIsLoggedIn(false);
@@ -79,7 +89,7 @@ const AuthProvider = ({ children }) => {
         openRegistrationModal,
         setOpenRegistrationModal,
         loading,
-        setLoading // Передаём состояние загрузки
+        setLoading, // Передаём состояние загрузки
       }}
     >
       {children}

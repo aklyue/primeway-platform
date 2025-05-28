@@ -24,18 +24,27 @@ const MenuItem = ({
   const isSelected = location.pathname === to;
 
   return (
-    <Tooltip title={name} placement="right">
-      <ListItem disablePadding>
-        <ListItemButton
-          component={Link}
-          to={to}
-          selected={isSelected}
-          onClick={isMobile ? handleDrawerToggle : undefined}
-          sx={{
-            justifyContent: "center",
-            padding: "10px 0",
-          }}
-        >
+    <ListItem disablePadding>
+      <ListItemButton
+        component={Link}
+        to={to}
+        selected={isSelected}
+        onClick={isMobile ? handleDrawerToggle : undefined}
+        sx={{
+          justifyContent: isDocsPage ? "flex-start" : "center",
+          padding: isDocsPage ? "1px 16px" : "10px 16px",
+        }}
+      >
+        {isDocsPage && (
+          <ListItemText
+            primary={name}
+            primaryTypographyProps={{
+              fontSize: 12,
+            }}
+            sx={{ mr: 1 }}
+          />
+        )}
+        {!isDocsPage && (
           <ListItemIcon
             sx={{
               minWidth: 0,
@@ -46,19 +55,9 @@ const MenuItem = ({
           >
             {icon}
           </ListItemIcon>
-          {isMobile && (
-            <ListItemText
-              primary={name}
-              primaryTypographyProps={{
-                fontSize: 14,
-                ml: 1,
-                color: isDocsPage ? "#F5F5F5" : "inherit",
-              }}
-            />
-          )}
-        </ListItemButton>
-      </ListItem>
-    </Tooltip>
+        )}
+      </ListItemButton>
+    </ListItem>
   );
 };
 

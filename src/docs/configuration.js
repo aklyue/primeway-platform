@@ -1,16 +1,11 @@
 // src/docs/Configuration.js
 
 import React from "react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Scrollspy from "react-scrollspy";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { coldarkCold } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import "./docs.css";
@@ -23,13 +18,16 @@ const Configuration = () => {
     };
 
     return (
-      <div className="code-block-container" style={{ position: "relative", marginBottom: "20px" }}>
+      <div
+        className="code-block-container"
+        style={{ position: "relative", marginBottom: "20px" }}
+      >
         <SyntaxHighlighter
           language={language}
           style={coldarkCold}
           customStyle={{
             margin: 0,
-            padding: '8px',
+            padding: "8px",
             borderRadius: "7px",
           }}
           showLineNumbers
@@ -69,14 +67,21 @@ const Configuration = () => {
   ];
 
   const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:1200px)');
+  const isMobile = useMediaQuery("(max-width:1200px)");
 
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       {/* Левая колонка - Основной контент */}
       <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "20px" }}>
         {/* Заголовок */}
-        <h1 style={{ marginBottom: "25px", fontSize: isMobile ? "1.7rem" : "2rem", lineHeight: 1.2 }}>
+        <h1
+          style={{
+            paddingBottom: "25px",
+            borderBottom: "1px solid lightgray",
+            fontSize: isMobile ? "1.7rem" : "2rem",
+            lineHeight: 1.2,
+          }}
+        >
           Конфигурация
         </h1>
 
@@ -85,7 +90,8 @@ const Configuration = () => {
           <h2>Создание задачи</h2>
           <h3>Написание конфигурации</h3>
           <p>
-            <strong>Создайте конфигурационный файл:</strong> Напишите YAML-файл (например, <code>job_config.yaml</code>) с необходимыми полями.
+            <strong>Создайте конфигурационный файл:</strong> Напишите YAML-файл
+            (например, <code>job_config.yaml</code>) с необходимыми полями.
           </p>
           <CodeBlock
             code={`# Обязательные поля
@@ -128,7 +134,9 @@ job_timeout: 3600  # Таймаут задачи в секундах`}
           />
 
           <p>
-            <strong>Подготовьте ваш проект:</strong> Убедитесь, что директория, указанная в <code>context</code>, содержит все необходимые скрипты и файлы.
+            <strong>Подготовьте ваш проект:</strong> Убедитесь, что директория,
+            указанная в <code>context</code>, содержит все необходимые скрипты и
+            файлы.
           </p>
         </section>
 
@@ -137,7 +145,8 @@ job_timeout: 3600  # Таймаут задачи в секундах`}
           <h2>Запуск задачи</h2>
           <h3>Использование CLI</h3>
           <p>
-            Чтобы запустить задачу с помощью CLI <code>primeway</code>, используйте следующую команду:
+            Чтобы запустить задачу с помощью CLI <code>primeway</code>,
+            используйте следующую команду:
           </p>
           <CodeBlock
             code={`primeway create job --config job_config.yaml`}
@@ -160,14 +169,18 @@ job_timeout: 3600  # Таймаут задачи в секундах`}
           <ol>
             <li>Валидирует вашу конфигурацию.</li>
             <li>
-              Пакует и загружает ваш проект, указанный в <code>context</code>, если он предоставлен.
+              Пакует и загружает ваш проект, указанный в <code>context</code>,
+              если он предоставлен.
             </li>
             <li>Запускает задачу на платформе PrimeWay.</li>
             <li>Предоставляет информацию о статусе выполнения задачи.</li>
           </ol>
 
           <p>
-            Обратите внимание, что задачу нужно создать только один раз. После создания вы можете запускать её с разными входными данными. Процесс загрузки проекта выполняется только при изменении содержимого директории <code>context</code>.
+            Обратите внимание, что задачу нужно создать только один раз. После
+            создания вы можете запускать её с разными входными данными. Процесс
+            загрузки проекта выполняется только при изменении содержимого
+            директории <code>context</code>.
           </p>
 
           <h3>Опции CLI:</h3>
@@ -176,7 +189,8 @@ job_timeout: 3600  # Таймаут задачи в секундах`}
               <code>--config</code>: Путь к вашему файлу конфигурации задачи.
             </li>
             <li>
-              <code>--data-file</code>: (Опционально) Путь к вашему файлу данных.
+              <code>--data-file</code>: (Опционально) Путь к вашему файлу
+              данных.
             </li>
           </ul>
         </section>
@@ -189,58 +203,84 @@ job_timeout: 3600  # Таймаут задачи в секундах`}
           </p>
           <ul>
             <li>
-              <strong>docker_image</strong> (string, обязательное): Базовый Docker-образ для запуска вашей задачи.
+              <strong>docker_image</strong> (string, обязательное): Базовый
+              Docker-образ для запуска вашей задачи.
             </li>
             <li>
-              <strong>job_name</strong> (string, обязательное): Уникальное имя для вашей задачи.
+              <strong>job_name</strong> (string, обязательное): Уникальное имя
+              для вашей задачи.
             </li>
             <li>
-              <strong>job_type</strong> (string, обязательное): Тип задачи. Возможные значения: <code>"run"</code> или <code>"deploy"</code>.
+              <strong>job_type</strong> (string, обязательное): Тип задачи.
+              Возможные значения: <code>"run"</code> или <code>"deploy"</code>.
             </li>
             <li>
-              <strong>primeway_api_token</strong> (string, опционально): Ваш API-токен для доступа к платформе PrimeWay.
+              <strong>primeway_api_token</strong> (string, опционально): Ваш
+              API-токен для доступа к платформе PrimeWay.
             </li>
             <li>
-              <strong>context</strong> (string, опционально): Путь к директории с вашим проектом. Если указан, содержимое директории будет загружено и использовано при выполнении задачи.
+              <strong>context</strong> (string, опционально): Путь к директории
+              с вашим проектом. Если указан, содержимое директории будет
+              загружено и использовано при выполнении задачи.
             </li>
             <li>
-              <strong>command</strong> (string или list, опционально): Команда для запуска внутри контейнера. Если не указана, используется команда по умолчанию из Docker-образа.
+              <strong>command</strong> (string или list, опционально): Команда
+              для запуска внутри контейнера. Если не указана, используется
+              команда по умолчанию из Docker-образа.
             </li>
             <li>
-              <strong>args</strong> (string или list, опционально): Аргументы для команды. Используется вместе с <code>command</code>.
+              <strong>args</strong> (string или list, опционально): Аргументы
+              для команды. Используется вместе с <code>command</code>.
             </li>
             <li>
-              <strong>disk_space</strong> (int, опционально): Требуемое дисковое пространство в гигабайтах.
+              <strong>disk_space</strong> (int, опционально): Требуемое дисковое
+              пространство в гигабайтах.
             </li>
             <li>
-              <strong>gpu_types</strong> (list, опционально): Список GPU, необходимых для задачи. Каждый элемент содержит <code>type</code> и <code>count</code>.
+              <strong>gpu_types</strong> (list, опционально): Список GPU,
+              необходимых для задачи. Каждый элемент содержит <code>type</code>{" "}
+              и <code>count</code>.
             </li>
             <li>
-              <strong>job_timeout</strong> (int, опционально): Таймаут выполнения задачи в секундах.
+              <strong>job_timeout</strong> (int, опционально): Таймаут
+              выполнения задачи в секундах.
             </li>
             <li>
-              <strong>request_input_dir</strong> (string, опционально): Директория внутри контейнера, куда будут смонтированы ваши входные данные.
+              <strong>request_input_dir</strong> (string, опционально):
+              Директория внутри контейнера, куда будут смонтированы ваши входные
+              данные.
             </li>
             <li>
-              <strong>port</strong> (int, опционально): Используется для задач типа <code>"deploy"</code>. Указывает на порт, который будет открыт для внешнего доступа.
+              <strong>port</strong> (int, опционально): Используется для задач
+              типа <code>"deploy"</code>. Указывает на порт, который будет
+              открыт для внешнего доступа.
             </li>
             <li>
-              <strong>env</strong> (list, опционально): Список переменных окружения для вашей задачи. Каждый элемент имеет <code>name</code> и <code>value</code>.
+              <strong>env</strong> (list, опционально): Список переменных
+              окружения для вашей задачи. Каждый элемент имеет <code>name</code>{" "}
+              и <code>value</code>.
             </li>
             <li>
-              <strong>requirements</strong> (list, опционально): Список Python-пакетов для установки через <code>pip</code>.
+              <strong>requirements</strong> (list, опционально): Список
+              Python-пакетов для установки через <code>pip</code>.
             </li>
             <li>
-              <strong>apt_packages</strong> (list, опционально): Список системных пакетов для установки через <code>apt-get</code>.
+              <strong>apt_packages</strong> (list, опционально): Список
+              системных пакетов для установки через <code>apt-get</code>.
             </li>
             <li>
-              <strong>health_endpoint</strong> (string, опционально): Используется для задач типа <code>"deploy"</code>. URL-эндпоинт для проверки состояния вашего сервиса.
+              <strong>health_endpoint</strong> (string, опционально):
+              Используется для задач типа <code>"deploy"</code>. URL-эндпоинт
+              для проверки состояния вашего сервиса.
             </li>
             <li>
-              <strong>schedule</strong> (object, опционально): Планировщик для периодического запуска задач. Поддерживает параметры cron.
+              <strong>schedule</strong> (object, опционально): Планировщик для
+              периодического запуска задач. Поддерживает параметры cron.
             </li>
             <li>
-              <strong>autoscaler_timeout</strong> (int, опционально): Время бездействия в секундах, после которого сервис автоматически масштабируется до нуля.
+              <strong>autoscaler_timeout</strong> (int, опционально): Время
+              бездействия в секундах, после которого сервис автоматически
+              масштабируется до нуля.
             </li>
           </ul>
         </section>
@@ -292,16 +332,21 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
           <h4>Особенности Deploy-задач:</h4>
           <ul>
             <li>
-              Параметры <code>port</code> и <code>health_endpoint</code> являются обязательными для задач типа <code>"deploy"</code>.
+              Параметры <code>port</code> и <code>health_endpoint</code>{" "}
+              являются обязательными для задач типа <code>"deploy"</code>.
             </li>
             <li>
-              Параметр <code>autoscaler_timeout</code> используется для автоматического масштабирования сервиса при отсутствии активности.
+              Параметр <code>autoscaler_timeout</code> используется для
+              автоматического масштабирования сервиса при отсутствии активности.
             </li>
           </ul>
 
           <h4>Пользовательская команда:</h4>
           <p>
-            Параметр <code>command</code> используется для запуска вашего веб-приложения. Убедитесь, что ваш сервис слушает на <code>0.0.0.0</code> и порту, указанном в параметре <code>port</code>.
+            Параметр <code>command</code> используется для запуска вашего
+            веб-приложения. Убедитесь, что ваш сервис слушает на{" "}
+            <code>0.0.0.0</code> и порту, указанном в параметре{" "}
+            <code>port</code>.
           </p>
         </section>
 
@@ -309,7 +354,8 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
         <section id="environment-variables">
           <h2>Переменные окружения</h2>
           <p>
-            <strong>Назначение:</strong> Храните конфигурационные значения или секреты без их жесткого кодирования в вашем приложении.
+            <strong>Назначение:</strong> Храните конфигурационные значения или
+            секреты без их жесткого кодирования в вашем приложении.
           </p>
           <p>
             <strong>Определение:</strong>
@@ -323,7 +369,8 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
             language="yaml"
           />
           <p>
-            Эти переменные будут доступны внутри вашего контейнера при выполнении задачи.
+            Эти переменные будут доступны внутри вашего контейнера при
+            выполнении задачи.
           </p>
         </section>
 
@@ -331,7 +378,9 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
         <section id="managing-dependencies">
           <h2>Управление зависимостями</h2>
           <p>
-            <strong>Python-пакеты:</strong> Используйте поле <code>requirements</code> для указания пакетов, которые должны быть установлены через <code>pip</code>.
+            <strong>Python-пакеты:</strong> Используйте поле{" "}
+            <code>requirements</code> для указания пакетов, которые должны быть
+            установлены через <code>pip</code>.
           </p>
           <CodeBlock
             code={`requirements:
@@ -342,7 +391,9 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
           />
 
           <p>
-            <strong>Системные пакеты:</strong> Используйте <code>apt_packages</code> для указания системных зависимостей, которые должны быть установлены через <code>apt-get</code>.
+            <strong>Системные пакеты:</strong> Используйте{" "}
+            <code>apt_packages</code> для указания системных зависимостей,
+            которые должны быть установлены через <code>apt-get</code>.
           </p>
           <CodeBlock
             code={`apt_packages:
@@ -356,7 +407,8 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
         <section id="gpu-resources">
           <h2>GPU-ресурсы</h2>
           <p>
-            Если ваша задача требует использования GPU, укажите необходимые ресурсы в поле <code>gpu_types</code>.
+            Если ваша задача требует использования GPU, укажите необходимые
+            ресурсы в поле <code>gpu_types</code>.
           </p>
           <CodeBlock
             code={`gpu_types:
@@ -365,7 +417,8 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
             language="yaml"
           />
           <p>
-            Доступные типы GPU могут быть разными. Свяжитесь с поддержкой для получения полного списка доступных GPU.
+            Доступные типы GPU могут быть разными. Свяжитесь с поддержкой для
+            получения полного списка доступных GPU.
           </p>
         </section>
 
@@ -374,7 +427,8 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
           <h2>Планирование и таймауты</h2>
           <h3>Планирование задач</h3>
           <p>
-            Вы можете настроить расписание для периодического запуска задач с помощью поля <code>schedule</code>.
+            Вы можете настроить расписание для периодического запуска задач с
+            помощью поля <code>schedule</code>.
           </p>
           <CodeBlock
             code={`schedule:
@@ -391,27 +445,29 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
           end: "23:59:59"`}
             language="yaml"
           />
-          <p>
-            Формат расписания основан на синтаксисе cron.
-          </p>
+          <p>Формат расписания основан на синтаксисе cron.</p>
 
           <h3>Таймауты</h3>
           <ul>
             <li>
-              <strong>job_timeout</strong>: Максимальное время выполнения задачи в секундах.
+              <strong>job_timeout</strong>: Максимальное время выполнения задачи
+              в секундах.
             </li>
             <li>
-              <strong>creation_timeout</strong>: Максимальное время ожидания для создания ресурсов.
+              <strong>creation_timeout</strong>: Максимальное время ожидания для
+              создания ресурсов.
             </li>
             <li>
-              <strong>health_check_timeout</strong>: Время ожидания успешного прохождения проверки здоровья для задач типа <code>"deploy"</code>.
+              <strong>health_check_timeout</strong>: Время ожидания успешного
+              прохождения проверки здоровья для задач типа <code>"deploy"</code>
+              .
             </li>
             <li>
-              <strong>autoscaler_timeout</strong>: Время бездействия в секундах, после которого сервис автоматически масштабируется до нуля.
+              <strong>autoscaler_timeout</strong>: Время бездействия в секундах,
+              после которого сервис автоматически масштабируется до нуля.
             </li>
           </ul>
         </section>
-
       </Box>
 
       {/* Правая колонка - Навигация Scrollspy */}
@@ -423,7 +479,7 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
             position: "sticky",
             top: "40px",
             alignSelf: "flex-start",
-            marginLeft: '25px',
+            marginLeft: "25px",
           }}
         >
           <Scrollspy
@@ -433,10 +489,14 @@ autoscaler_timeout: 300  # Автоматическое масштабирова
             offset={-30}
             rootEl="#main-content"
             className="nav-scrollspy"
-            style={{ listStyleType: "none", paddingLeft: '15px' }}
+            style={{ listStyleType: "none", paddingLeft: "15px" }}
           >
             {sections.map((section) => (
-              <li key={section.id} className="nav-item" style={{ marginBottom: "15px" }}>
+              <li
+                key={section.id}
+                className="nav-item"
+                style={{ marginBottom: "15px" }}
+              >
                 <a
                   href={`#${section.id}`}
                   style={{

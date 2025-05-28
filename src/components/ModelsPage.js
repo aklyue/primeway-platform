@@ -6,18 +6,12 @@ import {
   Divider,
   Modal,
   Typography,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
 } from "@mui/material";
 import ModelCard from "./ModelCard";
 import ConfigureModelForm from "./ConfigureModelForm";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import FineTunedModelCard from "./FineTunedModelCard";
 import { modelsData } from "../data/modelsData";
 import { AuthContext } from "../AuthContext";
 import { OrganizationContext } from "./Organization/OrganizationContext";
@@ -226,72 +220,42 @@ function ModelsPage() {
         </Box>
 
         {/* ============ Дообученные модели 💡 ================================= */}
-        <Box sx={{ maxHeight: "40vh", mt: 3, display: "flex", flexDirection: "column" }}>
-        <Typography variant="h5" gutterBottom>
-          Дообученные модели
-        </Typography>
+        <Box sx={{ maxHeight: "40vh", mt: 3, display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <Typography variant="h5" gutterBottom>Дообученные модели</Typography>
 
-        <Paper
-          elevation={0}
-          sx={{
-            border: "2px solid rgba(0,0,0,0.12)",
-            borderRadius: 2,
-            flex: 1,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <TableContainer sx={{ flex: 1 /* keeps sticky header inside the border */ }}>
-            <Table stickyHeader size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ width: "30%" }}>Название модели</TableCell>
-                  <TableCell align="center" sx={{ width: "20%" }}>
-                    Базовая модель
-                  </TableCell>
-                  <TableCell align="center" sx={{ width: "25%" }}>
-                    Набор Данных
-                  </TableCell>
-                  <TableCell align="center" sx={{ width: "25%" }}>
-                    Дата создания
-                  </TableCell>
-                </TableRow>
-              </TableHead>
+          <Box
+            sx={{
+              border: "2px solid rgba(0, 0, 0, 0.12)",
+              borderRadius: "16px",
+              pt: 2,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
+            {/* column headers */}
+            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+              <Grid item xs={6}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
+              <Grid item xs={4} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Базовая модель</Typography></Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
+            </Grid>
+            <Divider sx={{ my: 1 }} />
 
-              <TableBody>
+            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
               {fineTunedModels.length ? (
-                fineTunedModels.map((ft) => (
-                  <TableRow hover key={ft.job_id}>
-                    <TableCell>{ft.artifact_name}</TableCell>
-                    <TableCell align="center">{ft.base_model || "—"}</TableCell>
-                    <TableCell align="center">{ft.dataset_id || "—"}</TableCell>
-                    <TableCell align="center">
-                      {new Date(ft.created_at).toLocaleString("ru-RU")}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={() => runFineTunedModel(ft)}
-                      >
-                        Запустить
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                fineTunedModels.map((ft, idx) => (
+                  <FineTunedModelCard
+                    key={ft.job_id}
+                    ft={ft}
+                    isLast={idx === fineTunedModels.length - 1}
+                  />
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    Нет fine-tune моделей.
-                  </TableCell>
-                </TableRow>
+                <Typography align="center" sx={{ my: 2 }}>Нет fine-tune моделей.</Typography>
               )}
-            </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      </Box>
+            </Box>
+          </Box>
+        </Box>
 
         {/* ============ Базовые модели ===================================== */}
         <Box sx={{ maxHeight: "40vh", display: "flex", flexDirection: "column", minHeight: 0, mt: 3 }}>

@@ -271,19 +271,20 @@ function ModelCard({ model, isLast, isBasic }) {
     <>
       <Grid
         container
-        spacing={1}
+        spacing={0}
         alignItems="center"
         sx={{
           justifyContent: "center",
           cursor: "pointer",
-          pb: 1,
-          transition: "background 0.2s",
+          // transition: "background 0.2s",
           "&:hover": {
-            background: "rgba(0, 0, 0, 0.05)",
+            background: "rgba(102, 179, 238, 0.2)",
             borderBottomLeftRadius: isLast ? "24px" : "",
             borderBottomRightRadius: isLast ? "16px" : "",
           },
+          padding: "6px 0",
           overflow: "hidden",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
         }}
         onClick={isBasic ? handleConfigureOpen : handleModelDialogOpen}
       >
@@ -293,9 +294,6 @@ function ModelCard({ model, isLast, isBasic }) {
             sx={{ pl: 2, display: "flex", alignItems: "center", gap: "5px" }}
             variant="body2"
           >
-            {ModelImageComponent && (
-              <ModelImageComponent width={26} height={26} alt={modelName} />
-            )}
             {modelName}
           </Typography>
         </Grid>
@@ -303,8 +301,13 @@ function ModelCard({ model, isLast, isBasic }) {
         {isBasic ? (
           // **Базовые модели**
           <>
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              {ModelImageComponent && (
+                <ModelImageComponent width={26} height={26} alt={modelName} />
+              )}
+            </Grid>
             {/* **Тип модели** */}
-            <Grid item xs={4} sx={{ textAlign: "center" }}>
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
               <Typography variant="body2">{modelType}</Typography>
             </Grid>
 
@@ -386,7 +389,7 @@ function ModelCard({ model, isLast, isBasic }) {
         )}
       </Grid>
 
-      {!isLast && <Divider sx={{ mb: 1 }} />}
+      {/* {!isLast && <Divider sx={{ mb: 1 }} />} */}
 
       {/* **Модальное окно с деталями модели** */}
       <ModelsDialog

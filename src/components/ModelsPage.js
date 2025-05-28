@@ -137,8 +137,12 @@ function ModelsPage() {
 
   return (
     <Box sx={{ boxSizing: "border-box" }}>
-      {/* ---------- modal configure -------------------------------------- */}
-      <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+      {/* **Модальное окно для настройки новой модели** */}
+      <Modal
+        open={isConfigureOpen}
+        onClose={handleConfigureClose}
+        sx={{ zIndex: 9999 }}
+      >
         <Box
           sx={{
             position: "absolute",
@@ -183,9 +187,8 @@ function ModelsPage() {
           </Box>
           <Box
             sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
+              border: "1px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
-              pt: 2,
               display: "flex",
               flexDirection: "column",
               flex: 1,
@@ -193,18 +196,58 @@ function ModelsPage() {
               maxHeight: "90%",
             }}
           >
-            {/* column headers */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={3}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Дата создания</Typography></Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Состояние</Typography></Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">URL</Typography></Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
+            {/* **Заголовки колонок** */}
+            <Grid
+              sx={{
+                padding: 2,
+                backgroundColor: "rgba(102, 179, 238, 0.1)",
+                borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                borderTopLeftRadius: "16px",
+                borderTopRightRadius: "16px",
+              }}
+              container
+              spacing={0}
+              alignItems="center"
+            >
+              <Grid item xs={3}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  НАЗВАНИЕ
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДАТА СОЗДАНИЯ
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  СОСТОЯНИЕ
+                </Typography>
+              </Grid>
+              <Grid item xs={3} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  URL
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДЕЙСТВИЕ
+                </Typography>
+              </Grid>
             </Grid>
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
-              {launchedModels.length ? (
-                launchedModels.map((model, idx) => (
+
+            {/* <Divider sx={{ my: 1 }} /> */}
+
+            {/* **Область с прокруткой** */}
+            <Box
+              sx={{
+                overflowY: "auto",
+                minHeight: 0,
+              }}
+            >
+              {/* **Список "Запущенных моделей"** */}
+              {launchedModels.length > 0 ? (
+                launchedModels.map((model, index) => (
                   <ModelCard
                     key={model.job_id || idx}
                     model={model}
@@ -269,23 +312,61 @@ function ModelsPage() {
           <Typography variant="h5" gutterBottom>Базовые модели</Typography>
           <Box
             sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
+              border: "1px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
-              pt: 2,
+              // pt: 2,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
             }}
           >
-            {/* column headers */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={6}><Typography variant="subtitle2" fontWeight="bold">Название</Typography></Grid>
-              <Grid item xs={4} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Тип модели</Typography></Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Действие</Typography></Grid>
+            {/* **Заголовки колонок** */}
+            <Grid
+              sx={{
+                // pl: 2,
+                padding: 2,
+                backgroundColor: "rgba(102, 179, 238, 0.1)",
+                borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                borderTopLeftRadius: "16px",
+                borderTopRightRadius: "16px",
+              }}
+              container
+              spacing={0}
+              alignItems="center"
+            >
+              <Grid item xs={6}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  НАЗВАНИЕ
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  АВТОР
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ТИП МОДЕЛИ
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДЕЙСТВИЕ
+                </Typography>
+              </Grid>
             </Grid>
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
-              {allBasic.map((model, idx) => (
+
+            {/* <Divider sx={{ my: 1 }} /> */}
+
+            {/* **Область с прокруткой** */}
+            <Box
+              sx={{
+                overflowY: "auto",
+                minHeight: 0,
+              }}
+            >
+              {/* **Список "Базовых моделей"** */}
+              {all.map((model, index) => (
                 <ModelCard
                   key={model.id || idx}
                   model={model}

@@ -32,10 +32,10 @@ const MenuItem = ({
         onClick={isMobile ? handleDrawerToggle : undefined}
         sx={{
           justifyContent: isDocsPage ? "flex-start" : "center",
-          padding: isDocsPage ? "1px 16px" : "10px 16px",
+          padding: "1px 16px",
         }}
       >
-        {isDocsPage && (
+        {isDocsPage ? (
           <ListItemText
             primary={name}
             primaryTypographyProps={{
@@ -43,18 +43,14 @@ const MenuItem = ({
             }}
             sx={{ mr: 1 }}
           />
-        )}
-        {!isDocsPage && (
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              color: isSelected
-                ? theme.palette.primary.main
-                : theme.palette.primary.icon,
+        ) : (
+          <ListItemText
+            primary={name}
+            primaryTypographyProps={{
+              fontSize: 12,
             }}
-          >
-            {icon}
-          </ListItemIcon>
+            sx={{ mr: 1, }}
+          />
         )}
       </ListItemButton>
     </ListItem>

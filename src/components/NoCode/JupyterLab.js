@@ -309,6 +309,7 @@ export default function JupyterLabSessions() {
         open={openCreateModal}
         onClose={() => setOpenCreateModal(false)}
         aria-labelledby="create-session-modal"
+        sx={{zIndex: 9999}}
       >
         <Box
           sx={{

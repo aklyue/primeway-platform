@@ -170,11 +170,7 @@ export function Layout() {
 
   const isDocsPage = location.pathname.startsWith("/docs");
   const isMainPage = location.pathname === "/";
-  const drawerWidth = isDocsPage
-    ? "20%"
-    : isTablet || isMinDesktop
-    ? "8%"
-    : "6%";
+  const drawerWidth = isTablet || isMinDesktop ? "8%" : "17%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -285,7 +281,7 @@ export function Layout() {
           overflowX: "hidden",
         }}
       >
-        <Toolbar />
+        {isDocsPage && <Toolbar />}
         {isMobile && (
           <List sx={{ display: "flex", flexDirection: "column" }}>
             <ListItem disablePadding>
@@ -454,23 +450,28 @@ export function Layout() {
                 <>
                   <header
                     style={{
-                      backgroundColor: isDocsPage ? "white" : "rgb(21, 22, 25)",
                       position: "fixed",
-                      left: "50%",
                       marginTop: !isDocsPage ? "1%" : "",
-                      transform: "translateX(-50%)",
-                      width: isDocsPage ? "100%" : "98%",
-                      zIndex: 100000,
+                      width:
+                        isDocsPage || isMainPage
+                          ? "100%"
+                          : `calc(100% - ${drawerWidth})`,
+                      zIndex: 9999,
+                      padding: !isDocsPage && "0 1%",
+                      marginLeft: !isDocsPage && !isMainPage ? drawerWidth : "",
                       borderRadius: !isDocsPage && "50px",
-                      boxShadow: !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                     }}
                   >
                     <Toolbar
                       style={{
+                        backgroundColor: isDocsPage
+                          ? "white"
+                          : "rgb(21, 22, 25)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
-                        border: "1px solid lightgray",
                         borderRadius: !isDocsPage && "50px",
+                        boxShadow:
+                          !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
                     >
                       {isMobile && !isMainPage && (
@@ -918,9 +919,10 @@ export function Layout() {
       )}
 
       <Popover
+        sx={{ zIndex: 10000 }}
         open={isEventsOpen}
         anchorEl={eventsAnchorEl}
-        onClose={handleEventsClose}
+        onClick={handleEventsClose}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "right",

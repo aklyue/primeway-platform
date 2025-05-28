@@ -174,7 +174,7 @@ export function Layout() {
     ? "20%"
     : isTablet || isMinDesktop
     ? "8%"
-    : "5%";
+    : "6%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -281,7 +281,7 @@ export function Layout() {
     <div>
       <Box
         sx={{
-          width: isMobile ? "80px" : isDocsPage ? "240px" : "50px",
+          width: isMobile ? "80px" : "100%",
           overflowX: "hidden",
         }}
       >
@@ -314,7 +314,7 @@ export function Layout() {
           spacing={0}
           sx={{
             alignItems: "center",
-            mt: 2,
+            mt: 3,
           }}
         >
           {menuItems.map((item) => (
@@ -459,7 +459,7 @@ export function Layout() {
                       left: "50%",
                       marginTop: !isDocsPage ? "1%" : "",
                       transform: "translateX(-50%)",
-                      width: isDocsPage ? "100%" : "95%",
+                      width: isDocsPage ? "100%" : "98%",
                       zIndex: 100000,
                       borderRadius: !isDocsPage && "50px",
                       boxShadow: !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
@@ -699,7 +699,7 @@ export function Layout() {
                             flexShrink: 0,
                             "& .MuiDrawer-paper": {
                               width: drawerWidth,
-                              marginLeft: "1%",
+                              padding: "0 1%",
                               boxSizing: "border-box",
                               borderRight: "1px solid lightgray",
                             },

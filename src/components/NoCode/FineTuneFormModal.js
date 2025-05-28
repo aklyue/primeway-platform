@@ -44,7 +44,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
   /* dataset state */
   const [datasets, setDatasets] = useState([]);
   const [loadingDS, setLoadingDS] = useState(false);
-  const [datasetOption, setDatasetOption] = useState(""); // 'hf' | datasetId
+  const [datasetOption, setDatasetOption] = useState(""); // 'hf' | dataset_id
   const [hfDatasetId, setHfDatasetId] = useState("");
   const hfMode = datasetOption === "hf";
 
@@ -77,7 +77,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
         const list = await getDatasets(currentOrganization.id);
         setDatasets(list);
         if (!hfMode && !datasetOption && list.length) {
-          setDatasetOption(String(list[0].id));
+          setDatasetOption(list[0].dataset_id);      // 🡐 use dataset_id
         }
       } finally {
         setLoadingDS(false);
@@ -93,7 +93,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
       await uploadDataset(file, currentOrganization.id);
       const list = await getDatasets(currentOrganization.id);
       setDatasets(list);
-      setDatasetOption(String(list[0].id));
+      setDatasetOption(list[0].dataset_id);          // 🡐 use dataset_id
       alert("Dataset uploaded");
     } catch (err) {
       console.error(err);
@@ -118,7 +118,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
       base_model: baseModel,
       artifact_name: artifactName.trim(),
       custom_dataset: !hfMode,
-      dataset_name: hfMode ? hfDatasetId.trim() : Number(datasetOption),
+      dataset_id: hfMode ? hfDatasetId.trim() : datasetOption.trim(), // ✔
       disk_space: 30,
       creation_timeout: 600,
       env: [
@@ -209,7 +209,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
                   <CircularProgress size={20} />
                 ) : (
                   <>
-                    {/* hidden file input outside label to guarantee file dialog */}
+                    {/* hidden file input to trigger normal file picker */}
                     <input
                       ref={fileInputRef}
                       hidden
@@ -233,10 +233,15 @@ export default function FineTuningJobFormModal({ open, onClose }) {
           }}
         >
           {datasets.map((ds) => (
-            <MenuItem key={ds.id} value={String(ds.id)}>
-              {ds.name}
+            <MenuItem
+              key={ds.dataset_id}          
+              value={ds.dataset_id}        
+              sx={{ alignItems: "flex-start", whiteSpace: "normal" }}
+            >
+              {ds.dataset_id} — {ds.name}
             </MenuItem>
           ))}
+
           <MenuItem value="hf">Из HuggingFace</MenuItem>
         </TextField>
 

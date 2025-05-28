@@ -2,10 +2,17 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   Box,
   Button,
-  Divider,
   Grid,
+  Divider,
   Modal,
   Typography,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
 import ModelCard from "./ModelCard";
 import ConfigureModelForm from "./ConfigureModelForm";
@@ -51,6 +58,50 @@ function ModelsPage() {
       setLaunchedModels(data);
     } catch (err) {
       console.error("Ошибка при получении запущенных моделей:", err);
+    }
+  };
+
+  // put this just above the /* ---------------- ui ---------------- */ section
+  const runFineTunedModel = async (ft) => {
+    if (!currentOrganization || !authToken) return;
+
+    /* ① Pick the base model’s defaultConfig so we don’t have to
+          hard-code all model-specific env-vars, ports, etc.            */
+    const base = modelsData.find((m) => m.name === ft.base_model);
+    if (!base?.defaultConfig) {
+      alert("Не могу найти базовую конфигурацию для " + ft.base_model);
+      return;
+    }
+
+    /* ② Clone it and tweak only what’s different for a LoRA adapter.   */
+    const modelConfig = {
+      ...base.defaultConfig.modelConfig,
+      job_name: `${ft.artifact_name}-deploy`,
+      // ✅ VALID GpuType object ↓↓↓
+      gpu_types: [{ type: "A100", count: 1 }],
+    };
+
+    const vllmConfig = {
+      ...base.defaultConfig,
+      model: base.defaultConfig.modelName,     // e.g. "meta-llama/Llama-3-8B"
+      finetuned_job_id: ft.job_id,             // ⭐ tell backend which LoRA to load
+    };
+
+    /* ③ Send multipart/form-data exactly like ModelCard.handleRun      */
+    try {
+      const form = new FormData();
+      form.append("organization_id", currentOrganization.id);
+      form.append("config_str", JSON.stringify(modelConfig));
+      form.append("vllm_config_str", JSON.stringify(vllmConfig));
+
+      await axiosInstance.post("/models/run", form, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      alert("Fine-tune запущен! Проверьте раздел «Задачи».");
+    } catch (e) {
+      console.error("Не удалось запустить fine-tune:", e);
+      alert("Ошибка при запуске модели.");
     }
   };
 
@@ -175,52 +226,72 @@ function ModelsPage() {
         </Box>
 
         {/* ============ Дообученные модели 💡 ================================= */}
-        <Box sx={{ maxHeight: "40vh", display: "flex", flexDirection: "column", minHeight: 0, mt: 3 }}>
-          <Typography variant="h5" gutterBottom>Дообученные модели</Typography>
-          <Box
-            sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
-              borderRadius: "16px",
-              pt: 2,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 0,
-            }}
-          >
-            {/* column headers */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
-              <Grid item xs={3}><Typography variant="subtitle2" fontWeight="bold">Название модели</Typography></Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Базовая модель</Typography></Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Датасет</Typography></Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}><Typography variant="subtitle2" fontWeight="bold">Дата создания</Typography></Grid>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ overflowY: "auto", minHeight: 0 }}>
+        <Box sx={{ maxHeight: "40vh", mt: 3, display: "flex", flexDirection: "column" }}>
+        <Typography variant="h5" gutterBottom>
+          Дообученные модели
+        </Typography>
+
+        <Paper
+          elevation={0}
+          sx={{
+            border: "2px solid rgba(0,0,0,0.12)",
+            borderRadius: 2,
+            flex: 1,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <TableContainer sx={{ flex: 1 /* keeps sticky header inside the border */ }}>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ width: "30%" }}>Название модели</TableCell>
+                  <TableCell align="center" sx={{ width: "20%" }}>
+                    Базовая модель
+                  </TableCell>
+                  <TableCell align="center" sx={{ width: "25%" }}>
+                    Набор Данных
+                  </TableCell>
+                  <TableCell align="center" sx={{ width: "25%" }}>
+                    Дата создания
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
               {fineTunedModels.length ? (
-                fineTunedModels.map((ft, idx) => (
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                    key={ft.job_id || idx}
-                    sx={{ pl: 2, pb: 1 }}
-                  >
-                    <Grid item xs={3}><Typography>{ft.model_artifact_name}</Typography></Grid>
-                    <Grid item xs={3} sx={{ textAlign: "center" }}><Typography>{ft.base_model || "—"}</Typography></Grid>
-                    <Grid item xs={3} sx={{ textAlign: "center" }}><Typography>{ft.dataset_name || "—"}</Typography></Grid>
-                    <Grid item xs={3} sx={{ textAlign: "center" }}>
-                      <Typography>
-                        {new Date(ft.created_at).toLocaleString("ru-RU")}
-                      </Typography>
-                    </Grid>
-                  </Grid>
+                fineTunedModels.map((ft) => (
+                  <TableRow hover key={ft.job_id}>
+                    <TableCell>{ft.artifact_name}</TableCell>
+                    <TableCell align="center">{ft.base_model || "—"}</TableCell>
+                    <TableCell align="center">{ft.dataset_id || "—"}</TableCell>
+                    <TableCell align="center">
+                      {new Date(ft.created_at).toLocaleString("ru-RU")}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => runFineTunedModel(ft)}
+                      >
+                        Запустить
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <Typography align="center" sx={{ my: 2 }}>Нет fine-tune моделей.</Typography>
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    Нет fine-tune моделей.
+                  </TableCell>
+                </TableRow>
               )}
-            </Box>
-          </Box>
-        </Box>
+            </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Box>
 
         {/* ============ Базовые модели ===================================== */}
         <Box sx={{ maxHeight: "40vh", display: "flex", flexDirection: "column", minHeight: 0, mt: 3 }}>

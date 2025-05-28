@@ -80,7 +80,11 @@ function ModelsPage() {
   return (
     <Box sx={{ boxSizing: "border-box" }}>
       {/* **Модальное окно для настройки новой модели** */}
-      <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+      <Modal
+        open={isConfigureOpen}
+        onClose={handleConfigureClose}
+        sx={{ zIndex: 9999 }}
+      >
         <Box
           sx={{
             position: "absolute",
@@ -147,9 +151,8 @@ function ModelsPage() {
           </Box>
           <Box
             sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
+              border: "1px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
-              pt: 2,
               display: "flex",
               flexDirection: "column",
               flex: 1,
@@ -158,35 +161,46 @@ function ModelsPage() {
             }}
           >
             {/* **Заголовки колонок** */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+            <Grid
+              sx={{
+                padding: 2,
+                backgroundColor: "rgba(102, 179, 238, 0.1)",
+                borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                borderTopLeftRadius: "16px",
+                borderTopRightRadius: "16px",
+              }}
+              container
+              spacing={0}
+              alignItems="center"
+            >
               <Grid item xs={3}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Название
+                <Typography variant="subtitle2" fontWeight="light">
+                  НАЗВАНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Дата создания
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДАТА СОЗДАНИЯ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Состояние
+                <Typography variant="subtitle2" fontWeight="light">
+                  СОСТОЯНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={3} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight="light">
                   URL
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Действие
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДЕЙСТВИЕ
                 </Typography>
               </Grid>
             </Grid>
 
-            <Divider sx={{ my: 1 }} />
+            {/* <Divider sx={{ my: 1 }} /> */}
 
             {/* **Область с прокруткой** */}
             <Box
@@ -230,34 +244,51 @@ function ModelsPage() {
 
           <Box
             sx={{
-              border: "2px solid rgba(0, 0, 0, 0.12)",
+              border: "1px solid rgba(0, 0, 0, 0.12)",
               borderRadius: "16px",
-              pt: 2,
+              // pt: 2,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
             }}
           >
             {/* **Заголовки колонок** */}
-            <Grid sx={{ pl: 2 }} container spacing={2} alignItems="center">
+            <Grid
+              sx={{
+                // pl: 2,
+                padding: 2,
+                backgroundColor: "rgba(102, 179, 238, 0.1)",
+                borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                borderTopLeftRadius: "16px",
+                borderTopRightRadius: "16px",
+              }}
+              container
+              spacing={0}
+              alignItems="center"
+            >
               <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Название
-                </Typography>
-              </Grid>
-              <Grid item xs={4} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Тип модели
+                <Typography variant="subtitle2" fontWeight="light">
+                  НАЗВАНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  Действие
+                <Typography variant="subtitle2" fontWeight="light">
+                  АВТОР
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ТИП МОДЕЛИ
+                </Typography>
+              </Grid>
+              <Grid item xs={2} sx={{ textAlign: "center" }}>
+                <Typography variant="subtitle2" fontWeight="light">
+                  ДЕЙСТВИЕ
                 </Typography>
               </Grid>
             </Grid>
 
-            <Divider sx={{ my: 1 }} />
+            {/* <Divider sx={{ my: 1 }} /> */}
 
             {/* **Область с прокруткой** */}
             <Box

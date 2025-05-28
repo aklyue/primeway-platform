@@ -57,35 +57,36 @@ function ModelsPage() {
 
   // put this just above the /* ---------------- ui ---------------- */ section
   const runFineTunedModel = async (ft) => {
+    console.log("clicked-run", ft)
     if (!currentOrganization || !authToken) return;
 
-    /* ① Pick the base model’s defaultConfig so we don’t have to
-          hard-code all model-specific env-vars, ports, etc.            */
     const base = modelsData.find((m) => m.name === ft.base_model);
     if (!base?.defaultConfig) {
       alert("Не могу найти базовую конфигурацию для " + ft.base_model);
       return;
     }
 
-    /* ② Clone it and tweak only what’s different for a LoRA adapter.   */
+    /* ---------- JOB (runtime) CONFIG ---------- */
     const modelConfig = {
       ...base.defaultConfig.modelConfig,
-      job_name: `${ft.artifact_name}-deploy`,
-      // ✅ VALID GpuType object ↓↓↓
+      job_name : `${ft.artifact_name}-deploy`,
       gpu_types: [{ type: "A100", count: 1 }],
     };
 
+    /* ---------- VLLM CONFIG (backend schema) --- */
     const vllmConfig = {
-      ...base.defaultConfig,
-      model: base.defaultConfig.modelName,     // e.g. "meta-llama/Llama-3-8B"
-      finetuned_job_id: ft.job_id,             // ⭐ tell backend which LoRA to load
+      model            : base.defaultConfig.modelName ?? ft.base_model,
+      args             : base.defaultConfig.args  ?? {},
+      flags            : base.defaultConfig.flags ?? {},
+      finetuned_job_id : ft.job_id,                     // ⭐ stays intact
     };
 
-    /* ③ Send multipart/form-data exactly like ModelCard.handleRun      */
+    console.table(vllmConfig); 
+    console.log("vllmConfig", vllmConfig); 
     try {
       const form = new FormData();
       form.append("organization_id", currentOrganization.id);
-      form.append("config_str", JSON.stringify(modelConfig));
+      form.append("config_str",      JSON.stringify(modelConfig));
       form.append("vllm_config_str", JSON.stringify(vllmConfig));
 
       await axiosInstance.post("/models/run", form, {

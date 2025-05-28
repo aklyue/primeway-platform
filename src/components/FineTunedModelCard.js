@@ -11,13 +11,12 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ConfigureModelForm from "./ConfigureModelForm";
 import { modelsData } from "../data/modelsData";
 
-/* helper – build deploy config that points at this LoRA */
 const buildDefaultConfig = (ft) => {
   const base = modelsData.find((m) => m.name === ft.base_model) || {};
   const cfg  = base.defaultConfig || {};
   return {
     ...cfg,
-    modelName: cfg.modelName ?? ft.base_model,   // read-only in the form
+    modelName: cfg.modelName ?? ft.base_model,
     finetuned_job_id: ft.job_id,
     modelConfig: {
       ...(cfg.modelConfig || {}),
@@ -32,7 +31,7 @@ export default function FineTunedModelCard({ ft, isLast, onRun }) {
 
   return (
     <>
-      {/* ---------- list row ---------- */}
+      {/* --------- строка списка --------- */}
       <Box
         onClick={() => setOpenCfg(true)}
         sx={{
@@ -57,25 +56,12 @@ export default function FineTunedModelCard({ ft, isLast, onRun }) {
         <Typography sx={{ flexBasis: "15%", textAlign: "center" }}>
           {ft.status || "—"}
         </Typography>
-
-        {/* action button */}
-        <Box sx={{ flexBasis: "6%", textAlign: "center" }}>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRun(ft);
-            }}
-            variant="outlined"
-            sx={{ bgcolor: "#505156", color: "#fff" }}
-          >
-            <RocketLaunchOutlinedIcon sx={{ fontSize: 20 }} />
-          </Button>
-        </Box>
+        <Typography sx={{ flexBasis: "6%" }} />
       </Box>
 
       {!isLast && <Divider />}
 
-      {/* ---------- configure-and-run modal ---------- */}
+      {/* --------- модальное окно --------- */}
       <Modal open={openCfg} onClose={() => setOpenCfg(false)}>
         <Box
           sx={{
@@ -98,14 +84,26 @@ export default function FineTunedModelCard({ ft, isLast, onRun }) {
             <CloseIcon />
           </Button>
 
-          {/* ⚠️ inside ConfigureModelForm, simply render the “Имя модели
-              из Hugging Face” <TextField disabled /> when you receive
-              the prop `readOnlyModelName` */}
           <ConfigureModelForm
             initialConfig={defaultConfig}
             readOnlyModelName
             onClose={() => setOpenCfg(false)}
           />
+
+          {/* кнопка запуска */}
+          <Button
+            variant="contained"
+            sx={{ mt: 3, bgcolor: "#505156", color: "#fff" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("clicked-run", ft)
+              onRun(ft);
+              setOpenCfg(false);
+            }}
+          >
+            Запустить
+            <RocketLaunchOutlinedIcon sx={{ ml: 1 }} />
+          </Button>
         </Box>
       </Modal>
     </>

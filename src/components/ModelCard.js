@@ -99,6 +99,7 @@ function ModelCard({ model, isLast, isBasic }) {
 
     try {
       const { defaultConfig } = model;
+      console.log("defaultConfig", defaultConfig)
 
       const vllmConfig = {
         model: defaultConfig.modelName,
@@ -110,6 +111,7 @@ function ModelCard({ model, isLast, isBasic }) {
           (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
           {}
         ),
+        finetuned_job_id: defaultConfig.finetuned_job_id
       };
 
       const formData = new FormData();

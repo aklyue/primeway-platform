@@ -48,7 +48,7 @@ const AVAILABLE_GPUS = {
   "RTX A6000": { memoryInGb: 48, costPerHour: 130 },
 };
 
-function ConfigureModelForm({ initialConfig, onClose }) {
+function ConfigureModelForm({ initialConfig, onClose, readOnlyModelName = false }) {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
 
@@ -393,11 +393,15 @@ function ConfigureModelForm({ initialConfig, onClose }) {
 
     setLoading(true);
 
+    console.log("initialConfig", initialConfig)
     const vllmConfig = {
       model: modelName,
       args: {},
       flags: {},
     };
+    if (initialConfig?.finetuned_job_id) {
+      vllmConfig.finetuned_job_id = initialConfig.finetuned_job_id;
+    }
 
     args.forEach((arg) => {
       if (arg.key && arg.value) {
@@ -483,7 +487,7 @@ function ConfigureModelForm({ initialConfig, onClose }) {
           fullWidth
           required
           margin="normal"
-          disabled={loading}
+          disabled={loading || readOnlyModelName}
           helperText={modelNameErrorText || "Имя модели из Hugging Face"}
           error={modelNameError}
         />

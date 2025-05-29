@@ -242,6 +242,12 @@ export function Layout() {
       icon: <RecentActorsIcon fontSize="medium" />,
       description: "Управление организациями",
     },
+    {
+      name: "GPU",
+      to: "/gpu-list",
+      icon: <ModelTrainingIcon />,
+      description: "Работа с моделями машинного обучения",
+    },
   ];
 
   const docsMenuItems = [
@@ -272,66 +278,19 @@ export function Layout() {
     },
   ];
 
-  const menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
+  let menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
 
-  const drawer = (
-    <div>
-      <Box
-        sx={{
-          width: isMobile ? "80px" : "100%",
-          overflowX: "hidden",
-        }}
-      >
-        {isDocsPage && <Toolbar />}
-        {isMobile && (
-          <List sx={{ display: "flex", flexDirection: "column" }}>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/"
-                selected={!location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Дашборд" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs"
-                selected={location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Доки" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        )}
-        <Toolbar />
-        <Stack
-          spacing={0}
-          sx={{
-            alignItems: "center",
-            mt: 3,
-          }}
-        >
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.to}
-              to={item.to}
-              name={item.name}
-              icon={item.icon}
-              isMobile={isMobile}
-              isSmallDesktop={isSmallDesktop}
-              isTablet={isTablet}
-              isDocsPage={isDocsPage}
-              handleDrawerToggle={handleDrawerToggle}
-            />
-          ))}
-        </Stack>
-      </Box>
-    </div>
-  );
+  let rightMenuItems;
+
+  if (!isDocsPage && !isMobile) {
+    const splitIndex = dashboardMenuItems.findIndex(
+      (item) => item.name === "Биллинг"
+    );
+
+    menuItems = dashboardMenuItems.slice(0, splitIndex);
+
+    rightMenuItems = dashboardMenuItems.slice(splitIndex);
+  }
 
   const shouldRenderContent =
     openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
@@ -457,10 +416,12 @@ export function Layout() {
                       width:
                         isDocsPage || isMainPage
                           ? "100%"
-                          : `calc(100% - ${drawerWidth})`,
+                          : `calc(100% - (2 * ${drawerWidth}))`,
                       zIndex: 1201,
                       padding: !isDocsPage && "0 1%",
                       marginLeft: !isDocsPage && !isMainPage ? drawerWidth : "",
+                      marginRight:
+                        !isDocsPage && !isMainPage ? drawerWidth : "",
                       borderRadius: !isDocsPage && "50px",
                     }}
                   >
@@ -533,14 +494,6 @@ export function Layout() {
                                 sx={{ display: "flex", alignItems: "center" }}
                               >
                                 <OrganizationSwitcher />
-                                <Button
-                                  component={Link}
-                                  to="/gpu-list"
-                                  variant="outlined"
-                                  sx={{ ml: 2, padding: "3px 5px" }}
-                                >
-                                  GPU
-                                </Button>
                               </Box>
                             )}
                           </Typography>
@@ -686,6 +639,7 @@ export function Layout() {
                           isTablet={isTablet}
                           menuItems={menuItems}
                           location={location}
+                          anchor="left"
                         />
                       ) : (
                         <ResponsiveDrawer
@@ -698,6 +652,7 @@ export function Layout() {
                           isTablet={isTablet}
                           menuItems={menuItems}
                           location={location}
+                          anchor="left"
                         />
                       )}
                     </Box>
@@ -710,7 +665,7 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  marginLeft: isMobile ? "0" : isMainPage ? "0" : drawerWidth,
+                  margin: `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: "#FFFFFF",
@@ -832,6 +787,27 @@ export function Layout() {
                   </motion.div>
                 </AnimatePresence>
               </Box>
+
+              {(showMenu ||
+                (location.pathname !== "/" &&
+                  !location.pathname.startsWith("/docs"))) && (
+                <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
+                  {!isMobile && (
+                    <ResponsiveDrawer
+                      variant="permanent"
+                      drawerWidth={drawerWidth}
+                      isMobile={isMobile}
+                      isDocsPage={isDocsPage}
+                      handleDrawerToggle={handleDrawerToggle}
+                      isSmallDesktop={isSmallDesktop}
+                      isTablet={isTablet}
+                      menuItems={rightMenuItems}
+                      location={location}
+                      anchor="right"
+                    />
+                  )}
+                </Box>
+              )}
             </Box>
           </motion.div>
         )}

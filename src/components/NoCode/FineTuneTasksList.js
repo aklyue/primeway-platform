@@ -120,9 +120,17 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
       </Toolbar>
 
       {/* TABLE */}
-      <Paper elevation={0} variant="outlined">
+      <Paper
+        elevation={0}
+        sx={{ border: "1px solid rgba(0, 0, 0, 0.12)", borderRadius: "16px", overflow: "hidden" }}
+      >
         <Table size="small">
-          <TableHead>
+          <TableHead
+            sx={{
+              padding: 2,
+              backgroundColor: "rgba(102, 179, 238, 0.1)",
+            }}
+          >
             <TableRow>
               <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
               <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>

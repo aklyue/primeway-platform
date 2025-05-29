@@ -75,6 +75,7 @@ import DatasetsPage from "./components/NoCode/DatasetsPage";
 import TrainPage from "./components/NoCode/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import JupyterLabSessions from "./components/NoCode/JupyterLab";
+import ResponsiveDrawer from "./assets/UI/ResponsiveDrawer";
 
 export function Layout() {
   const {
@@ -306,6 +307,7 @@ export function Layout() {
             </ListItem>
           </List>
         )}
+        <Toolbar />
         <Stack
           spacing={0}
           sx={{
@@ -456,7 +458,7 @@ export function Layout() {
                         isDocsPage || isMainPage
                           ? "100%"
                           : `calc(100% - ${drawerWidth})`,
-                      zIndex: 9999,
+                      zIndex: 1201,
                       padding: !isDocsPage && "0 1%",
                       marginLeft: !isDocsPage && !isMainPage ? drawerWidth : "",
                       borderRadius: !isDocsPage && "50px",
@@ -466,7 +468,7 @@ export function Layout() {
                       style={{
                         backgroundColor: isDocsPage
                           ? "white"
-                          : "rgb(21, 22, 25)",
+                          : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
                         borderRadius: !isDocsPage && "50px",
@@ -503,7 +505,7 @@ export function Layout() {
                             display: "flex",
                             alignItems: "center",
                             gap: "7px",
-                            color: isDocsPage ? "white" : "",
+                            color: isDocsPage && "white",
                           }}
                         >
                           <Logo width={32} height={32} />
@@ -563,7 +565,7 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: !isDocsPage
-                                ? "primary.main"
+                                ? "#5ca0bd"
                                 : "transparent",
                               color: !isDocsPage ? "#FFFFFF" : "#acacbe",
                               borderRadius: "8px",
@@ -585,7 +587,7 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: isDocsPage
-                                ? "primary.main"
+                                ? "#5ca0bd"
                                 : "transparent",
                               color: isDocsPage ? "#FFFFFF" : "#acacbe",
                               borderRadius: "8px",
@@ -671,44 +673,32 @@ export function Layout() {
                     (location.pathname !== "/" &&
                       location.pathname !== "/docs")) && (
                     <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
-                      {isMobile && (
-                        <Drawer
+                      {isMobile ? (
+                        <ResponsiveDrawer
                           variant="temporary"
+                          drawerWidth={80}
                           open={mobileOpen}
                           onClose={handleDrawerToggle}
-                          ModalProps={{
-                            keepMounted: true,
-                          }}
-                          sx={{
-                            "& .MuiDrawer-paper": {
-                              width: isMobile
-                                ? "80px"
-                                : isDocsPage
-                                ? "180px"
-                                : "50px",
-                            },
-                          }}
-                        >
-                          {drawer}
-                        </Drawer>
-                      )}
-                      {!isMobile && (
-                        <Drawer
+                          isMobile={isMobile}
+                          isDocsPage={isDocsPage}
+                          handleDrawerToggle={handleDrawerToggle}
+                          isSmallDesktop={isSmallDesktop}
+                          isTablet={isTablet}
+                          menuItems={menuItems}
+                          location={location}
+                        />
+                      ) : (
+                        <ResponsiveDrawer
                           variant="permanent"
-                          sx={{
-                            width: drawerWidth,
-                            flexShrink: 0,
-                            "& .MuiDrawer-paper": {
-                              width: drawerWidth,
-                              padding: "0 1%",
-                              boxSizing: "border-box",
-                              borderRight: "1px solid lightgray",
-                            },
-                          }}
-                          open
-                        >
-                          {drawer}
-                        </Drawer>
+                          drawerWidth={drawerWidth}
+                          isMobile={isMobile}
+                          isDocsPage={isDocsPage}
+                          handleDrawerToggle={handleDrawerToggle}
+                          isSmallDesktop={isSmallDesktop}
+                          isTablet={isTablet}
+                          menuItems={menuItems}
+                          location={location}
+                        />
                       )}
                     </Box>
                   )}
@@ -919,7 +909,6 @@ export function Layout() {
       )}
 
       <Popover
-        sx={{ zIndex: 10000 }}
         open={isEventsOpen}
         anchorEl={eventsAnchorEl}
         onClick={handleEventsClose}

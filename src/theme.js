@@ -120,7 +120,7 @@ let theme = createTheme({
             backgroundColor: "rgba(102, 179, 238, 0.2)",
             color: "rgb(96, 92, 208)",
             "&:hover": {
-              backgroundColor: "rgba(131, 131, 131, 0.3)",
+              backgroundColor: "rgba(139, 150, 178, 0.3)",
             },
           },
         },

@@ -23,16 +23,17 @@ export default function DatasetsPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const { currentOrganization } = useContext(OrganizationContext);
   const fileInputRef = useRef();
+  const organizationId = currentOrganization.id;
 
   const refresh = () =>
-    getDatasets(currentOrganization.id).then(setData).catch((err) => {
+    getDatasets(organizationId).then(setData).catch((err) => {
       console.error(err);
       setSnackbar({ open: true, message: "Failed to load datasets.", severity: "error" });
     });
 
   useEffect(() => {
     refresh();
-  }, [currentOrganization.id]);
+  }, [organizationId]);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -40,7 +41,7 @@ export default function DatasetsPage() {
     setUploading(true);
 
     try {
-      await uploadDataset(file, currentOrganization.id);
+      await uploadDataset(file, organizationId);
       setSnackbar({ open: true, message: "Upload successful!", severity: "success" });
       refresh();
     } catch (err) {

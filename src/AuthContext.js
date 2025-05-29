@@ -32,6 +32,7 @@ const AuthProvider = ({ children }) => {
         //   username: "DevUser",
         //   avatar_url: "https://via.placeholder.com/150",
         //   email: "dev@example.com",
+        //   organizations: [{id: "123"}]
         // };
         // setUser(mockUser);
         // setIsLoggedIn(true);

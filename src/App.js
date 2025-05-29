@@ -75,6 +75,7 @@ import DatasetsPage from "./components/NoCode/DatasetsPage";
 import TrainPage from "./components/NoCode/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import JupyterLabSessions from "./components/NoCode/JupyterLab";
+import ResponsiveDrawer from "./assets/UI/ResponsiveDrawer";
 
 export function Layout() {
   const {
@@ -241,6 +242,12 @@ export function Layout() {
       icon: <RecentActorsIcon fontSize="medium" />,
       description: "Управление организациями",
     },
+    {
+      name: "GPU",
+      to: "/gpu-list",
+      icon: <ModelTrainingIcon />,
+      description: "Работа с моделями машинного обучения",
+    },
   ];
 
   const docsMenuItems = [
@@ -271,65 +278,19 @@ export function Layout() {
     },
   ];
 
-  const menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
+  let menuItems = isDocsPage ? docsMenuItems : dashboardMenuItems;
 
-  const drawer = (
-    <div>
-      <Box
-        sx={{
-          width: isMobile ? "80px" : "100%",
-          overflowX: "hidden",
-        }}
-      >
-        {isDocsPage && <Toolbar />}
-        {isMobile && (
-          <List sx={{ display: "flex", flexDirection: "column" }}>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/"
-                selected={!location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Дашборд" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={Link}
-                to="/docs"
-                selected={location.pathname.startsWith("/docs")}
-                onClick={handleDrawerToggle}
-              >
-                <ListItemText primary="Доки" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        )}
-        <Stack
-          spacing={0}
-          sx={{
-            alignItems: "center",
-            mt: 3,
-          }}
-        >
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.to}
-              to={item.to}
-              name={item.name}
-              icon={item.icon}
-              isMobile={isMobile}
-              isSmallDesktop={isSmallDesktop}
-              isTablet={isTablet}
-              isDocsPage={isDocsPage}
-              handleDrawerToggle={handleDrawerToggle}
-            />
-          ))}
-        </Stack>
-      </Box>
-    </div>
-  );
+  let rightMenuItems;
+
+  if (!isDocsPage && !isMobile) {
+    const splitIndex = dashboardMenuItems.findIndex(
+      (item) => item.name === "Биллинг"
+    );
+
+    menuItems = dashboardMenuItems.slice(0, splitIndex);
+
+    rightMenuItems = dashboardMenuItems.slice(splitIndex);
+  }
 
   const shouldRenderContent =
     openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
@@ -455,10 +416,12 @@ export function Layout() {
                       width:
                         isDocsPage || isMainPage
                           ? "100%"
-                          : `calc(100% - ${drawerWidth})`,
-                      zIndex: 9999,
+                          : `calc(100% - (2 * ${drawerWidth}))`,
+                      zIndex: 1201,
                       padding: !isDocsPage && "0 1%",
                       marginLeft: !isDocsPage && !isMainPage ? drawerWidth : "",
+                      marginRight:
+                        !isDocsPage && !isMainPage ? drawerWidth : "",
                       borderRadius: !isDocsPage && "50px",
                     }}
                   >
@@ -466,7 +429,7 @@ export function Layout() {
                       style={{
                         backgroundColor: isDocsPage
                           ? "white"
-                          : "rgb(21, 22, 25)",
+                          : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
                         borderRadius: !isDocsPage && "50px",
@@ -503,7 +466,7 @@ export function Layout() {
                             display: "flex",
                             alignItems: "center",
                             gap: "7px",
-                            color: isDocsPage ? "white" : "",
+                            color: isDocsPage && "white",
                           }}
                         >
                           <Logo width={32} height={32} />
@@ -531,14 +494,6 @@ export function Layout() {
                                 sx={{ display: "flex", alignItems: "center" }}
                               >
                                 <OrganizationSwitcher />
-                                <Button
-                                  component={Link}
-                                  to="/gpu-list"
-                                  variant="outlined"
-                                  sx={{ ml: 2, padding: "3px 5px" }}
-                                >
-                                  GPU
-                                </Button>
                               </Box>
                             )}
                           </Typography>
@@ -563,7 +518,7 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: !isDocsPage
-                                ? "primary.main"
+                                ? "#5ca0bd"
                                 : "transparent",
                               color: !isDocsPage ? "#FFFFFF" : "#acacbe",
                               borderRadius: "8px",
@@ -585,7 +540,7 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: isDocsPage
-                                ? "primary.main"
+                                ? "#5ca0bd"
                                 : "transparent",
                               color: isDocsPage ? "#FFFFFF" : "#acacbe",
                               borderRadius: "8px",
@@ -671,44 +626,34 @@ export function Layout() {
                     (location.pathname !== "/" &&
                       location.pathname !== "/docs")) && (
                     <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
-                      {isMobile && (
-                        <Drawer
+                      {isMobile ? (
+                        <ResponsiveDrawer
                           variant="temporary"
+                          drawerWidth={80}
                           open={mobileOpen}
                           onClose={handleDrawerToggle}
-                          ModalProps={{
-                            keepMounted: true,
-                          }}
-                          sx={{
-                            "& .MuiDrawer-paper": {
-                              width: isMobile
-                                ? "80px"
-                                : isDocsPage
-                                ? "180px"
-                                : "50px",
-                            },
-                          }}
-                        >
-                          {drawer}
-                        </Drawer>
-                      )}
-                      {!isMobile && (
-                        <Drawer
+                          isMobile={isMobile}
+                          isDocsPage={isDocsPage}
+                          handleDrawerToggle={handleDrawerToggle}
+                          isSmallDesktop={isSmallDesktop}
+                          isTablet={isTablet}
+                          menuItems={menuItems}
+                          location={location}
+                          anchor="left"
+                        />
+                      ) : (
+                        <ResponsiveDrawer
                           variant="permanent"
-                          sx={{
-                            width: drawerWidth,
-                            flexShrink: 0,
-                            "& .MuiDrawer-paper": {
-                              width: drawerWidth,
-                              padding: "0 1%",
-                              boxSizing: "border-box",
-                              borderRight: "1px solid lightgray",
-                            },
-                          }}
-                          open
-                        >
-                          {drawer}
-                        </Drawer>
+                          drawerWidth={drawerWidth}
+                          isMobile={isMobile}
+                          isDocsPage={isDocsPage}
+                          handleDrawerToggle={handleDrawerToggle}
+                          isSmallDesktop={isSmallDesktop}
+                          isTablet={isTablet}
+                          menuItems={menuItems}
+                          location={location}
+                          anchor="left"
+                        />
                       )}
                     </Box>
                   )}
@@ -720,7 +665,7 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  marginLeft: isMobile ? "0" : isMainPage ? "0" : drawerWidth,
+                  margin: `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: "#FFFFFF",
@@ -842,6 +787,27 @@ export function Layout() {
                   </motion.div>
                 </AnimatePresence>
               </Box>
+
+              {(showMenu ||
+                (location.pathname !== "/" &&
+                  !location.pathname.startsWith("/docs"))) && (
+                <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
+                  {!isMobile && (
+                    <ResponsiveDrawer
+                      variant="permanent"
+                      drawerWidth={drawerWidth}
+                      isMobile={isMobile}
+                      isDocsPage={isDocsPage}
+                      handleDrawerToggle={handleDrawerToggle}
+                      isSmallDesktop={isSmallDesktop}
+                      isTablet={isTablet}
+                      menuItems={rightMenuItems}
+                      location={location}
+                      anchor="right"
+                    />
+                  )}
+                </Box>
+              )}
             </Box>
           </motion.div>
         )}
@@ -919,7 +885,6 @@ export function Layout() {
       )}
 
       <Popover
-        sx={{ zIndex: 10000 }}
         open={isEventsOpen}
         anchorEl={eventsAnchorEl}
         onClick={handleEventsClose}

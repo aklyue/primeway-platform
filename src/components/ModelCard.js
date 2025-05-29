@@ -319,7 +319,7 @@ function ModelCard({ model, isLast, isBasic }) {
                 onClick={actionButtonHandler}
                 disabled={isActionButtonDisabled}
                 variant="outlined"
-                sx={{ bgcolor: "#505156", color: "#FFFFFF" }}
+                sx={{ bgcolor: "#86b5d9", color: "#FFFFFF" }}
               >
                 {actionButtonText}
                 <RocketLaunchOutlinedIcon

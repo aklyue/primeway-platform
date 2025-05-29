@@ -40,6 +40,7 @@ const AVAILABLE_GPUS = {
 /* ───────────────────────── COMPONENT ───────────────────────── */
 export default function FineTuningJobFormModal({ open, onClose }) {
   const { currentOrganization } = useContext(OrganizationContext);
+  const organizationId = currentOrganization.id;
 
   /* dataset state */
   const [datasets, setDatasets] = useState([]);
@@ -74,7 +75,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
     (async () => {
       try {
         setLoadingDS(true);
-        const list = await getDatasets(currentOrganization.id);
+        const list = await getDatasets(organizationId);
         setDatasets(list);
         if (!hfMode && !datasetOption && list.length) {
           setDatasetOption(list[0].dataset_id);      // 🡐 use dataset_id
@@ -83,15 +84,15 @@ export default function FineTuningJobFormModal({ open, onClose }) {
         setLoadingDS(false);
       }
     })();
-  }, [open, currentOrganization.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, organizationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* upload dataset */
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      await uploadDataset(file, currentOrganization.id);
-      const list = await getDatasets(currentOrganization.id);
+      await uploadDataset(file, organizationId);
+      const list = await getDatasets(organizationId);
       setDatasets(list);
       setDatasetOption(list[0].dataset_id);          // 🡐 use dataset_id
       alert("Dataset uploaded");
@@ -140,7 +141,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
     try {
       const formData = new FormData();
       formData.append("finetuning_config_str", JSON.stringify(config));
-      formData.append("organization_id", currentOrganization.id);
+      formData.append("organization_id", organizationId);
 
       await axiosInstance.post("/finetuning/run", formData, {
         headers: { "Content-Type": "multipart/form-data" },

@@ -225,7 +225,13 @@ export default function JupyterLabSessions() {
         <Button
           variant="contained"
           color="primary"
-          sx={{ color: "#F5F5F5" }}
+          sx={{
+            color: "#ffffff",
+            bgcolor: "#96cce3",
+            "&:hover": {
+              bgcolor: "#4e92b0",
+            },
+          }}
           onClick={() => setOpenCreateModal(true)}
         >
           Новый проект
@@ -309,7 +315,6 @@ export default function JupyterLabSessions() {
         open={openCreateModal}
         onClose={() => setOpenCreateModal(false)}
         aria-labelledby="create-session-modal"
-        sx={{zIndex: 9999}}
       >
         <Box
           sx={{

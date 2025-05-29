@@ -193,9 +193,9 @@ function ModelsPage() {
               sx={{
                 color: "white",
                 padding: "8px 16px",
-                bgcolor: "#96cce3",
+                bgcolor: "#597ad3",
                 "&:hover": {
-                  bgcolor: "#4e92b0",
+                  bgcolor: "#7c97de",
                 },
               }}
             >

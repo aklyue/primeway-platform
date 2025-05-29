@@ -24,14 +24,15 @@ export default function ResponsiveDrawer({
           width: drawerWidth,
           padding: "0 1%",
           boxSizing: "border-box",
+          overflow: "visible",
           ...(anchor === "right"
             ? { right: 0, left: "auto", borderLeft: "1px solid lightgray" }
             : { left: 0, right: "auto", borderRight: "1px solid lightgray" }),
-          position: "fixed", // важно!
+          position: "fixed",
         },
       }}
     >
-      <DrawerContent {...contentProps} />
+      <DrawerContent anchor={anchor} {...contentProps} />
     </Drawer>
   );
 }

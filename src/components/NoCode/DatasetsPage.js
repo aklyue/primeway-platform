@@ -20,16 +20,26 @@ import { OrganizationContext } from "../Organization/OrganizationContext";
 export default function DatasetsPage() {
   const [data, setData] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const { currentOrganization } = useContext(OrganizationContext);
   const fileInputRef = useRef();
   const organizationId = currentOrganization.id;
 
   const refresh = () =>
-    getDatasets(organizationId).then(setData).catch((err) => {
-      console.error(err);
-      setSnackbar({ open: true, message: "Failed to load datasets.", severity: "error" });
-    });
+    getDatasets(organizationId)
+      .then(setData)
+      .catch((err) => {
+        console.error(err);
+        setSnackbar({
+          open: true,
+          message: "Failed to load datasets.",
+          severity: "error",
+        });
+      });
 
   useEffect(() => {
     refresh();
@@ -42,7 +52,11 @@ export default function DatasetsPage() {
 
     try {
       await uploadDataset(file, organizationId);
-      setSnackbar({ open: true, message: "Upload successful!", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Upload successful!",
+        severity: "success",
+      });
       refresh();
     } catch (err) {
       console.error(err);
@@ -57,7 +71,11 @@ export default function DatasetsPage() {
   const handleDelete = async (id) => {
     try {
       await deleteDataset(id);
-      setSnackbar({ open: true, message: "Dataset deleted.", severity: "info" });
+      setSnackbar({
+        open: true,
+        message: "Dataset deleted.",
+        severity: "info",
+      });
       refresh();
     } catch (err) {
       console.error(err);
@@ -82,9 +100,17 @@ export default function DatasetsPage() {
         <Button
           variant="contained"
           component="span"
-          sx={{ color: "white" }}
+          sx={{
+            color: "white",
+            bgcolor: "#597ad3",
+            "&:hover": {
+              bgcolor: "#7c97de",
+            },
+          }}
           disabled={uploading}
-          startIcon={uploading && <CircularProgress size={20} color="inherit" />}
+          startIcon={
+            uploading && <CircularProgress size={20} color="inherit" />
+          }
         >
           {uploading ? "Загрузка..." : "Загрузить Набор Данных"}
         </Button>
@@ -123,7 +149,7 @@ export default function DatasetsPage() {
         <Alert
           onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

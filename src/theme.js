@@ -9,8 +9,8 @@ let theme = createTheme({
     },
     primary: {
       main: "#353740",
-      selected: "#605cd0",
-      icon: "#a2a2a2",
+      selected: "#5282ff",
+      icon: "#d9c0fa",
     },
     secondary: {
       main: "#5282ff",

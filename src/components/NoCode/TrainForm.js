@@ -306,7 +306,14 @@ export default function TrainForm({
       <Box sx={{ textAlign: "center", mt: 3 }}>
         <Button
           variant="contained"
-          sx={{ color: "white", mb: 1 }}
+          sx={{
+            color: "white",
+            mb: 1,
+            bgcolor: "#597ad3",
+            "&:hover": {
+              bgcolor: "#7c97de",
+            },
+          }}
           onClick={handleSubmit}
           disabled={isLoading}
         >

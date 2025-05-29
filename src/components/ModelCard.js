@@ -99,7 +99,7 @@ function ModelCard({ model, isLast, isBasic }) {
 
     try {
       const { defaultConfig } = model;
-      console.log("defaultConfig", defaultConfig)
+      console.log("defaultConfig", defaultConfig);
 
       const vllmConfig = {
         model: defaultConfig.modelName,
@@ -111,7 +111,7 @@ function ModelCard({ model, isLast, isBasic }) {
           (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
           {}
         ),
-        finetuned_job_id: defaultConfig.finetuned_job_id
+        finetuned_job_id: defaultConfig.finetuned_job_id,
       };
 
       const formData = new FormData();
@@ -319,7 +319,7 @@ function ModelCard({ model, isLast, isBasic }) {
                 onClick={actionButtonHandler}
                 disabled={isActionButtonDisabled}
                 variant="outlined"
-                sx={{ bgcolor: "#86b5d9", color: "#FFFFFF" }}
+                sx={{ bgcolor: "#5282ff", color: "#FFFFFF" }}
               >
                 {actionButtonText}
                 <RocketLaunchOutlinedIcon
@@ -364,7 +364,7 @@ function ModelCard({ model, isLast, isBasic }) {
                 disabled={isActionButtonDisabled}
                 variant="outlined"
                 sx={{
-                  bgcolor: "#505156",
+                  bgcolor: "#5282ff",
                   color: "#FFFFFF",
                   opacity: isActionButtonDisabled ? 0.5 : 1,
                   padding:
@@ -380,7 +380,7 @@ function ModelCard({ model, isLast, isBasic }) {
                 onClick={handleLogsClick}
                 variant="outlined"
                 sx={{
-                  bgcolor: "#505156",
+                  bgcolor: "#5282ff",
                   color: "#FFFFFF",
                 }}
               >

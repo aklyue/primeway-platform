@@ -78,7 +78,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
         const list = await getDatasets(organizationId);
         setDatasets(list);
         if (!hfMode && !datasetOption && list.length) {
-          setDatasetOption(list[0].dataset_id);      // 🡐 use dataset_id
+          setDatasetOption(list[0].dataset_id); // 🡐 use dataset_id
         }
       } finally {
         setLoadingDS(false);
@@ -94,7 +94,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
       await uploadDataset(file, organizationId);
       const list = await getDatasets(organizationId);
       setDatasets(list);
-      setDatasetOption(list[0].dataset_id);          // 🡐 use dataset_id
+      setDatasetOption(list[0].dataset_id); // 🡐 use dataset_id
       alert("Dataset uploaded");
     } catch (err) {
       console.error(err);
@@ -151,9 +151,7 @@ export default function FineTuningJobFormModal({ open, onClose }) {
       onClose();
     } catch (err) {
       console.error(err);
-      alert(
-        "Ошибка запуска: " + (err.response?.data?.detail || err.message),
-      );
+      alert("Ошибка запуска: " + (err.response?.data?.detail || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -235,8 +233,8 @@ export default function FineTuningJobFormModal({ open, onClose }) {
         >
           {datasets.map((ds) => (
             <MenuItem
-              key={ds.dataset_id}          
-              value={ds.dataset_id}        
+              key={ds.dataset_id}
+              value={ds.dataset_id}
               sx={{ alignItems: "flex-start", whiteSpace: "normal" }}
             >
               {ds.dataset_id} — {ds.name}
@@ -345,7 +343,13 @@ export default function FineTuningJobFormModal({ open, onClose }) {
           </Button>
           <Button
             variant="contained"
-            sx={{ color: "#fff" }}
+            sx={{
+              color: "#fff",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
             onClick={handleSubmit}
             disabled={isLoading}
           >

@@ -48,7 +48,11 @@ const AVAILABLE_GPUS = {
   "RTX A6000": { memoryInGb: 48, costPerHour: 130 },
 };
 
-function ConfigureModelForm({ initialConfig, onClose, readOnlyModelName = false }) {
+function ConfigureModelForm({
+  initialConfig,
+  onClose,
+  readOnlyModelName = false,
+}) {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
 
@@ -393,7 +397,7 @@ function ConfigureModelForm({ initialConfig, onClose, readOnlyModelName = false 
 
     setLoading(true);
 
-    console.log("initialConfig", initialConfig)
+    console.log("initialConfig", initialConfig);
     const vllmConfig = {
       model: modelName,
       args: {},
@@ -1196,7 +1200,15 @@ function ConfigureModelForm({ initialConfig, onClose, readOnlyModelName = false 
             variant="contained"
             color="secondary"
             disabled={loading}
-            sx={{ mt: 2, color: "white", padding: "7px 18px" }}
+            sx={{
+              mt: 2,
+              color: "white",
+              padding: "7px 18px",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
           >
             {loading ? (
               <CircularProgress size={24} color="inherit" />

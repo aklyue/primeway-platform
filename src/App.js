@@ -75,7 +75,7 @@ import DatasetsPage from "./components/NoCode/DatasetsPage";
 import TrainPage from "./components/NoCode/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import JupyterLabSessions from "./components/NoCode/JupyterLab";
-import ResponsiveDrawer from "./assets/UI/ResponsiveDrawer";
+import ResponsiveDrawer from "./UI/ResponsiveDrawer";
 
 export function Layout() {
   const {
@@ -171,7 +171,7 @@ export function Layout() {
 
   const isDocsPage = location.pathname.startsWith("/docs");
   const isMainPage = location.pathname === "/";
-  const drawerWidth = isTablet || isMinDesktop ? "8%" : "17%";
+  const drawerWidth = isTablet || isMinDesktop ? "8%" : isDocsPage ? "17%" : "6%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -518,14 +518,14 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: !isDocsPage
-                                ? "#5ca0bd"
+                                ? "#5282ff"
                                 : "transparent",
-                              color: !isDocsPage ? "#FFFFFF" : "#acacbe",
+                              color: !isDocsPage ? "#FFFFFF" : "#5282ff",
                               borderRadius: "8px",
                               marginRight: "8px",
                               "&:hover": {
                                 backgroundColor: !isDocsPage
-                                  ? "primary.dark"
+                                  ? "#86a7fc"
                                   : "transparent",
                               },
                             }}
@@ -540,14 +540,14 @@ export function Layout() {
                               fontWeight: 700,
                               textTransform: "none",
                               backgroundColor: isDocsPage
-                                ? "#5ca0bd"
+                                ? "#5282ff"
                                 : "transparent",
-                              color: isDocsPage ? "#FFFFFF" : "#acacbe",
+                              color: isDocsPage ? "#FFFFFF" : "#5282ff",
                               borderRadius: "8px",
                               marginRight: "8px",
                               "&:hover": {
                                 backgroundColor: isDocsPage
-                                  ? "primary.dark"
+                                  ? "#86a7fc"
                                   : "transparent",
                               },
                             }}
@@ -665,7 +665,9 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  margin: `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
+                  margin: isDocsPage
+                    ? `0 0 0 ${drawerWidth}`
+                    : `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: "#FFFFFF",

@@ -227,9 +227,9 @@ export default function JupyterLabSessions() {
           color="primary"
           sx={{
             color: "#ffffff",
-            bgcolor: "#96cce3",
+            bgcolor: "#5282ff",
             "&:hover": {
-              bgcolor: "#4e92b0",
+              bgcolor: "#9e74e3",
             },
           }}
           onClick={() => setOpenCreateModal(true)}

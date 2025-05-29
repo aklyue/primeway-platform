@@ -9,7 +9,7 @@ import {
   Stack,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import MenuItem from "../../../components/MenuItem";
+import MenuItem from "../../components/MenuItem";
 
 export default function DrawerContent({
   isMobile,
@@ -19,12 +19,12 @@ export default function DrawerContent({
   isTablet,
   menuItems,
   location,
+  anchor,
 }) {
   return (
     <Box
       sx={{
         width: isMobile ? "80px" : "100%",
-        overflowX: "hidden",
       }}
     >
       {isMobile && (
@@ -53,14 +53,15 @@ export default function DrawerContent({
       )}
       <Toolbar />
       <Stack
-        spacing={0}
         sx={{
           alignItems: "center",
           mt: 3,
         }}
+        spacing={isDocsPage ? 0 : 1}
       >
         {menuItems.map((item) => (
           <MenuItem
+            anchor={anchor}
             key={item.to}
             to={item.to}
             name={item.name}

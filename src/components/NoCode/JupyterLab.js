@@ -227,9 +227,9 @@ export default function JupyterLabSessions() {
           color="primary"
           sx={{
             color: "#ffffff",
-            bgcolor: "#5282ff",
+            bgcolor: "#597ad3",
             "&:hover": {
-              bgcolor: "#9e74e3",
+              bgcolor: "#7c97de",
             },
           }}
           onClick={() => setOpenCreateModal(true)}
@@ -393,7 +393,13 @@ export default function JupyterLabSessions() {
                 </Button>
                 <Button
                   variant="contained"
-                  sx={{ color: "white" }}
+                  sx={{
+                    color: "white",
+                    bgcolor: "#597ad3",
+                    "&:hover": {
+                      bgcolor: "#7c97de",
+                    },
+                  }}
                   onClick={handleCreateSession}
                   disabled={isCreating || !selectedGpu || !jobName}
                 >

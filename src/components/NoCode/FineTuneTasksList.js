@@ -112,7 +112,13 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenModal(true)}
-            sx={{ color: "#fff" }}
+            sx={{
+              color: "#fff",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
           >
             New fine-tuning job
           </Button>
@@ -122,7 +128,11 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
       {/* TABLE */}
       <Paper
         elevation={0}
-        sx={{ border: "1px solid rgba(0, 0, 0, 0.12)", borderRadius: "16px", overflow: "hidden" }}
+        sx={{
+          border: "1px solid rgba(0, 0, 0, 0.12)",
+          borderRadius: "16px",
+          overflow: "hidden",
+        }}
       >
         <Table size="small">
           <TableHead

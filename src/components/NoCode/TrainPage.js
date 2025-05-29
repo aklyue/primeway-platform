@@ -105,7 +105,14 @@ export default function TrainPage() {
       <Button
         variant="contained"
         onClick={() => setOpenTrainModal(true)}
-        sx={{ mb: 4, color: "white" }}
+        sx={{
+          mb: 4,
+          color: "white",
+          bgcolor: "#597ad3",
+          "&:hover": {
+            bgcolor: "#7c97de",
+          },
+        }}
       >
         Открыть форму дообучения
       </Button>

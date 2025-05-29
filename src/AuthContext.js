@@ -27,20 +27,20 @@ const AuthProvider = ({ children }) => {
         setAuthToken(token);
         setIsLoggedIn(true);
       } else {
-        const mockUser = {
-          id: 1,
-          username: "DevUser",
-          avatar_url: "https://via.placeholder.com/150",
-          email: "dev@example.com",
-          organizations: [{id: "123"}]
-        };
-        setUser(mockUser);
-        setIsLoggedIn(true);
-        setAuthToken("dev_token");
+        // const mockUser = {
+        //   id: 1,
+        //   username: "DevUser",
+        //   avatar_url: "https://via.placeholder.com/150",
+        //   email: "dev@example.com",
+        //   organizations: [{id: "123"}]
+        // };
+        // setUser(mockUser);
+        // setIsLoggedIn(true);
+        // setAuthToken("dev_token");
 
-        // setUser(null);
-        // setAuthToken(null);
-        // setIsLoggedIn(false);
+        setUser(null);
+        setAuthToken(null);
+        setIsLoggedIn(false);
       }
     } catch (error) {
       console.error("Ошибка при получении данных пользователя:", error);

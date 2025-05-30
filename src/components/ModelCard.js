@@ -92,8 +92,10 @@ function ModelCard({ model, isLast, isBasic }) {
     setModelStatus,
   });
 
+
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
     useModelButtonLogic({
+      model,
       isBasic,
       modelStatus,
       handleRun,
@@ -164,7 +166,7 @@ function ModelCard({ model, isLast, isBasic }) {
             return;
           }
 
-          navigate(`/models/${model.id.replace(/^.*\//, "")}`, {
+          navigate(`/models/${model.id.replaceAll("/", "__")}`, {
             state: {
               model,
               isBasic,

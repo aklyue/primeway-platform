@@ -8,7 +8,7 @@ function SpecificModelPage() {
   const { model, initialConfig, isBasic } = location.state || {};
   return (
     <div>
-      <BackArrow path={"/models"} name={"Models"} />
+      <BackArrow path={"/models"} name={"Models"} model={model}/>
       <SpecificModel
         model={model}
         initialConfig={initialConfig}

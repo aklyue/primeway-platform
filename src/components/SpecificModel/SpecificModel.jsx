@@ -10,20 +10,17 @@ import { AuthContext } from "../../AuthContext";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import ModelActions from "../../UI/ModelActions";
 
-function SpecificModel({
-  model: passedModel,
-  initialConfig,
-  isBasic: passedIsBasic,
-}) {
+function SpecificModel({ initialConfig, isBasic: passedIsBasic }) {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
   const { modelId } = useParams();
+
+
+  const decodedModelId = modelId.replaceAll("__", "/");
+
+  const model = modelsData.find((m) => m.id === decodedModelId);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
   const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
-
-  const model =
-    passedModel ||
-    modelsData.find((m) => m.id.replace(/^.*\//, "") === modelId);
 
   const isBasic = passedIsBasic ?? model.isBasic;
   const [modelStatus, setModelStatus] = useState(model.last_execution_status);
@@ -41,6 +38,7 @@ function SpecificModel({
 
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
     useModelButtonLogic({
+      model,
       isBasic,
       modelStatus,
       handleRun,
@@ -60,8 +58,7 @@ function SpecificModel({
         borderRadius: "16px",
         overflow: "hidden",
         m: 4,
-        maxWidth: 1000,
-        mx: "auto",
+        mx:4,
         bgcolor: "#ffffff",
       }}
     >
@@ -94,12 +91,6 @@ function SpecificModel({
           {
             label: "Job name",
             value: model.defaultConfig.modelConfig.job_name,
-          },
-          {
-            label: "GPU",
-            value: model.defaultConfig.modelConfig.gpu_types
-              .map((gpu) => `${gpu.type} x${gpu.count}`)
-              .join(", "),
           },
         ].map((row, index) => (
           <Grid

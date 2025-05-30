@@ -12,7 +12,12 @@ export const useModelButtonLogic = ({
   currentOrganization,
   authToken,
 }) => {
-  const { handleStart, handleStop, handleRun, loading: actionLoading } = useModelActions({
+  const {
+    handleStart,
+    handleStop,
+    handleRun,
+    loading: actionLoading,
+  } = useModelActions({
     isBasic,
     model,
     jobId,

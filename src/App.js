@@ -193,61 +193,61 @@ export function Layout() {
     {
       name: "JupyterLab",
       to: "/jupyter",
-      icon: <CodeIcon fontSize="medium" />,
+      icon: <CodeIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Интерактивная среда разработки JupyterLab",
     },
     {
       name: "Задачи",
       to: "/tasks",
-      icon: <AssignmentIcon fontSize="medium" />,
+      icon: <AssignmentIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Просмотр и управление задачами",
     },
     {
       name: "Модели",
       to: "/models",
-      icon: <ModelTrainingIcon />,
+      icon: <ModelTrainingIcon sx={{color: isMainPage && "white"}}/>,
       description: "Работа с моделями машинного обучения",
     },
     {
       name: "Наборы Данных",
       to: "/datasets",
-      icon: <DatasetIcon />,
+      icon: <DatasetIcon sx={{color: isMainPage && "white"}}/>,
       description: "Управление наборами данных",
     },
     {
       name: "Обучение",
       to: "/train",
-      icon: <PsychologyIcon />,
+      icon: <PsychologyIcon sx={{color: isMainPage && "white"}}/>,
       description: "Обучение моделей",
     },
     {
       name: "Биллинг",
       to: "/billing",
-      icon: <PriceChangeIcon fontSize="medium" />,
+      icon: <PriceChangeIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Управление платежами и балансом",
     },
     {
       name: "API Ключи",
       to: "/api-keys",
-      icon: <KeyIcon fontSize="medium" />,
+      icon: <KeyIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Управление API ключами",
     },
     {
       name: "Настройки",
       to: "/settings",
-      icon: <SettingsIcon fontSize="medium" />,
+      icon: <SettingsIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Настройки аккаунта",
     },
     {
       name: "Организации",
       to: "/organization-settings",
-      icon: <RecentActorsIcon fontSize="medium" />,
+      icon: <RecentActorsIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
       description: "Управление организациями",
     },
     {
       name: "GPU",
       to: "/gpu-list",
-      icon: <ModelTrainingIcon />,
+      icon: <ModelTrainingIcon sx={{color: isMainPage && "white"}}/>,
       description: "Работа с моделями машинного обучения",
     },
   ];
@@ -358,18 +358,44 @@ export function Layout() {
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      textAlign: "center",
-                      p: 4.5,
-                      backgroundColor: "#F5F5F5",
+                      p: 2.5,
+                      backgroundColor: "#fff",
+                      boxShadow: 2,
+                      borderRadius: "6px"
                     }}
                   >
-                    <Box sx={{ mb: 2, transform: "scale(1.3)" }}>
-                      {item.icon}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mb: 2,
+                        width: "100%",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography variant="h5" component="div">
+                        {item.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          transform: "scale(1.1)",
+                          borderRadius: "50%",
+                          bgcolor: "#5282ff",
+                          width: 40,
+                          height: 40,
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center"
+                        }}
+                      >
+                        {item.icon}
+                      </Box>
                     </Box>
-                    <Typography variant="h5" component="div" sx={{ mb: 1 }}>
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ width: "100%" }}
+                    >
                       {item.description}
                     </Typography>
                   </CardContent>
@@ -561,9 +587,7 @@ export function Layout() {
                             aria-label="Открыть события"
                             onClick={handleEventsClick}
                             sx={{
-                              color: isEventsOpen
-                                ? "#7097ff"
-                                : "#5282ff",
+                              color: isEventsOpen ? "#7097ff" : "#5282ff",
                               backgroundColor: "rgba(0, 0, 255, 0.04);",
                             }}
                           >

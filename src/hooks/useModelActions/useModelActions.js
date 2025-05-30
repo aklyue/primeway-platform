@@ -87,6 +87,8 @@ export const useModelActions = ({
       formData.append("vllm_config_str", JSON.stringify(vllmConfig));
       formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
 
+      console.log(formData);
+
       const response = await axiosInstance.post("/models/run", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

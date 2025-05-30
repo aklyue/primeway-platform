@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Typography } from "@mui/material";
 
-function BackArrow({ path, name }) {
+function BackArrow({ path, name, model }) {
   return (
     <Box sx={{ m: 2, width: "fit-content", ml: 4 }}>
       <Link to={path} style={{ textDecoration: "none" }}>
@@ -21,7 +21,7 @@ function BackArrow({ path, name }) {
         >
           <ArrowBackIcon sx={{ mr: 1 }} />
           <Typography variant="body1" fontSize={20} fontWeight={500}>
-            {name}
+            {name} / <span style={{color: "black"}}>{model.name}</span>
           </Typography>
         </Box>
       </Link>

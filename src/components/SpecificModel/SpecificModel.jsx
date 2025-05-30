@@ -1,30 +1,57 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
-import { Box, Typography, Button, Modal, Grid } from "@mui/material";
+import { Box, Typography, Button, Modal, Grid, Collapse } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
+import useModelActions from "../../hooks/useModelActions";
+import useModelButtonLogic from "../../hooks/useModelButtonLogic";
+import { AuthContext } from "../../AuthContext";
+import { OrganizationContext } from "../Organization/OrganizationContext";
+import ModelActions from "../../UI/ModelActions";
 
 function SpecificModel({
   model: passedModel,
   initialConfig,
   isBasic: passedIsBasic,
 }) {
+  const { authToken } = useContext(AuthContext);
+  const { currentOrganization } = useContext(OrganizationContext);
   const { modelId } = useParams();
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+  const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
 
   const model =
     passedModel ||
     modelsData.find((m) => m.id.replace(/^.*\//, "") === modelId);
 
+  const isBasic = passedIsBasic ?? model.isBasic;
+  const [modelStatus, setModelStatus] = useState(model.last_execution_status);
+
+  useEffect(() => {
+    setModelStatus(model.last_execution_status);
+  }, [model.last_execution_status]);
+
+  const { handleRun, handleStart, handleStop, loading } = useModelActions({
+    model,
+    currentOrganization,
+    authToken,
+    setModelStatus,
+  });
+
+  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
+    useModelButtonLogic({
+      isBasic,
+      modelStatus,
+      handleRun,
+      handleStart,
+      handleStop,
+      loading,
+    });
+
   if (!model) {
     return <Typography sx={{ p: 4 }}>Модель не найдена</Typography>;
   }
-
-  const isBasic = passedIsBasic ?? model.isBasic;
-
-  const handleConfigureOpen = () => setIsConfigureOpen(true);
-  const handleConfigureClose = () => setIsConfigureOpen(false);
 
   return (
     <Box
@@ -90,9 +117,9 @@ function SpecificModel({
         ))}
       </Box>
 
-      <Box sx={{ p: 2, textAlign: "right" }}>
+      <Box sx={{ p: 2, display: "flex", justifyContent: "space-between" }}>
         <Button
-          onClick={handleConfigureOpen}
+          onClick={toggleConfigure}
           sx={{
             color: "white",
             padding: "8px 16px",
@@ -102,41 +129,30 @@ function SpecificModel({
             },
           }}
         >
-          Настроить
+          {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
         </Button>
+        <ModelActions
+          // isBasic={isBasic}
+          actionButtonHandler={actionButtonHandler}
+          actionButtonText={actionButtonText}
+          isActionButtonDisabled={isActionButtonDisabled}
+        />
       </Box>
 
-      <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+      <Collapse in={isConfigureOpen}>
         <Box
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            pr: 2,
-            maxHeight: "95vh",
-            overflowY: "auto",
-            borderRadius: 3,
-            outline: "none",
-            width: "90%",
-            maxWidth: 800,
+            borderTop: "1px solid #e0e0e0",
+            bgcolor: "#fff",
+            p: 3,
           }}
         >
-          <Button
-            sx={{ position: "absolute", left: 1, top: 12 }}
-            onClick={handleConfigureClose}
-          >
-            <CloseIcon />
-          </Button>
           <ConfigureModelForm
             initialConfig={initialConfig || model.defaultConfig}
-            onClose={handleConfigureClose}
+            onClose={toggleConfigure}
           />
         </Box>
-      </Modal>
+      </Collapse>
     </Box>
   );
 }

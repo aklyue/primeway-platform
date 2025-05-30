@@ -20,6 +20,7 @@ export default function DrawerContent({
   menuItems,
   location,
   anchor,
+  isDrawerHovered,
 }) {
   return (
     <Box
@@ -61,6 +62,7 @@ export default function DrawerContent({
       >
         {menuItems.map((item) => (
           <MenuItem
+            isDrawerHovered={isDrawerHovered}
             anchor={anchor}
             key={item.to}
             to={item.to}

@@ -4,6 +4,7 @@ export const modelsData = [
   {
     id: "unsloth/gemma-3-4b-it-finetuned",
     name: "unsloth/gemma-3-4b-it",
+    isBasic: true,
     type: "LLM",
     description:
       "T-lite-it-1.0 — это модель, созданная на базе семейства моделей Qwen 2.5. Предварительный этап обучения 1: 100 млрд токенов. Предварительный этап обучения 2: 40 млрд токенов",
@@ -39,6 +40,7 @@ export const modelsData = [
   {
     id: "T-lite-it-1.0",
     name: "t-tech/T-lite-it-1.0",
+    isBasic: true,
     type: "LLM",
     description:
       "T-lite-it-1.0 — это модель, созданная на базе семейства моделей Qwen 2.5. Предварительный этап обучения 1: 100 млрд токенов. Предварительный этап обучения 2: 40 млрд токенов",
@@ -74,6 +76,7 @@ export const modelsData = [
   {
     id: "gemma-3-12b-it",
     name: "google/gemma-3-12b-it",
+    isBasic: true,
     type: "LLM",
     description:
       "Модели Gemma 3 являются многомодальными, обрабатывают ввод текста и изображений и генерируют текстовый вывод, с открытыми весами как для предварительно обученных вариантов, так и для вариантов, настроенных на основе инструкций.",
@@ -112,6 +115,7 @@ export const modelsData = [
   {
     id: "DeepSeek-R1-Distill-Qwen-14B",
     name: "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    isBasic: true,
     type: "LLM",
     description:
       "Модели DeepSeek-R1-Distill дообученны на основе моделей с открытым исходным кодом с использованием примеров, созданных DeepSeek-R1.",

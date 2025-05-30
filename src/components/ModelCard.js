@@ -26,11 +26,13 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { ReactComponent as DeepSeek } from "../assets/deepseek-color.svg";
 import { ReactComponent as Google } from "../assets/gemma-color.svg";
 import { ReactComponent as HuggingFace } from "../assets/huggingface-color.svg";
+import { useNavigate } from "react-router-dom";
 
 function ModelCard({ model, isLast, isBasic }) {
   // **Контексты**
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
+  const navigate = useNavigate();
 
   // **Состояния**
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
@@ -288,7 +290,19 @@ function ModelCard({ model, isLast, isBasic }) {
           overflow: "hidden",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
         }}
-        onClick={isBasic ? handleConfigureOpen : handleModelDialogOpen}
+        onClick={(e) => {
+          if (e.target.closest("[data-no-navigate]")) {
+            e.stopPropagation();
+            return;
+          }
+
+          navigate(`/models/${model.id.replace(/^.*\//, "")}`, {
+            state: {
+              model,
+              isBasic,
+            },
+          });
+        }}
       >
         {/* **Название модели** */}
         <Grid item xs={isBasic ? 6 : 3}>
@@ -402,37 +416,37 @@ function ModelCard({ model, isLast, isBasic }) {
       />
 
       {/* **Модальное окно настройки модели (только для базовых моделей)** */}
-      {isBasic && (
-        <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              bgcolor: "background.paper",
-              boxShadow: 24,
-              p: 4,
-              pr: 2,
-              maxHeight: "95vh",
-              overflowY: "hidden",
-              borderRadius: 3,
-              outline: "none",
-            }}
-          >
-            <Button
-              sx={{ position: "absolute", left: 1, top: 12 }}
-              onClick={handleConfigureClose}
+      {/* {isBasic && (
+          <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+                pr: 2,
+                maxHeight: "95vh",
+                overflowY: "hidden",
+                borderRadius: 3,
+                outline: "none",
+              }}
             >
-              <CloseIcon />
-            </Button>
-            <ConfigureModelForm
-              initialConfig={model.defaultConfig}
-              onClose={handleConfigureClose}
-            />
-          </Box>
-        </Modal>
-      )}
+              <Button
+                sx={{ position: "absolute", left: 1, top: 12 }}
+                onClick={handleConfigureClose}
+              >
+                <CloseIcon />
+              </Button>
+              <ConfigureModelForm
+                initialConfig={model.defaultConfig}
+                onClose={handleConfigureClose}
+              />
+            </Box>
+          </Modal>
+        )} */}
 
       {/* **Диалоговое окно логов модели** */}
       <Dialog

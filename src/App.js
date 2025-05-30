@@ -76,6 +76,7 @@ import TrainPage from "./components/NoCode/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import JupyterLabSessions from "./components/NoCode/JupyterLab";
 import ResponsiveDrawer from "./UI/ResponsiveDrawer";
+import SpecificModelPage from "./pages/SpecificModelPage/SpecificModelPage";
 
 export function Layout() {
   const {
@@ -171,7 +172,8 @@ export function Layout() {
 
   const isDocsPage = location.pathname.startsWith("/docs");
   const isMainPage = location.pathname === "/";
-  const drawerWidth = isTablet || isMinDesktop ? "8%" : isDocsPage ? "17%" : "6%";
+  const drawerWidth =
+    isTablet || isMinDesktop ? "8%" : isDocsPage ? "17%" : "6%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -560,16 +562,14 @@ export function Layout() {
                             onClick={handleEventsClick}
                             sx={{
                               color: isEventsOpen
-                                ? "secondary.main"
-                                : "#F5F5F5",
-                              backgroundColor: "rgba(0, 0, 0, 0.04);",
+                                ? "#7097ff"
+                                : "#5282ff",
+                              backgroundColor: "rgba(0, 0, 255, 0.04);",
                             }}
                           >
                             <NotificationsNoneIcon
                               sx={{
-                                color: isDocsPage
-                                  ? "rgba(255, 255, 255, 0.8)"
-                                  : "",
+                                color: "#5282ff",
                                 animation: isEventsOpen
                                   ? ""
                                   : `${pulse} 1.2s infinite ease-in-out`,
@@ -737,6 +737,14 @@ export function Layout() {
                         element={
                           <ProtectedRoute>
                             <ModelsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/models/:modelId"
+                        element={
+                          <ProtectedRoute>
+                            <SpecificModelPage />
                           </ProtectedRoute>
                         }
                       />

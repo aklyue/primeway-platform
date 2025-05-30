@@ -6,6 +6,7 @@ import {
   useTheme,
   Box,
 } from "@mui/material";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const MenuItem = ({
@@ -18,10 +19,12 @@ const MenuItem = ({
   isDocsPage,
   handleDrawerToggle,
   anchor,
+  isDrawerHovered,
 }) => {
   const location = useLocation();
   const theme = useTheme();
-  const isSelected = location.pathname === to;
+  const isSelected = location.pathname == to;
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <ListItem disablePadding sx={{ position: "relative" }}>
@@ -30,15 +33,12 @@ const MenuItem = ({
         to={to}
         selected={isSelected}
         onClick={isMobile ? handleDrawerToggle : undefined}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         sx={{
           justifyContent: isDocsPage ? "flex-start" : "center",
           padding: isDocsPage ? "1px 16px" : "8px 16px",
           position: "relative",
-          "&:hover .hover-label": {
-            opacity: 1,
-            visibility: "visible",
-            transform: "translateX(0)",
-          },
         }}
       >
         {isDocsPage ? (
@@ -67,18 +67,30 @@ const MenuItem = ({
             className="hover-label"
             sx={{
               position: "absolute",
+              top: "50%",
               transform:
-                anchor === "right" ? "translateX(-20px)" : "translateX(20px)",
-              [anchor === "right" ? "right" : "left"]: "120%",
-              backgroundColor: "#5282ff",
+                isDrawerHovered && !isMobile
+                  ? "translateY(-50%) translateX(0)"
+                  : anchor === "right"
+                  ? "translateY(-50%) translateX(-20px)"
+                  : "translateY(-50%) translateX(20px)",
+
+              [anchor === "right" ? "right" : "left"]: isHovered
+                ? "110%"
+                : "130%",
+              backgroundColor: isHovered ? "#3a63cc" : "#5282ff",
               color: "white",
               padding: "4px 8px",
               borderRadius: "4px",
               whiteSpace: "nowrap",
-              opacity: 0,
-              visibility: "hidden",
-              transition: "all 0.2s ease",
+              opacity: isDrawerHovered ? 1 : 0,
+              visibility: isDrawerHovered ? "visible" : "hidden",
+              transition: "all 0.25s ease",
               zIndex: 1300,
+              pointerEvents: "none",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
             }}
           >
             {name}

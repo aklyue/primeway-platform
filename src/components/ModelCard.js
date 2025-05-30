@@ -26,16 +26,20 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { ReactComponent as DeepSeek } from "../assets/deepseek-color.svg";
 import { ReactComponent as Google } from "../assets/gemma-color.svg";
 import { ReactComponent as HuggingFace } from "../assets/huggingface-color.svg";
+import { useNavigate } from "react-router-dom";
+import useModelActions from "../hooks/useModelActions";
+import useModelButtonLogic from "../hooks/useModelButtonLogic";
+import ModelActions from "../UI/ModelActions";
 
 function ModelCard({ model, isLast, isBasic }) {
   // **Контексты**
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
+  const navigate = useNavigate();
 
   // **Состояния**
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // **Состояния для логов**
   const [logsModalOpen, setLogsModalOpen] = useState(false);
@@ -76,122 +80,27 @@ function ModelCard({ model, isLast, isBasic }) {
   }
 
   // **Обработчики открытия и закрытия модальных окон**
-  const handleModelDialogOpen = () => {
-    setIsModelDialogOpen(true);
-  };
 
   const handleModelDialogClose = () => {
     setIsModelDialogOpen(false);
   };
 
-  const handleConfigureOpen = () => {
-    setIsConfigureOpen(true);
-  };
+  const { handleRun, handleStart, handleStop, loading } = useModelActions({
+    model,
+    currentOrganization,
+    authToken,
+    setModelStatus,
+  });
 
-  const handleConfigureClose = () => {
-    setIsConfigureOpen(false);
-  };
-
-  // **Функция запуска базовой модели**
-  const handleRun = async () => {
-    if (!isBasic) return; // Запускать можно только базовые модели
-    setLoading(true);
-
-    try {
-      const { defaultConfig } = model;
-      console.log("defaultConfig", defaultConfig);
-
-      const vllmConfig = {
-        model: defaultConfig.modelName,
-        args: defaultConfig.args.reduce(
-          (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
-          {}
-        ),
-        flags: defaultConfig.flags.reduce(
-          (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
-          {}
-        ),
-        finetuned_job_id: defaultConfig.finetuned_job_id,
-      };
-
-      const formData = new FormData();
-      formData.append("organization_id", currentOrganization?.id || "");
-      formData.append("vllm_config_str", JSON.stringify(vllmConfig));
-      formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
-
-      const response = await axiosInstance.post("/models/run", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      const { job_id } = response.data;
-
-      alert(
-        'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
-      );
-    } catch (error) {
-      console.error("Ошибка при запуске модели:", error);
-      alert("Произошла ошибка при запуске модели.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // **Функция запуска запущенной модели**
-  const handleStart = async () => {
-    if (isBasic) return; // Запускать можно только запущенные модели
-    setLoading(true);
-
-    try {
-      if (!jobId) {
-        alert("Идентификатор задачи отсутствует.");
-        setLoading(false);
-        return;
-      }
-
-      await axiosInstance.post("/jobs/job-start", null, {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      setModelStatus("running"); // Обновляем статус модели
-      alert("Модель успешно запущена.");
-    } catch (error) {
-      console.error("Ошибка при запуске модели:", error);
-      alert("Произошла ошибка при запуске модели.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // **Функция остановки запущенной модели**
-  const handleStop = async () => {
-    if (isBasic) return; // Останавливать можно только запущенные модели
-    setLoading(true);
-
-    try {
-      if (!jobId) {
-        alert("Идентификатор задачи отсутствует.");
-        setLoading(false);
-        return;
-      }
-
-      await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      setModelStatus("stopped"); // Обновляем статус модели
-      alert("Модель успешно остановлена.");
-    } catch (error) {
-      console.error("Ошибка при остановке модели:", error);
-      alert("Произошла ошибка при остановке модели.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
+    useModelButtonLogic({
+      isBasic,
+      modelStatus,
+      handleRun,
+      handleStart,
+      handleStop,
+      loading,
+    });
 
   // **Функция для получения логов модели**
   const handleLogsClick = async (e) => {
@@ -229,45 +138,6 @@ function ModelCard({ model, isLast, isBasic }) {
   };
 
   // **Определяем текст и действие кнопки в зависимости от статуса модели**
-  let actionButtonText = "";
-  let actionButtonHandler = null;
-  let isActionButtonDisabled = false;
-
-  if (isBasic) {
-    // Для базовых моделей кнопка запуска
-    actionButtonText = "Запустить";
-    actionButtonHandler = (e) => {
-      e.stopPropagation();
-      handleRun();
-    };
-    isActionButtonDisabled = loading;
-  } else {
-    // Для запущенных моделей
-    if (modelStatus === "running") {
-      actionButtonText = "Остановить";
-      actionButtonHandler = (e) => {
-        e.stopPropagation();
-        handleStop();
-      };
-      isActionButtonDisabled = loading;
-    } else if (
-      modelStatus === "failed" ||
-      modelStatus === "stopped" ||
-      modelStatus === undefined
-    ) {
-      actionButtonText = "Запустить";
-      actionButtonHandler = (e) => {
-        e.stopPropagation();
-        handleStart();
-      };
-      isActionButtonDisabled = loading;
-    } else {
-      // Если статус модели неизвестен или в непредусмотренном состоянии
-      actionButtonText = "Остановить";
-      actionButtonHandler = null;
-      isActionButtonDisabled = true;
-    }
-  }
 
   return (
     <>
@@ -288,7 +158,21 @@ function ModelCard({ model, isLast, isBasic }) {
           overflow: "hidden",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
         }}
-        onClick={isBasic ? handleConfigureOpen : handleModelDialogOpen}
+        onClick={(e) => {
+          if (e.target.closest("[data-no-navigate]")) {
+            e.stopPropagation();
+            return;
+          }
+
+          navigate(`/models/${model.id.replace(/^.*\//, "")}`, {
+            state: {
+              model,
+              isBasic,
+              actionButtonText,
+              isActionButtonDisabled,
+            },
+          });
+        }}
       >
         {/* **Название модели** */}
         <Grid item xs={isBasic ? 6 : 3}>
@@ -315,17 +199,11 @@ function ModelCard({ model, isLast, isBasic }) {
 
             {/* **Действие (Кнопка запуска)** */}
             <Grid item xs={2} sx={{ textAlign: "center" }}>
-              <Button
-                onClick={actionButtonHandler}
-                disabled={isActionButtonDisabled}
-                variant="outlined"
-                sx={{ bgcolor: "#5282ff", color: "#FFFFFF" }}
-              >
-                {actionButtonText}
-                <RocketLaunchOutlinedIcon
-                  sx={{ ml: 1, fontSize: 22, color: "#FFFFFF" }}
-                />
-              </Button>
+              <ModelActions
+                actionButtonHandler={actionButtonHandler}
+                actionButtonText={actionButtonText}
+                isActionButtonDisabled={isActionButtonDisabled}
+              />
             </Grid>
           </>
         ) : (
@@ -402,37 +280,37 @@ function ModelCard({ model, isLast, isBasic }) {
       />
 
       {/* **Модальное окно настройки модели (только для базовых моделей)** */}
-      {isBasic && (
-        <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              bgcolor: "background.paper",
-              boxShadow: 24,
-              p: 4,
-              pr: 2,
-              maxHeight: "95vh",
-              overflowY: "hidden",
-              borderRadius: 3,
-              outline: "none",
-            }}
-          >
-            <Button
-              sx={{ position: "absolute", left: 1, top: 12 }}
-              onClick={handleConfigureClose}
+      {/* {isBasic && (
+          <Modal open={isConfigureOpen} onClose={handleConfigureClose}>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+                pr: 2,
+                maxHeight: "95vh",
+                overflowY: "hidden",
+                borderRadius: 3,
+                outline: "none",
+              }}
             >
-              <CloseIcon />
-            </Button>
-            <ConfigureModelForm
-              initialConfig={model.defaultConfig}
-              onClose={handleConfigureClose}
-            />
-          </Box>
-        </Modal>
-      )}
+              <Button
+                sx={{ position: "absolute", left: 1, top: 12 }}
+                onClick={handleConfigureClose}
+              >
+                <CloseIcon />
+              </Button>
+              <ConfigureModelForm
+                initialConfig={model.defaultConfig}
+                onClose={handleConfigureClose}
+              />
+            </Box>
+          </Modal>
+        )} */}
 
       {/* **Диалоговое окно логов модели** */}
       <Dialog

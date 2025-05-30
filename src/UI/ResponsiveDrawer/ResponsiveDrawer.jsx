@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Drawer } from "@mui/material";
 import DrawerContent from "../DrawerContent";
 
@@ -10,12 +10,16 @@ export default function ResponsiveDrawer({
   anchor,
   ...contentProps
 }) {
+  const [isDrawerHovered, setIsDrawerHovered] = useState(false);
+
   return (
     <Drawer
       anchor={anchor}
       variant={variant}
       open={open}
       onClose={onClose}
+      onMouseEnter={() => setIsDrawerHovered(true)}
+      onMouseLeave={() => setIsDrawerHovered(false)}
       ModalProps={variant === "temporary" ? { keepMounted: true } : undefined}
       sx={{
         width: drawerWidth,
@@ -32,7 +36,11 @@ export default function ResponsiveDrawer({
         },
       }}
     >
-      <DrawerContent anchor={anchor} {...contentProps} />
+      <DrawerContent
+        anchor={anchor}
+        isDrawerHovered={isDrawerHovered}
+        {...contentProps}
+      />
     </Drawer>
   );
 }

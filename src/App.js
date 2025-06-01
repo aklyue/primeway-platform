@@ -38,12 +38,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import DatasetIcon from "@mui/icons-material/Folder";
 import AuthProvider, { AuthContext } from "./AuthContext";
+import FineTuningJobCreatePage from "./components/NoCode/FineTuningJobCreatePage";
 import {
   OrganizationContext,
   OrganizationProvider,
 } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import Billing from "./components/Billing";
+import FineTuneJobDetails from "./components/NoCode/FineTuneJobDetails";
 import ApiKeys from "./components/ApiKeys";
 import Settings from "./components/Settings";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
@@ -216,7 +218,7 @@ export function Layout() {
     },
     {
       name: "Обучение",
-      to: "/train",
+      to: "/fine-tuning",
       icon: <PsychologyIcon sx={{color: isMainPage && "white"}}/>,
       description: "Обучение моделей",
     },
@@ -749,10 +751,26 @@ export function Layout() {
                         }
                       />
                       <Route
-                        path="/train"
+                        path="/fine-tuning"
                         element={
                           <ProtectedRoute>
                             <TrainPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route 
+                        path="/fine-tuning/new"
+                        element={
+                          <ProtectedRoute>
+                            <FineTuningJobCreatePage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route 
+                        path="/fine-tuning/jobs/:jobId"
+                        element={
+                          <ProtectedRoute>
+                            <FineTuneJobDetails />
                           </ProtectedRoute>
                         }
                       />

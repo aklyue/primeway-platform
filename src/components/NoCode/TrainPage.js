@@ -17,9 +17,6 @@ import { modelsData } from "../../data/modelsData";
 export default function TrainPage() {
   const [datasets, setDatasets] = useState([]);
   const [customTasks, setCustomTasks] = useState([]);
-  const [openRetrain, setOpenRetrain] = useState(false);
-  const [rowForRetrain, setRowForRetrain] = useState(null);
-  const [base, setBase] = useState(modelsData[0]?.name || "");
 
   useEffect(() => {
     api.getDatasets().then(setDatasets);
@@ -47,10 +44,6 @@ export default function TrainPage() {
   const [loraDropout, setLoraDropout] = useState("0");
   const [hfToken, setHfToken] = useState("");
 
-  const handleRetrainOpen = (row) => {
-    setRowForRetrain(row);
-    setOpenRetrain(true);
-  };
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -97,25 +90,14 @@ export default function TrainPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
+      <Typography variant="h4" sx={{ mb: 1 }}>
         {" "}
-        Train Page{" "}
+        Дообучение{" "}
       </Typography>
-
-      <Button
-        variant="contained"
-        onClick={() => setOpenTrainModal(true)}
-        sx={{
-          mb: 4,
-          color: "white",
-          bgcolor: "#597ad3",
-          "&:hover": {
-            bgcolor: "#7c97de",
-          },
-        }}
-      >
-        Открыть форму дообучения
-      </Button>
+      <Typography variant="p" sx={{ mb: 4 }}>
+        {" "}
+        Здесь мы можете отслеживать и создавать задачи дообучения{" "}
+      </Typography>
 
       <Modal open={openTrainModal} onClose={() => setOpenTrainModal(false)}>
         <Box
@@ -171,15 +153,7 @@ export default function TrainPage() {
       </Modal>
 
       {/* Добавьте список задач ниже */}
-      <FineTuneTasksList mode="train" onRetrain={handleRetrainOpen} />
-
-      <FineTuneFormModal
-        open={openRetrain}
-        onClose={() => setOpenRetrain(false)}
-        datasets={datasets}
-        baseModel={rowForRetrain?.name || base}
-        onSuccess={() => {}}
-      />
+      <FineTuneTasksList />
     </Box>
   );
 }

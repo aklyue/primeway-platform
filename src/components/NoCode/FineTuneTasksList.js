@@ -1,8 +1,8 @@
 import { useEffect, useState, useContext, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
-  IconButton,
   InputAdornment,
   Paper,
   Table,
@@ -19,77 +19,75 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
-import FineTuneFormModal from "./FineTuneFormModal";
-import ModelsDialog from "../ModelsDialog";
 
-export default function FineTuneTasksList({ mode, onRetrain }) {
-  const [rows, setRows] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+/**
+ * Displays the list of running fine‑tune jobs for the current organisation.
+ *
+ * Props
+ * ───────────────────────────────────────────────────────────────────────────────
+ * • mode:     "view" | "train"  – When "train", clicking a row calls onRetrain.
+ * • onRetrain(row):              – Called with the clicked row when mode is
+ *                                 "train". Useful for re‑training workflows.
+ */
+export default function FineTuneTasksList() {
+  const navigate = useNavigate();
+
+  const handleRowClick = (row) => {
+    navigate(`/fine-tuning/jobs/${row.id}`);
+  };
+
+  /** org context */
   const { currentOrganization } = useContext(OrganizationContext);
 
-  // jobs
+  /** jobs */
   const [jobs, setJobs] = useState([]);
   const refreshJobs = async () => {
+    if (!currentOrganization?.id) return;
     try {
       const { data } = await axiosInstance.get("/finetuning/get-running-jobs", {
-        params: {
-          organization_id: currentOrganization.id,
-        },
+        params: { organization_id: currentOrganization.id },
       });
 
       setJobs(
         data.map((j) => ({
           id: j.job_id,
           baseModel: j.base_model,
-          suffix: j.job_name,
-          type: j.build_type,
-          status: j.build_status.toLowerCase(),
+          suffix: j.suffix,
+          lastExecutionStatus: j.last_execution_status,
           runTime: j.run_time ?? "-",
           createdAt: new Date(j.created_at).toLocaleString(),
         }))
       );
     } catch (e) {
-      console.error(e);
+      console.error("Failed to load fine‑tune jobs", e);
     }
   };
 
-  /* poll every 3 s */
+  /** poll every 3 s */
   useEffect(() => {
     refreshJobs();
     const id = setInterval(refreshJobs, 3_000);
     return () => clearInterval(id);
-  }, [currentOrganization]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrganization?.id]);
 
-  // search
+  /** search */
   const [query, setQuery] = useState("");
   const filteredJobs = useMemo(() => {
     if (!query.trim()) return jobs;
+    const q = query.toLowerCase();
     return jobs.filter((j) =>
-      Object.values(j).some((v) =>
-        String(v).toLowerCase().includes(query.toLowerCase())
-      )
+      Object.values(j).some((v) => String(v).toLowerCase().includes(q))
     );
   }, [query, jobs]);
 
-  // modal
-  const [openModal, setOpenModal] = useState(false);
-
-  const handleRowClick = (row) => {
-    setSelectedRow(row);
-    setDialogOpen(true);
-  };
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedRow(null);
-  };
+  /** render */
   return (
     <>
-      {/* HEADER */}
+      {/* ───────────────────────────── Header */}
       <Toolbar disableGutters sx={{ mb: 2 }}>
         <Typography variant="h5" sx={{ flexGrow: 1 }}>
-          Fine-tuning jobs
+          Fine‑tuning jobs
         </Typography>
 
         <TextField
@@ -107,46 +105,39 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
           }}
         />
 
-        <Tooltip title="New fine-tuning job">
+        <Tooltip title="New fine‑tuning job">
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setOpenModal(true)}
+            onClick={() => navigate("/fine-tuning/new")}
             sx={{
               color: "#fff",
               bgcolor: "#597ad3",
-              "&:hover": {
-                bgcolor: "#7c97de",
-              },
+              "&:hover": { bgcolor: "#7c97de" },
             }}
           >
-            New fine-tuning job
+            Новая fine-tuning задача
           </Button>
         </Tooltip>
       </Toolbar>
 
-      {/* TABLE */}
+      {/* ───────────────────────────── Table */}
       <Paper
         elevation={0}
         sx={{
-          border: "1px solid rgba(0, 0, 0, 0.12)",
-          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.12)",
+          borderRadius: 2,
           overflow: "hidden",
         }}
       >
         <Table size="small">
-          <TableHead
-            sx={{
-              padding: 2,
-              backgroundColor: "rgba(102, 179, 238, 0.1)",
-            }}
-          >
+          <TableHead sx={{ backgroundColor: "rgba(102,179,238,0.1)" }}>
             <TableRow>
-              <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
-              <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>
+              <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
+              <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>
               <TableCell>АДАПТЕР</TableCell>
               <TableCell>СТАТУС</TableCell>
-              <TableCell>ВРЕМЯ РАБОТЫ</TableCell>
+              <TableCell>ВРЕМЯ РАБОТЫ</TableCell>
               <TableCell sortDirection="desc">СОЗДАНО</TableCell>
             </TableRow>
           </TableHead>
@@ -155,7 +146,7 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
             {filteredJobs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center">
-                  No finetune job available.
+                  No fine‑tune job available.
                 </TableCell>
               </TableRow>
             ) : (
@@ -163,28 +154,21 @@ export default function FineTuneTasksList({ mode, onRetrain }) {
                 <TableRow
                   key={j.id}
                   hover
-                  onClick={() => mode === "train" && onRetrain?.(j)}
-                  sx={{ cursor: mode === "train" ? "pointer" : "default" }}
+                  onClick={() => handleRowClick(j)}
+                  sx={{ cursor: "pointer" }}
                 >
                   <TableCell>{j.id}</TableCell>
-                  <TableCell>{j.base_model}</TableCell>
+                  <TableCell>{j.baseModel}</TableCell>
                   <TableCell>{j.suffix}</TableCell>
-                  <TableCell>{j.last_execution_status}</TableCell>
-                  <TableCell>{j.run_time}</TableCell>
-                  <TableCell>{j.created_at}</TableCell>
+                  <TableCell>{j.lastExecutionStatus}</TableCell>
+                  <TableCell>{j.runTime}</TableCell>
+                  <TableCell>{j.createdAt}</TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </Paper>
-
-      {/* CREATE-JOB MODAL  */}
-      <FineTuneFormModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        baseModel="" /* or pass selected base model */
-      />
     </>
   );
 }

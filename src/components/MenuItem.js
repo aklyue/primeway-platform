@@ -55,7 +55,7 @@ const MenuItem = ({
               justifyContent: "center",
               color: isSelected
                 ? theme.palette.primary.selected
-                : theme.palette.primary.icon,
+                : "#6695ff",
             }}
           >
             {icon}

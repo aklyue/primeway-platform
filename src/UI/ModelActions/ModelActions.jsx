@@ -15,18 +15,25 @@ export default function ModelActions({
       variant="outlined"
       sx={{
         color: "white",
-        padding: isMobile ? "4px 4px" : "6px 18px",
+        padding: isMobile
+          ? "4px 8px"
+          : actionButtonText === "Остановить"
+          ? "6px 13px"
+          : "6px 18px !important",
         bgcolor: "#597ad3",
         "&:hover": {
           bgcolor: "#7c97de",
         },
-        fontSize: isMobile ? "9px !important" : "14px",
+        maxWidth: "100px",
+        fontSize: isMobile ? "9px !important" : "12px",
       }}
     >
       {actionButtonText}
-      <RocketLaunchOutlinedIcon
-        sx={{ ml: 1, fontSize: isMobile ? 16 : 22, color: "#FFFFFF" }}
-      />
+      {actionButtonText === "Запустить" && (
+        <RocketLaunchOutlinedIcon
+          sx={{ ml: 1, fontSize: isMobile ? 16 : 20, color: "#FFFFFF" }}
+        />
+      )}
     </Button>
   );
 }

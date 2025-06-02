@@ -5,7 +5,7 @@ import { Box, Typography } from "@mui/material";
 
 function BackArrow({ path, name, model }) {
   return (
-    <Box sx={{ m: 2, width: "fit-content", ml: 4 }}>
+    <Box sx={{ my: 2, width: "fit-content", }}>
       <Link to={path} style={{ textDecoration: "none" }}>
         <Box
           sx={{
@@ -14,14 +14,20 @@ function BackArrow({ path, name, model }) {
             color: "#5282ff",
             "&:hover": {
               color: "#3a63cc",
-              transform: "scale(1.1)"
+              transform: "scale(1.1)",
             },
-            transition: "all 0.2s"
+            transition: "all 0.2s",
           }}
         >
           <ArrowBackIcon sx={{ mr: 1 }} />
           <Typography variant="body1" fontSize={20} fontWeight={500}>
-            {name} / <span style={{color: "black"}}>{model.name}</span>
+            {name}
+            {model && model.name && (
+              <>
+                {" "}
+                / <span style={{ color: "black" }}>{model.name}</span>
+              </>
+            )}
           </Typography>
         </Box>
       </Link>

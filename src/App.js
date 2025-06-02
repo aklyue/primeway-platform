@@ -225,7 +225,7 @@ export function Layout() {
     },
     {
       name: "Обучение",
-      to: "/train",
+      to: "/fine-tuning",
       icon: <PsychologyIcon sx={{ color: isMainPage && "white" }} />,
       description: "Обучение моделей",
     },

@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
+  CircularProgress,
+  IconButton,
   InputAdornment,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +22,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
+import { ContentCopy } from "@mui/icons-material";
+import useFineTuneActions from "../../hooks/useFineTuneActions";
 
 /**
  * Displays the list of running fine‑tune jobs for the current organisation.
@@ -39,47 +44,20 @@ export default function FineTuneTasksList() {
   /** org context */
   const { currentOrganization } = useContext(OrganizationContext);
 
-  /** jobs */
-  const [jobs, setJobs] = useState([]);
-  const refreshJobs = async () => {
-    if (!currentOrganization?.id) return;
-    try {
-      const { data } = await axiosInstance.get("/finetuning/get-running-jobs", {
-        params: { organization_id: currentOrganization.id },
-      });
+  /** jobs and search */
 
-      setJobs(
-        data.map((j) => ({
-          id: j.job_id,
-          baseModel: j.base_model,
-          suffix: j.suffix,
-          lastExecutionStatus: j.last_execution_status,
-          runTime: j.run_time ?? "-",
-          createdAt: new Date(j.created_at).toLocaleString(),
-        }))
-      );
-    } catch (e) {
-      console.error("Failed to load fine‑tune jobs", e);
-    }
-  };
-
-  /** poll every 3 s */
-  useEffect(() => {
-    refreshJobs();
-    const id = setInterval(refreshJobs, 3_000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentOrganization?.id]);
-
-  /** search */
-  const [query, setQuery] = useState("");
-  const filteredJobs = useMemo(() => {
-    if (!query.trim()) return jobs;
-    const q = query.toLowerCase();
-    return jobs.filter((j) =>
-      Object.values(j).some((v) => String(v).toLowerCase().includes(q))
-    );
-  }, [query, jobs]);
+  const {
+    jobs,
+    initialLoading,
+    handleCopy,
+    copied,
+    setCopied,
+    query,
+    setQuery,
+    filteredJobs,
+  } = useFineTuneActions({
+    currentOrganization,
+  });
 
   /** render */
   return (
@@ -143,7 +121,15 @@ export default function FineTuneTasksList() {
           </TableHead>
 
           <TableBody>
-            {filteredJobs.length === 0 ? (
+            {initialLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  <Box sx={{ textAlign: "center", py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : filteredJobs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center">
                   No fine‑tune job available.
@@ -157,7 +143,41 @@ export default function FineTuneTasksList() {
                   onClick={() => handleRowClick(j)}
                   sx={{ cursor: "pointer" }}
                 >
-                  <TableCell>{j.id}</TableCell>
+                  <TableCell
+                    sx={{
+                      width: 120,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 13,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    <Tooltip title={j.id}>
+                      <span
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: 75,
+                          display: "inline-block",
+                        }}
+                      >
+                        {j.id}
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="Скопировать JOB ID">
+                      <IconButton
+                        size="small"
+                        sx={{ ml: 0.5 }}
+                        onClick={(e) => handleCopy(e, j.id)}
+                      >
+                        <ContentCopy fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell>{j.baseModel}</TableCell>
                   <TableCell>{j.suffix}</TableCell>
                   <TableCell>{j.lastExecutionStatus}</TableCell>
@@ -169,6 +189,26 @@ export default function FineTuneTasksList() {
           </TableBody>
         </Table>
       </Paper>
+      <Snackbar
+        open={copied}
+        autoHideDuration={1200}
+        onClose={() => setCopied(false)}
+        message="Скопировано!"
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        ContentProps={{
+          sx: {
+            background: "#e9f7ef",
+            color: "#20744a",
+            fontWeight: 500,
+            border: "1px solid #b2dfdb",
+            boxShadow: "0 2px 8px rgba(32,116,74,0.12)",
+            pointerEvents: "none",
+          },
+        }}
+      />
     </>
   );
 }

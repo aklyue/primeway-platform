@@ -27,6 +27,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
 import { getDatasets, uploadDataset } from "./datasetsApi";
+import { Link } from "react-router-dom";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
 const AVAILABLE_GPUS = {
@@ -60,7 +61,7 @@ export default function FineTuningJobCreatePage() {
   const organizationId = currentOrganization?.id;
 
   /* ───── dataset state ───── */
-  const [datasets, setDatasets] = useState([]);       // список с бэка
+  const [datasets, setDatasets] = useState([]); // список с бэка
   const [loadingDS, setLoadingDS] = useState(false);
   const [datasetOption, setDatasetOption] = useState(""); // 'hf' | dataset_id
   const [hfDatasetId, setHfDatasetId] = useState("");
@@ -68,7 +69,7 @@ export default function FineTuningJobCreatePage() {
 
   /* ───── form state ───── */
   const [selectedGpu, setSelectedGpu] = useState("A100 PCIe");
-  const [gpuCount,  setGpuCount]  = useState(1);
+  const [gpuCount, setGpuCount] = useState(1);
   const [baseModel, setBaseModel] = useState("");
   const [artifactName, setArtifactName] = useState("");
   const [maxSeqLen, setMaxSeqLen] = useState(8192);
@@ -173,7 +174,7 @@ export default function FineTuningJobCreatePage() {
       loraAlpha,
       loraDropout,
       hfToken,
-    ],
+    ]
   );
 
   const handleCreate = () => {
@@ -210,14 +211,20 @@ export default function FineTuningJobCreatePage() {
           Создать задачу дообучения
         </Typography>
         <Tooltip title="Вернуться к списку">
-          {/* Замените на <Link> если используете react-router */}
-          <Button href="/fine-tuning" startIcon={<AddCircleOutlineIcon />}>
+          <Button
+            component={Link}
+            to="/fine-tuning"
+            startIcon={<AddCircleOutlineIcon />}
+          >
             К списку задач
           </Button>
         </Tooltip>
       </Toolbar>
 
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: "1px solid rgba(0,0,0,0.12)" }}>
+      <Paper
+        elevation={0}
+        sx={{ p: 3, borderRadius: 2, border: "1px solid rgba(0,0,0,0.12)" }}
+      >
         {/* SECTION: BASE MODEL & DATASET */}
         <Typography variant="subtitle1" gutterBottom>
           Базовая модель и датасет
@@ -279,12 +286,19 @@ export default function FineTuningJobCreatePage() {
               }}
             >
               {datasets.map((ds) => (
-                <MenuItem key={ds.dataset_id} value={ds.dataset_id} sx={{ alignItems: "flex-start" }}>
+                <MenuItem
+                  key={ds.dataset_id}
+                  value={ds.dataset_id}
+                  sx={{ alignItems: "flex-start" }}
+                >
                   <Stack spacing={0.5}>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {ds.dataset_id}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary" }}
+                    >
                       {ds.name} • {formatBytes(ds.size)} •{" "}
                       {new Date(ds.created_at).toLocaleString()}
                     </Typography>
@@ -317,7 +331,11 @@ export default function FineTuningJobCreatePage() {
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>GPU</InputLabel>
-              <Select value={selectedGpu} onChange={handleGpuChange} label="GPU">
+              <Select
+                value={selectedGpu}
+                onChange={handleGpuChange}
+                label="GPU"
+              >
                 {Object.keys(AVAILABLE_GPUS).map((k) => (
                   <MenuItem key={k} value={k}>
                     {AVAILABLE_GPUS[k].name} – {AVAILABLE_GPUS[k].memoryInGb} GB
@@ -441,9 +459,9 @@ export default function FineTuningJobCreatePage() {
           <Button onClick={() => window.history.back()} sx={{ mr: 1 }}>
             Отмена
           </Button>
-          <Button 
-            variant="contained" 
-            disabled={isSubmitting} 
+          <Button
+            variant="contained"
+            disabled={isSubmitting}
             onClick={handleCreate}
             color="primary"
             sx={{
@@ -461,7 +479,12 @@ export default function FineTuningJobCreatePage() {
       </Paper>
 
       {/* ───── CONFIRMATION DIALOG ───── */}
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Подтвердите создание задачи</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={1}>
@@ -497,9 +520,9 @@ export default function FineTuningJobCreatePage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)}>Отмена</Button>
-          <Button 
-            variant="contained" 
-            disabled={isSubmitting} 
+          <Button
+            variant="contained"
+            disabled={isSubmitting}
             onClick={handleSubmit}
             color="primary"
             sx={{
@@ -511,7 +534,11 @@ export default function FineTuningJobCreatePage() {
               },
             }}
           >
-            {isSubmitting ? <CircularProgress size={24} /> : "Подтвердить запуск"}
+            {isSubmitting ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Подтвердить запуск"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

@@ -14,7 +14,7 @@ import {
   subscribeFineTuned, // (you can delete these two lines if local storage is no longer needed)
 } from "./NoCode/fineTuneStorage";
 
-function ModelsPage() {
+function ModelsPage({ isMobile }) {
   /* ---------------- state ------------------------------------------------ */
   const [launchedModels, setLaunchedModels] = useState([]);
   const [fineTunedModels, setFineTunedModels] = useState([]); /* 💡 */
@@ -218,38 +218,60 @@ function ModelsPage() {
             {/* **Заголовки колонок** */}
             <Grid
               sx={{
-                padding: 2,
+                p: { xs: 1, sm: 2 },
                 backgroundColor: "rgba(102, 179, 238, 0.1)",
                 borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
+                justifyContent: isMobile && "center",
+                gap: isMobile && "5px",
               }}
               container
               spacing={0}
               alignItems="center"
             >
-              <Grid item xs={3}>
-                <Typography variant="subtitle2" fontWeight="light">
+              <Grid item xs={isMobile ? 2 : 3}>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   НАЗВАНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   ДАТА СОЗДАНИЯ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   СОСТОЯНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={3} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   URL
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   ДЕЙСТВИЕ
                 </Typography>
               </Grid>
@@ -311,27 +333,49 @@ function ModelsPage() {
             <Box
               sx={{
                 display: "flex",
-                padding: 2,
+                p: { xs: 1, sm: 2 },
                 backgroundColor: "rgba(102, 179, 238, 0.1)",
                 borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
+                justifyContent: isMobile && "center",
+                gap: isMobile && "5px",
               }}
             >
-              <Typography sx={{ flexBasis: "25%" }}>НАЗВАНИЕ</Typography>
-              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+              <Typography
+                sx={{ flexBasis: "25%" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
+                НАЗВАНИЕ
+              </Typography>
+              <Typography
+                sx={{ flexBasis: "18%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
                 БАЗОВАЯ МОДЕЛЬ
               </Typography>
-              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+              <Typography
+                sx={{ flexBasis: "18%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
                 НАБОР ДАННЫХ
               </Typography>
-              <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+              <Typography
+                sx={{ flexBasis: "18%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
                 ДАТА
               </Typography>
-              <Typography sx={{ flexBasis: "15%", textAlign: "center" }}>
+              <Typography
+                sx={{ flexBasis: "15%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
                 СТАТУС
               </Typography>
-              <Typography sx={{ flexBasis: "6%", textAlign: "center" }}>
+              <Typography
+                sx={{ flexBasis: "6%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
                 {" "}
               </Typography>
             </Box>
@@ -384,8 +428,7 @@ function ModelsPage() {
             {/* **Заголовки колонок** */}
             <Grid
               sx={{
-                // pl: 2,
-                padding: 2,
+                p: { xs: 1, sm: 2 },
                 backgroundColor: "rgba(102, 179, 238, 0.1)",
                 borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
                 borderTopLeftRadius: "16px",
@@ -395,23 +438,49 @@ function ModelsPage() {
               spacing={0}
               alignItems="center"
             >
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="light">
+              <Grid item xs={isMobile ? 5 : 6}>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   НАЗВАНИЕ
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   АВТОР
                 </Typography>
               </Grid>
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
-                  ТИП МОДЕЛИ
-                </Typography>
+                {isMobile ? (
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="light"
+                    fontSize={{ xs: 10, sm: 14 }}
+                  >
+                    ТИП
+                  </Typography>
+                ) : (
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="light"
+                    fontSize={{ xs: 10, sm: 14 }}
+                  >
+                    ТИП МОДЕЛИ
+                  </Typography>
+                )}
               </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="subtitle2" fontWeight="light">
+              <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="light"
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
                   ДЕЙСТВИЕ
                 </Typography>
               </Grid>
@@ -429,6 +498,7 @@ function ModelsPage() {
               {/* **Список "Базовых моделей"** */}
               {allBasic.map((model, idx) => (
                 <ModelCard
+                  isMobile={isMobile}
                   key={model.id || idx}
                   model={model}
                   isLast={idx === allBasic.length - 1}

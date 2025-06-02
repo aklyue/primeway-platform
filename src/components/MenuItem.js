@@ -37,7 +37,7 @@ const MenuItem = ({
         onMouseLeave={() => setIsHovered(false)}
         sx={{
           justifyContent: isDocsPage ? "flex-start" : "center",
-          padding: isDocsPage ? "1px 16px" : "8px 16px",
+          padding: isMobile && isDocsPage ? "1px 8px" : isDocsPage ? "1px 16px" : "8px 16px",
           position: "relative",
         }}
       >

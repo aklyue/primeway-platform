@@ -10,7 +10,7 @@ import { AuthContext } from "../../AuthContext";
 import { OrganizationContext } from "../Organization/OrganizationContext";
 import ModelActions from "../../UI/ModelActions";
 
-function SpecificModel({ initialConfig, isBasic: passedIsBasic }) {
+function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
   const { modelId } = useParams();
@@ -58,7 +58,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic }) {
         borderRadius: "16px",
         overflow: "hidden",
         m: 4,
-        mx:4,
+        mx: isMobile ? 0 : 4,
         bgcolor: "#ffffff",
       }}
     >
@@ -135,7 +135,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic }) {
           sx={{
             borderTop: "1px solid #e0e0e0",
             bgcolor: "#fff",
-            p: 3,
+            p: 1,
           }}
         >
           <ConfigureModelForm

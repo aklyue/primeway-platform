@@ -195,61 +195,80 @@ export function Layout() {
     {
       name: "JupyterLab",
       to: "/jupyter",
-      icon: <CodeIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: (
+        <CodeIcon fontSize="medium" sx={{ color: isMainPage && "white" }} />
+      ),
       description: "Интерактивная среда разработки JupyterLab",
     },
     {
       name: "Задачи",
       to: "/tasks",
-      icon: <AssignmentIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: (
+        <AssignmentIcon
+          fontSize="medium"
+          sx={{ color: isMainPage && "white" }}
+        />
+      ),
       description: "Просмотр и управление задачами",
     },
     {
       name: "Модели",
       to: "/models",
-      icon: <ModelTrainingIcon sx={{color: isMainPage && "white"}}/>,
+      icon: <ModelTrainingIcon sx={{ color: isMainPage && "white" }} />,
       description: "Работа с моделями машинного обучения",
     },
     {
       name: "Наборы Данных",
       to: "/datasets",
-      icon: <DatasetIcon sx={{color: isMainPage && "white"}}/>,
+      icon: <DatasetIcon sx={{ color: isMainPage && "white" }} />,
       description: "Управление наборами данных",
     },
     {
       name: "Обучение",
-      to: "/fine-tuning",
-      icon: <PsychologyIcon sx={{color: isMainPage && "white"}}/>,
+      to: "/train",
+      icon: <PsychologyIcon sx={{ color: isMainPage && "white" }} />,
       description: "Обучение моделей",
     },
     {
       name: "Биллинг",
       to: "/billing",
-      icon: <PriceChangeIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: (
+        <PriceChangeIcon
+          fontSize="medium"
+          sx={{ color: isMainPage && "white" }}
+        />
+      ),
       description: "Управление платежами и балансом",
     },
     {
       name: "API Ключи",
       to: "/api-keys",
-      icon: <KeyIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: <KeyIcon fontSize="medium" sx={{ color: isMainPage && "white" }} />,
       description: "Управление API ключами",
     },
     {
       name: "Настройки",
       to: "/settings",
-      icon: <SettingsIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: (
+        <SettingsIcon fontSize="medium" sx={{ color: isMainPage && "white" }} />
+      ),
       description: "Настройки аккаунта",
     },
     {
       name: "Организации",
       to: "/organization-settings",
-      icon: <RecentActorsIcon fontSize="medium" sx={{color: isMainPage && "white"}}/>,
+      icon: (
+        <RecentActorsIcon
+          fontSize="medium"
+          sx={{ color: isMainPage && "white" }}
+        />
+      ),
       description: "Управление организациями",
     },
     {
       name: "GPU",
       to: "/gpu-list",
-      icon: <ModelTrainingIcon sx={{color: isMainPage && "white"}}/>,
+      icon: <ModelTrainingIcon sx={{ color: isMainPage && "white" }} />,
       description: "Работа с моделями машинного обучения",
     },
   ];
@@ -363,7 +382,7 @@ export function Layout() {
                       p: 2.5,
                       backgroundColor: "#fff",
                       boxShadow: 2,
-                      borderRadius: "6px"
+                      borderRadius: "6px",
                     }}
                   >
                     <Box
@@ -387,7 +406,7 @@ export function Layout() {
                           height: 40,
                           display: "flex",
                           justifyContent: "center",
-                          alignItems: "center"
+                          alignItems: "center",
                         }}
                       >
                         {item.icon}
@@ -442,17 +461,20 @@ export function Layout() {
                   <header
                     style={{
                       position: "fixed",
-                      marginTop: !isDocsPage ? "1%" : "",
+                      marginTop: !isDocsPage && !isMobile ? "1%" : "",
                       width:
-                        isDocsPage || isMainPage
+                        isDocsPage || isMainPage || isMobile
                           ? "100%"
                           : `calc(100% - (2 * ${drawerWidth}))`,
                       zIndex: 1201,
-                      padding: !isDocsPage && "0 1%",
-                      marginLeft: !isDocsPage && !isMainPage ? drawerWidth : "",
+                      padding: isMobile ? "0 0" : !isDocsPage && "0 1%",
+                      marginLeft:
+                        !isDocsPage && !isMainPage && !isMobile
+                          ? drawerWidth
+                          : "",
                       marginRight:
                         !isDocsPage && !isMainPage ? drawerWidth : "",
-                      borderRadius: !isDocsPage && "50px",
+                      borderRadius: isMobile ? "0" : !isDocsPage ? "50px" : "0",
                     }}
                   >
                     <Toolbar
@@ -462,7 +484,7 @@ export function Layout() {
                           : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
-                        borderRadius: !isDocsPage && "50px",
+                        borderRadius: isMobile ? "0" : !isDocsPage ? "50px" : "0",
                         boxShadow:
                           !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
@@ -655,7 +677,7 @@ export function Layout() {
                       {isMobile ? (
                         <ResponsiveDrawer
                           variant="temporary"
-                          drawerWidth={80}
+                          drawerWidth={114}
                           open={mobileOpen}
                           onClose={handleDrawerToggle}
                           isMobile={isMobile}
@@ -691,7 +713,9 @@ export function Layout() {
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  margin: isDocsPage
+                  margin: isMobile
+                    ? "0 0 0 0"
+                    : isDocsPage
                     ? `0 0 0 ${drawerWidth}`
                     : `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
                   minHeight: "90vh",
@@ -746,7 +770,7 @@ export function Layout() {
                         path="/jupyter"
                         element={
                           <ProtectedRoute>
-                            <JupyterLabSessions />
+                            <JupyterLabSessions isMobile={isMobile}/>
                           </ProtectedRoute>
                         }
                       />
@@ -778,7 +802,7 @@ export function Layout() {
                         path="/models"
                         element={
                           <ProtectedRoute>
-                            <ModelsPage />
+                            <ModelsPage isMobile={isMobile}/>
                           </ProtectedRoute>
                         }
                       />

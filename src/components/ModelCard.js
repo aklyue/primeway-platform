@@ -31,7 +31,7 @@ import useModelActions from "../hooks/useModelActions";
 import useModelButtonLogic from "../hooks/useModelButtonLogic";
 import ModelActions from "../UI/ModelActions";
 
-function ModelCard({ model, isLast, isBasic }) {
+function ModelCard({ model, isLast, isBasic, isMobile }) {
   // **Контексты**
   const { authToken } = useContext(AuthContext);
   const { currentOrganization } = useContext(OrganizationContext);
@@ -92,7 +92,6 @@ function ModelCard({ model, isLast, isBasic }) {
     setModelStatus,
   });
 
-
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
     useModelButtonLogic({
       model,
@@ -148,7 +147,7 @@ function ModelCard({ model, isLast, isBasic }) {
         spacing={0}
         alignItems="center"
         sx={{
-          justifyContent: "center",
+          justifyContent: isMobile ? "space-around" : "center",
           cursor: "pointer",
           // transition: "background 0.2s",
           "&:hover": {
@@ -168,6 +167,7 @@ function ModelCard({ model, isLast, isBasic }) {
 
           navigate(`/models/${model.id.replaceAll("/", "__")}`, {
             state: {
+              isMobile,
               model,
               isBasic,
               actionButtonText,
@@ -177,9 +177,15 @@ function ModelCard({ model, isLast, isBasic }) {
         }}
       >
         {/* **Название модели** */}
-        <Grid item xs={isBasic ? 6 : 3}>
+        <Grid item xs={isMobile ? 5 : isBasic ? 6 : 3}>
           <Typography
-            sx={{ pl: 2, display: "flex", alignItems: "center", gap: "5px" }}
+            fontSize={{ xs: 10, sm: 14 }}
+            sx={{
+              pl: isMobile ? 0 : 2,
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
             variant="body2"
           >
             {modelName}
@@ -189,19 +195,26 @@ function ModelCard({ model, isLast, isBasic }) {
         {isBasic ? (
           // **Базовые модели**
           <>
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
               {ModelImageComponent && (
-                <ModelImageComponent width={26} height={26} alt={modelName} />
+                <ModelImageComponent
+                  width={isMobile ? 20 : 26}
+                  height={isMobile ? 20 : 26}
+                  alt={modelName}
+                />
               )}
             </Grid>
             {/* **Тип модели** */}
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
-              <Typography variant="body2">{modelType}</Typography>
+            <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
+              <Typography fontSize={{ xs: 10, sm: 14 }} variant="body2">
+                {modelType}
+              </Typography>
             </Grid>
 
             {/* **Действие (Кнопка запуска)** */}
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
               <ModelActions
+                isMobile={isMobile}
                 actionButtonHandler={actionButtonHandler}
                 actionButtonText={actionButtonText}
                 isActionButtonDisabled={isActionButtonDisabled}
@@ -247,8 +260,11 @@ function ModelCard({ model, isLast, isBasic }) {
                   bgcolor: "#5282ff",
                   color: "#FFFFFF",
                   opacity: isActionButtonDisabled ? 0.5 : 1,
-                  padding:
-                    actionButtonText === "Остановить" ? "6px 13px" : "6px 18px",
+                  padding: isMobile
+                    ? "4px 8px"
+                    : actionButtonText === "Остановить"
+                    ? "6px 13px"
+                    : "6px 18px",
                 }}
               >
                 {actionButtonText}

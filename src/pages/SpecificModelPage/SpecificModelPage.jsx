@@ -5,11 +5,12 @@ import SpecificModel from "../../components/SpecificModel";
 
 function SpecificModelPage() {
   const location = useLocation();
-  const { model, initialConfig, isBasic } = location.state || {};
+  const { model, initialConfig, isBasic, isMobile } = location.state || {};
   return (
     <div>
-      <BackArrow path={"/models"} name={"Models"} model={model}/>
+      <BackArrow path={"/models"} name={"Models"} model={model} />
       <SpecificModel
+        isMobile={isMobile}
         model={model}
         initialConfig={initialConfig}
         isBasic={isBasic}

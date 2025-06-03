@@ -25,13 +25,15 @@ export default function DrawerContent({
   return (
     <Box
       sx={{
-        width: isMobile ? "80px" : "100%",
+        width: isMobile ? "107px" : "100%",
       }}
     >
       {isMobile && (
         <List sx={{ display: "flex", flexDirection: "column" }}>
+          <Toolbar />
           <ListItem disablePadding>
             <ListItemButton
+              sx={{ pl: 1 }}
               component={Link}
               to="/"
               selected={!location.pathname.startsWith("/docs")}
@@ -42,6 +44,7 @@ export default function DrawerContent({
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton
+              sx={{ pl: 1 }}
               component={Link}
               to="/docs"
               selected={location.pathname.startsWith("/docs")}
@@ -52,11 +55,11 @@ export default function DrawerContent({
           </ListItem>
         </List>
       )}
-      <Toolbar />
+      {!isMobile && <Toolbar />}
       <Stack
         sx={{
           alignItems: "center",
-          mt: 3,
+          mt: isMobile ? 0 : 3,
         }}
         spacing={isDocsPage ? 0 : 1}
       >

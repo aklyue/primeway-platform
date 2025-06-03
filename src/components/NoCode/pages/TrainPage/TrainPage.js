@@ -15,7 +15,7 @@ import FineTuneFormModal from "../../components/FineTuneFormModal";
 import { modelsData } from "../../../../data/modelsData";
 import BackArrow from "../../../../UI/BackArrow";
 
-export default function TrainPage() {
+export default function TrainPage({ isMobile }) {
   const [datasets, setDatasets] = useState([]);
   const [customTasks, setCustomTasks] = useState([]);
 
@@ -90,14 +90,20 @@ export default function TrainPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <BackArrow path={"/tasks"} name={"Tasks"} />
-        <Box>
+        <Box sx={{width: isMobile ? "200px" : "auto", textAlign: "end"}}>
           <Typography variant="h4" sx={{ mb: 1, textAlign: "end" }}>
             {" "}
             Дообучение{" "}
           </Typography>
-          <Typography variant="p" sx={{ mb: 4 }}>
+          <Typography variant="p" sx={{ mb: 4, textAlign: "end" }}>
             {" "}
             Здесь мы можете отслеживать и создавать задачи дообучения{" "}
           </Typography>

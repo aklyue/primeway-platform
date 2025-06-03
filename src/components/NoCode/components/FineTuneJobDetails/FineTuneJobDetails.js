@@ -41,6 +41,8 @@ export default function FineTuneJobDetails() {
     currentLogs,
   } = useFineTuneJobDetails({ jobId, currentOrganization });
 
+  console.log(job);
+
   /* ─── Render states ────────────────────────────────────── */
   if (loading) {
     return (
@@ -71,8 +73,12 @@ export default function FineTuneJobDetails() {
           model={"jobs"}
         />
 
-        <Typography variant="h5" sx={{ mb: 3 }}>
-          Fine-tuning jobs
+        <Typography
+          variant="h6"
+          sx={{ mb: 3, fontSize: "14px", fontWeight: "normal" }}
+        >
+          Fine-tuning job{" "}
+          <span style={{ color: "#5282ff" }}>{job.job_name}</span> details
         </Typography>
 
         <Paper
@@ -201,7 +207,7 @@ export default function FineTuneJobDetails() {
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            {firstLogsLoading  ? (
+            {firstLogsLoading ? (
               <Box sx={{ textAlign: "center", py: 4 }}>
                 <CircularProgress />
               </Box>

@@ -19,7 +19,7 @@ const buildDefaultConfig = (ft) => {
   };
 };
 
-function FineTunedModelCard({ ft, isLast, onRun }) {
+function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
   const [openCfg, setOpenCfg] = useState(false);
   const defaultConfig = buildDefaultConfig(ft);
 
@@ -30,27 +30,65 @@ function FineTunedModelCard({ ft, isLast, onRun }) {
         onClick={() => setOpenCfg(true)}
         sx={{
           display: "flex",
+          justifyContent: "space-between",
           alignItems: "center",
-          px: 2,
+          px: "16px",
           py: 1,
           cursor: "pointer",
           "&:hover": { background: "rgba(0,0,0,.05)" },
         }}
       >
-        <Typography sx={{ flexBasis: "25%" }}>{ft.artifact_name}</Typography>
-        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
-          {ft.base_model || "—"}
+        <Typography
+          sx={{
+            flexBasis: "25%",
+            fontSize: isMobile ? "9px !important" : "12px",
+          }}
+        >
+          {ft.artifact_name}
         </Typography>
-        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+        {!isMobile && (
+          <Typography
+            sx={{
+              flexBasis: "18%",
+              textAlign: "center",
+              fontSize: isMobile ? "9px !important" : "12px",
+            }}
+          >
+            {ft.base_model || "—"}
+          </Typography>
+        )}
+        <Typography
+          sx={{
+            flexBasis: "24%",
+            textAlign: "center",
+            fontSize: isMobile ? "9px !important" : "12px",
+            ...(isMobile && {
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }),
+          }}
+        >
           {ft.dataset_id || "—"}
         </Typography>
-        <Typography sx={{ flexBasis: "18%", textAlign: "center" }}>
+        <Typography
+          sx={{
+            flexBasis: "18%",
+            textAlign: "center",
+            fontSize: isMobile ? "9px !important" : "12px",
+          }}
+        >
           {new Date(ft.created_at).toLocaleDateString()}
         </Typography>
-        <Typography sx={{ flexBasis: "15%", textAlign: "center" }}>
+        <Typography
+          sx={{
+            flexBasis: "15%",
+            textAlign: "center",
+            fontSize: isMobile ? "9px !important" : "12px",
+          }}
+        >
           {ft.status || "—"}
         </Typography>
-        <Typography sx={{ flexBasis: "6%" }} />
       </Box>
 
       {!isLast && <Divider />}

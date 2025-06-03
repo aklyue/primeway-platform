@@ -13,6 +13,7 @@ import TrainForm from "../../components/TrainForm";
 import CloseIcon from "@mui/icons-material/Close";
 import FineTuneFormModal from "../../components/FineTuneFormModal";
 import { modelsData } from "../../../../data/modelsData";
+import BackArrow from "../../../../UI/BackArrow";
 
 export default function TrainPage() {
   const [datasets, setDatasets] = useState([]);
@@ -43,7 +44,6 @@ export default function TrainPage() {
   const [loraAlpha, setLoraAlpha] = useState("16");
   const [loraDropout, setLoraDropout] = useState("0");
   const [hfToken, setHfToken] = useState("");
-
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -90,14 +90,19 @@ export default function TrainPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 1 }}>
-        {" "}
-        Дообучение{" "}
-      </Typography>
-      <Typography variant="p" sx={{ mb: 4 }}>
-        {" "}
-        Здесь мы можете отслеживать и создавать задачи дообучения{" "}
-      </Typography>
+      <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+        <BackArrow path={"/tasks"} name={"Tasks"} />
+        <Box>
+          <Typography variant="h4" sx={{ mb: 1, textAlign: "end" }}>
+            {" "}
+            Дообучение{" "}
+          </Typography>
+          <Typography variant="p" sx={{ mb: 4 }}>
+            {" "}
+            Здесь мы можете отслеживать и создавать задачи дообучения{" "}
+          </Typography>
+        </Box>
+      </Box>
 
       <Modal open={openTrainModal} onClose={() => setOpenTrainModal(false)}>
         <Box

@@ -28,195 +28,33 @@ import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import axiosInstance from "../../../../api";
 import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import { AuthContext } from "../../../../AuthContext";
-
-// Данные о доступных GPU с полем name для передачи на сервер
-const AVAILABLE_GPUS = {
-  "A100 PCIe": { name: "A100 PCIe", memoryInGb: 80, costPerHour: 260 },
-  "A100 SXM": { name: "A100 SXM", memoryInGb: 80, costPerHour: 299 },
-  A40: { name: "A40", memoryInGb: 48, costPerHour: 90 },
-  "RTX 4090": { name: "RTX 4090", memoryInGb: 24, costPerHour: 130 },
-  "H100 SXM": { name: "H100 SXM", memoryInGb: 80, costPerHour: 399 },
-  "H100 NVL": { name: "H100 NVL", memoryInGb: 94, costPerHour: 355 },
-  "H100 PCIe": { name: "H100 PCIe", memoryInGb: 80, costPerHour: 335 },
-  "H200 SXM": { name: "H200 SXM", memoryInGb: 143, costPerHour: 460 },
-  L4: { name: "L4", memoryInGb: 24, costPerHour: 90 },
-  L40: { name: "L40", memoryInGb: 48, costPerHour: 170 },
-  L40S: { name: "L40S", memoryInGb: 48, costPerHour: 175 },
-  "RTX 2000 Ada": { name: "RTX 2000 Ada", memoryInGb: 16, costPerHour: 55 },
-  "RTX 6000 Ada": { name: "RTX 6000 Ada", memoryInGb: 48, costPerHour: 140 },
-  "RTX A6000": { name: "RTX A6000", memoryInGb: 48, costPerHour: 130 },
-};
+import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
 
 export default function JupyterLabSessions({ isMobile }) {
-  const [sessions, setSessions] = useState([]);
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [selectedGpu, setSelectedGpu] = useState("");
-  const [diskSpace, setDiskSpace] = useState(20);
-  const [jobName, setJobName] = useState(""); // Для имени задачи
-  const [isCreating, setIsCreating] = useState(false);
-  const [gpuQuantity, setGpuQuantity] = useState(1);
-  const [loadingId, setLoadingId] = useState(null);
-
   const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию из контекста
   const { authToken } = useContext(AuthContext);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success", // "success" | "error" | "info" | "warning"
-  });
-
-  const handleSnackbarClose = (_, reason) => {
-    if (reason === "clickaway") return;
-    setSnackbar((s) => ({ ...s, open: false }));
-  };
-
-  const availableGpus = Object.keys(AVAILABLE_GPUS).map((gpuKey) => ({
-    id: gpuKey,
-    name: AVAILABLE_GPUS[gpuKey].name, // Добавляем поле name
-    ...AVAILABLE_GPUS[gpuKey],
-  }));
-
-  const refreshSessions = async () => {
-    try {
-      const response = await axiosInstance.get(
-        "/jupyter/get-jupyter-projects",
-        {
-          params: {
-            organization_id: currentOrganization.id,
-          },
-        }
-      );
-      setSessions(response.data); // Обновляем список сессий
-    } catch (error) {
-      console.error("Ошибка при получении проектов:", error);
-    }
-  };
-
-  useEffect(() => {
-    refreshSessions();
-    const intervalId = setInterval(refreshSessions, 3000);
-    return () => clearInterval(intervalId);
-  }, [currentOrganization]);
-
-  const handleCreateSession = async () => {
-    if (!selectedGpu || !jobName) {
-      alert("Please select GPU type and provide job name");
-      return;
-    }
-
-    setIsCreating(true);
-
-    const formData = new FormData();
-    formData.append(
-      "config_str",
-      JSON.stringify({
-        job_type: "run", // <-- ОБЯЗАТЕЛЬНО
-        job_name: jobName,
-        gpu_types: [
-          {
-            type: selectedGpu,
-            count: parseInt(gpuQuantity),
-          },
-        ],
-        disk_space: parseInt(diskSpace),
-      })
-    );
-    formData.append("organization_id", String(currentOrganization.id));
-
-    try {
-      const response = await axiosInstance.post("/jupyter/run", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      refreshSessions();
-      setOpenCreateModal(false);
-      setSnackbar({
-        open: true,
-        message: "Сессия создана",
-        severity: "success",
-      });
-    } catch (error) {
-      console.error(
-        "Error creating session:",
-        error.response?.data || error.message
-      );
-      setSnackbar({
-        open: true,
-        message: "Ошибка при создании проекта",
-        severity: "error",
-      });
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const handleStartSession = async (jobId) => {
-    if (!jobId)
-      return setSnackbar({
-        open: true,
-        message: "ID задачи отсутствует",
-        severity: "error",
-      });
-
-    setLoadingId(jobId);
-    try {
-      await axiosInstance.post("/jobs/job-start", null, {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      setSnackbar({
-        open: true,
-        message: "Задача запущена",
-        severity: "success",
-      });
-      refreshSessions();
-    } catch (e) {
-      console.error(e);
-      setSnackbar({
-        open: true,
-        message: "Ошибка при запуске задачи",
-        severity: "error",
-      });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleStopSession = async (jobId) => {
-    if (!jobId)
-      return setSnackbar({
-        open: true,
-        message: "ID задачи отсутствует",
-        severity: "error",
-      });
-
-    setLoadingId(jobId);
-    try {
-      await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      refreshSessions();
-      setSnackbar({
-        open: true,
-        message: "Задача остановлена",
-        severity: "success",
-      });
-    } catch (e) {
-      console.error("Ошибка при остановке:", e);
-      setSnackbar({
-        open: true,
-        message: "Ошибка при остановке задачи",
-        severity: "error",
-      });
-    } finally {
-      setLoadingId(null);
-    }
-  };
+  const {
+    setOpenCreateModal,
+    openCreateModal,
+    sessions,
+    loadingId,
+    handleStartSession,
+    handleStopSession,
+    jobName,
+    setJobName,
+    selectedGpu,
+    setSelectedGpu,
+    isCreating,
+    availableGpus,
+    diskSpace,
+    setDiskSpace,
+    gpuQuantity,
+    setGpuQuantity,
+    handleCreateSession,
+    snackbar,
+    handleSnackbarClose,
+  } = useJupyterLab({ currentOrganization, authToken });
 
   return (
     <Box sx={{ mt: 4 }}>

@@ -1,4 +1,7 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   CircularProgress,
@@ -13,11 +16,13 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DescriptionIcon from "@mui/icons-material/Description";   // ← new (log button)
+import DescriptionIcon from "@mui/icons-material/Description"; // ← new (log button)
 import axiosInstance from "../../api";
 import { useEffect, useState, useContext, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { OrganizationContext } from "../Organization/OrganizationContext";
+import BackArrow from "../../UI/BackArrow";
+import { Description, ExpandMore } from "@mui/icons-material";
 
 export default function FineTuneJobDetails() {
   const { jobId } = useParams();
@@ -28,7 +33,7 @@ export default function FineTuneJobDetails() {
   const [loading, setLoading] = useState(true);
 
   /* ─── NEW: state for logs ───────────────────────────────── */
-  const [logsModalOpen, setLogsModalOpen] = useState(false);
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [logsLoading, setLogsLoading] = useState(false);
   const [currentLogs, setCurrentLogs] = useState("");
 
@@ -56,7 +61,7 @@ export default function FineTuneJobDetails() {
   const handleLogsClick = useCallback(() => {
     if (!job) return;
 
-    setLogsModalOpen(true);
+    setIsLogsOpen(true);
     setLogsLoading(true);
     setCurrentLogs("");
 
@@ -66,7 +71,10 @@ export default function FineTuneJobDetails() {
         setCurrentLogs(data.logs || "Логи отсутствуют.");
       })
       .catch((error) => {
-        console.error(`Ошибка при получении логов для задачи ${job.id}:`, error);
+        console.error(
+          `Ошибка при получении логов для задачи ${job.id}:`,
+          error
+        );
         const msg =
           error.response?.data?.detail ||
           (error.response?.status === 404
@@ -77,11 +85,45 @@ export default function FineTuneJobDetails() {
       .finally(() => setLogsLoading(false));
   }, [job]);
 
+  useEffect(() => {
+    if (!isLogsOpen || !job) return;
+
+    const fetchLogs = () => {
+      setLogsLoading(true);
+      setCurrentLogs("");
+      axiosInstance
+        .get("/jobs/job-logs", { params: { job_id: job.job_id } })
+        .then(({ data }) => {
+          setCurrentLogs(data.logs || "Логи отсутствуют.");
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при получении логов для задачи ${job.id}:`,
+            error
+          );
+          const msg =
+            error.response?.data?.detail ||
+            (error.response?.status === 404
+              ? "Логи недоступны."
+              : "Ошибка при получении логов.");
+          setCurrentLogs(msg);
+        })
+        .finally(() => setLogsLoading(false));
+    };
+
+    fetchLogs();
+
+    const interval = setInterval(fetchLogs, 2000);
+
+    return () => clearInterval(interval);
+  }, [isLogsOpen, job]);
+
   /* ─── Helper ───────────────────────────────────────────── */
   const formatGpu = (gpu) => {
     if (!gpu) return "-";
     if (typeof gpu === "string") return gpu;
-    if (gpu.type && gpu.count !== undefined) return `${gpu.type} × ${gpu.count}`;
+    if (gpu.type && gpu.count !== undefined)
+      return `${gpu.type} × ${gpu.count}`;
     return JSON.stringify(gpu);
   };
 
@@ -109,9 +151,11 @@ export default function FineTuneJobDetails() {
   return (
     <>
       <Box sx={{ px: 4, py: 2 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ mb: 1 }}>
-          <ArrowBackIcon />
-        </IconButton>
+        <BackArrow
+          path={"/fine-tuning"}
+          name={"Fine-tuning jobs"}
+          model={"jobs"}
+        />
 
         <Typography variant="h5" sx={{ mb: 3 }}>
           Fine-tuning jobs
@@ -134,7 +178,10 @@ export default function FineTuneJobDetails() {
                 ["Status", job.last_execution_status],
                 ["Base model", job.finetuning_config?.base_model],
                 ["Suffix", job.suffix ?? job.finetuning_config?.artifact_name],
-                ["Custom dataset", String(job.finetuning_config?.custom_dataset)],
+                [
+                  "Custom dataset",
+                  String(job.finetuning_config?.custom_dataset),
+                ],
                 ["Dataset ID", job.finetuning_config?.dataset_id || "-"],
                 ["Disk space (GB)", job.finetuning_config?.disk_space],
                 ["Created at", new Date(job.created_at).toLocaleString()],
@@ -165,7 +212,7 @@ export default function FineTuneJobDetails() {
                 </Box>
               ))}
 
-              {/* —— NEW: button to open logs —— */}
+              {/* —— NEW: button to open logs ——
               <Button
                 variant="outlined"
                 size="small"
@@ -174,7 +221,7 @@ export default function FineTuneJobDetails() {
                 onClick={handleLogsClick}
               >
                 Показать логи
-              </Button>
+              </Button> */}
             </Grid>
 
             {/* ——— RIGHT column ——— */}
@@ -194,7 +241,11 @@ export default function FineTuneJobDetails() {
                     sx={{ display: "flex", mb: 1, alignItems: "center" }}
                   >
                     <Typography
-                      sx={{ width: 160, color: "text.secondary", flexShrink: 0 }}
+                      sx={{
+                        width: 190,
+                        color: "text.secondary",
+                        flexShrink: 0,
+                      }}
                     >
                       {name}:
                     </Typography>
@@ -210,34 +261,52 @@ export default function FineTuneJobDetails() {
       </Box>
 
       {/* ─── NEW: modal with logs ──────────────────────────── */}
-      <Dialog
-        open={logsModalOpen}
-        onClose={() => setLogsModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>Логи задачи</DialogTitle>
-        <DialogContent dividers sx={{ minHeight: 300 }}>
-          {logsLoading ? (
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <pre
-              style={{
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-all",
-                margin: 0,
-              }}
-            >
-              {currentLogs}
-            </pre>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
-        </DialogActions>
-      </Dialog>
+      <Box sx={{ mx: 4 }}>
+        <Accordion
+          onClick={handleLogsClick}
+          onChange={(_, expanded) => {
+            setIsLogsOpen(expanded);
+            if (expanded) handleLogsClick();
+          }}
+          sx={{
+            border: "1px solid rgba(0,0,0,0.12)",
+            borderRadius: 2,
+            background: "#fff",
+            boxShadow: "none",
+            "&:before": { display: "none" },
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMore />}
+            aria-controls="logs-content"
+            id="logs-header"
+          >
+            <Description />
+            <Typography variant="h6" sx={{ userSelect: "none" }}>
+              Логи задачи
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {logsLoading ? (
+              <Box sx={{ textAlign: "center", py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <pre
+                style={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-all",
+                  margin: 0,
+                  fontFamily: "monospace",
+                  fontSize: 14,
+                }}
+              >
+                {currentLogs}
+              </pre>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      </Box>
     </>
   );
 }

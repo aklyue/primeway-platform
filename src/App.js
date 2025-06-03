@@ -38,18 +38,18 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import DatasetIcon from "@mui/icons-material/Folder";
 import AuthProvider, { AuthContext } from "./AuthContext";
-import FineTuningJobCreatePage from "./components/NoCode/FineTuningJobCreatePage";
+import FineTuningJobCreatePage from "./components/NoCode/pages/FineTuningJobCreatePage";
 import {
   OrganizationContext,
   OrganizationProvider,
 } from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import Billing from "./components/Billing";
-import FineTuneJobDetails from "./components/NoCode/FineTuneJobDetails";
+import FineTuneJobDetails from "./components/NoCode/components/FineTuneJobDetails";
 import ApiKeys from "./components/ApiKeys";
 import Settings from "./components/Settings";
 import OrganizationSettings from "./components/Organization/OrganizationSettings";
-import { SubscriptionToCaptcha } from "./components/SubscriptionToCaptcha";
+import SubscriptionToCaptcha from "./components/SubscriptionToCaptcha";
 import YandexAuth from "./components/YandexAuth";
 import OrganizationSwitcher from "./components/Organization/OrganizationSwitcher";
 import { keyframes, useTheme } from "@mui/material/styles";
@@ -70,13 +70,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import GPUList from "./components/GPUList";
 import Tasks from "./components/Tasks/Tasks";
 import OrganizationEvents from "./components/Organization/OrganizationEvents";
-import ModelsPage from "./components/ModelsPage";
+import ModelsPage from "./pages/ModelsPage";
 import { ReactComponent as Logo } from "./assets/favicon2.svg";
-import MenuItem from "./components/MenuItem";
-import DatasetsPage from "./components/NoCode/DatasetsPage";
-import TrainPage from "./components/NoCode/TrainPage";
+import DatasetsPage from "./components/NoCode/pages/DatasetsPage";
+import TrainPage from "./components/NoCode/pages/TrainPage";
 import PsychologyIcon from "@mui/icons-material/Psychology";
-import JupyterLabSessions from "./components/NoCode/JupyterLab";
+import JupyterLabSessions from "./components/NoCode/components/JupyterLab";
 import ResponsiveDrawer from "./UI/ResponsiveDrawer";
 import SpecificModelPage from "./pages/SpecificModelPage/SpecificModelPage";
 

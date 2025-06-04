@@ -1,5 +1,5 @@
 // src/docs/quickstart.js
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -13,9 +13,11 @@ import "./docs.css"; // Убедитесь, что у вас есть соотв
 // Импортируем useTheme и useMediaQuery для адаптивности
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { useLocation } from "react-router-dom";
 
 const Quickstart = () => {
   // Компонент для отображения блока кода с кнопкой копирования
+  const location = useLocation();
   const CodeBlock = ({ code, language }) => {
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
@@ -83,10 +85,29 @@ const Quickstart = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery("(max-width:1200px)");
 
+  const handleScrollspyUpdate = () => {
+    if (isMobile) return;
+    const nav = document.querySelector(".nav-scrollspy");
+    if (!nav) return;
+    const current = nav.querySelector(".nav-item.is-current");
+    if (current) {
+      current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       {/* Левая колонка - основной контент */}
-      <Box sx={{ flexGrow: 1, paddingRight: isMobile ? "0" : "10px", maxWidth:'1000px' }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          paddingRight: isMobile ? "0" : "10px",
+          width: !isMobile ? "80%" : "100%",
+        }}
+      >
         {/* Заголовок */}
         <h1
           style={{
@@ -145,7 +166,7 @@ const Quickstart = () => {
             backgroundColor: "rgba(249, 115, 22, .08)",
             display: "flex",
             alignItems: "center",
-            flexWrap:'wrap',
+            flexWrap: "wrap",
             gap: "5px",
           }}
         >
@@ -327,25 +348,32 @@ job_timeout: 7200  # Таймаут задачи в секундах (2 часа
         </p>
         <ul>
           <li>
-            <code>docker_image</code>: Базовый Docker-образ; PrimeWay позаботится об остальном.
+            <code>docker_image</code>: Базовый Docker-образ; PrimeWay
+            позаботится об остальном.
           </li>
           <li>
             <code>job_name</code>: Уникальное имя для вашей задачи.
           </li>
           <li>
-            <code>job_type</code>: Используйте <code>run</code> для одноразовых задач или <code>deploy</code> для постоянных сервисов.
+            <code>job_type</code>: Используйте <code>run</code> для одноразовых
+            задач или <code>deploy</code> для постоянных сервисов.
           </li>
           <li>
-            <code>primeway_api_token</code>: Ваш API-ключ (включайте только, если не используете файл <code>.env</code> или переменную окружения).
+            <code>primeway_api_token</code>: Ваш API-ключ (включайте только,
+            если не используете файл <code>.env</code> или переменную
+            окружения).
           </li>
           <li>
-            <code>context</code>: Путь к вашему коду (например, <code>.</code> для текущей директории - относительно файла конфигурации).
+            <code>context</code>: Путь к вашему коду (например, <code>.</code>{" "}
+            для текущей директории - относительно файла конфигурации).
           </li>
           <li>
-            <code>command</code>: Команда, которую необходимо выполнить внутри контейнера.
+            <code>command</code>: Команда, которую необходимо выполнить внутри
+            контейнера.
           </li>
           <li>
-            <code>request_input_dir</code>: Директория внутри контейнера, куда будут помещены входные данные.
+            <code>request_input_dir</code>: Директория внутри контейнера, куда
+            будут помещены входные данные.
           </li>
           <li>
             <code>disk_space</code>: Объём дискового пространства (в ГБ).
@@ -357,16 +385,20 @@ job_timeout: 7200  # Таймаут задачи в секундах (2 часа
             <code>env</code>: Переменные окружения для вашей задачи.
           </li>
           <li>
-            <code>requirements</code>: Список Python-пакетов, необходимых вашему приложению.
+            <code>requirements</code>: Список Python-пакетов, необходимых вашему
+            приложению.
           </li>
           <li>
-            <code>apt_packages</code>: Список системных пакетов для установки через <code>apt-get</code>.
+            <code>apt_packages</code>: Список системных пакетов для установки
+            через <code>apt-get</code>.
           </li>
           <li>
-            <code>ignore_patterns</code>: Шаблоны файлов, которые нужно исключить при загрузке.
+            <code>ignore_patterns</code>: Шаблоны файлов, которые нужно
+            исключить при загрузке.
           </li>
           <li>
-            <code>job_timeout</code>: Максимальное время выполнения задачи в секундах (для <code>run</code> типа).
+            <code>job_timeout</code>: Максимальное время выполнения задачи в
+            секундах (для <code>run</code> типа).
           </li>
         </ul>
 
@@ -385,16 +417,14 @@ job_timeout: 7200  # Таймаут задачи в секундах (2 часа
             padding: "15px 5px",
             borderRadius: "10px",
             backgroundColor: "rgba(249, 115, 22, .08)",
-            
           }}
         >
-          <div style={{display: "flex",
-            alignItems: "center",
-            gap: "5px",}}>
-          <ErrorOutlineIcon />
-          <em>Примечание:</em></div> Замените <code>job_config.yaml</code> на путь к
-          вашему файлу конфигурации, если он находится в другом месте.
-          
+          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <ErrorOutlineIcon />
+            <em>Примечание:</em>
+          </div>{" "}
+          Замените <code>job_config.yaml</code> на путь к вашему файлу
+          конфигурации, если он находится в другом месте.
         </p>
         <p>
           <strong>Вывод:</strong> Команда выдаст <code>JOB_ID</code>, который вы
@@ -624,14 +654,13 @@ job_timeout: 7200  # Таймаут задачи в секундах (2 часа
             top: "40px",
             alignSelf: "flex-start",
             marginLeft: "20px",
-            // maxHeight: "calc(100vh - 40px)", // Ограничиваем максимальную высоту
-            // overflowY: "auto", // Добавляем вертикальную прокрутку при необходимости
-            // // Скрываем полосу прокрутки
-            // "&::-webkit-scrollbar": {
-            //   display: "none", // Скрываем скроллбар в Chrome, Safari и Opera
-            // },
-            // "-ms-overflow-style": "none", // Скрываем скроллбар в Internet Explorer и Edge
-            // "scrollbar-width": "none", // Скрываем скроллбар в Firefox
+            maxHeight: "75dvh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            "-ms-overflow-style": "none",
+            "scrollbar-width": "none",
           }}
         >
           <Scrollspy
@@ -641,6 +670,7 @@ job_timeout: 7200  # Таймаут задачи в секундах (2 часа
             offset={-30}
             rootEl="#main-content"
             className="nav-scrollspy"
+            onUpdate={handleScrollspyUpdate}
           >
             {sections.map((section) => (
               <li

@@ -483,7 +483,11 @@ export function Layout() {
                           : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
-                        borderRadius: isMobile ? "0" : !isDocsPage ? "50px" : "0",
+                        borderRadius: isMobile
+                          ? "0"
+                          : !isDocsPage
+                          ? "50px"
+                          : "0",
                         boxShadow:
                           !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
@@ -544,7 +548,7 @@ export function Layout() {
                               <Box
                                 sx={{ display: "flex", alignItems: "center" }}
                               >
-                                <OrganizationSwitcher />
+                                <OrganizationSwitcher isMainPage={isMainPage} />
                               </Box>
                             )}
                           </Typography>
@@ -769,7 +773,7 @@ export function Layout() {
                         path="/jupyter"
                         element={
                           <ProtectedRoute>
-                            <JupyterLabSessions isMobile={isMobile}/>
+                            <JupyterLabSessions isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />
@@ -777,11 +781,11 @@ export function Layout() {
                         path="/fine-tuning"
                         element={
                           <ProtectedRoute>
-                            <TrainPage />
+                            <TrainPage isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />
-                      <Route 
+                      <Route
                         path="/fine-tuning/new"
                         element={
                           <ProtectedRoute>
@@ -789,7 +793,7 @@ export function Layout() {
                           </ProtectedRoute>
                         }
                       />
-                      <Route 
+                      <Route
                         path="/fine-tuning/jobs/:jobId"
                         element={
                           <ProtectedRoute>
@@ -801,7 +805,7 @@ export function Layout() {
                         path="/models"
                         element={
                           <ProtectedRoute>
-                            <ModelsPage isMobile={isMobile}/>
+                            <ModelsPage isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />

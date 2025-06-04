@@ -13,7 +13,7 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const OrganizationSwitcher = () => {
+const OrganizationSwitcher = ({ isMainPage }) => {
   const {
     organizations,
     currentOrganization,
@@ -47,11 +47,16 @@ const OrganizationSwitcher = () => {
         sx={{
           width: "100%",
           display: "flex",
-          alignItems:'center'
-          
+          alignItems: "center",
         }}
       >
-        <Typography sx={{ mr: "8px", fontSize: "17px", fontWeight: 600 }}>
+        <Typography
+          sx={{
+            mr: isMobile ? "5px" : "8px",
+            fontSize: "17px",
+            fontWeight: 600,
+          }}
+        >
           /
         </Typography>
         <Button
@@ -78,17 +83,26 @@ const OrganizationSwitcher = () => {
               variant="body2"
               sx={{
                 whiteSpace: "normal",
+                display: "flex",
+                alignItems: "center",
               }}
             >
               <Box
                 component="span"
-                sx={{ color: "secondary.main", whiteSpace: "nowrap" }}
+                sx={{
+                  color: "secondary.main",
+                  whiteSpace: "nowrap",
+                  fontSize: isMobile && "10px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "inline-block",
+                  width: isMobile && !isMainPage ? "130px" : "auto",
+                }}
               >
                 {currentOrganization
                   ? currentOrganization.name
                   : "Organization"}
               </Box>
-              
             </Typography>
           </Box>
           <UnfoldMoreIcon
@@ -96,32 +110,32 @@ const OrganizationSwitcher = () => {
           />
         </Button>
         {walletLoading ? (
-                <CircularProgress size={16} sx={{ marginLeft: 1 }} />
-              ) : walletError ? (
-                <Box
-                  component="span"
-                  sx={{
-                    marginLeft: 1,
-                    color: "error.main",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  (Ошибка загрузки баланса)
-                </Box>
-              ) : (
-                walletBalance !== null && (
-                  <Box
-                    component="span"
-                    sx={{
-                      marginLeft: isMobile ? 0 : 1,
-                      color: "text.secondary",
-                      fontSize: isMobile ? '0.7rem' : "0.9rem",
-                    }}
-                  >
-                   {walletBalance} ₽
-                  </Box>
-                )
-              )}
+          <CircularProgress size={16} sx={{ marginLeft: 1 }} />
+        ) : walletError ? (
+          <Box
+            component="span"
+            sx={{
+              marginLeft: 1,
+              color: "error.main",
+              fontSize: "0.9rem",
+            }}
+          >
+            (Ошибка загрузки баланса)
+          </Box>
+        ) : (
+          walletBalance !== null && (
+            <Box
+              component="span"
+              sx={{
+                marginLeft: isMobile ? 0 : 1,
+                color: "text.secondary",
+                fontSize: isMobile ? "0.7rem" : "0.9rem",
+              }}
+            >
+              {walletBalance} ₽
+            </Box>
+          )
+        )}
       </Box>
 
       {/* Используем Popover вместо Menu */}

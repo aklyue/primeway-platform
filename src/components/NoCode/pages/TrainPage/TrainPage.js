@@ -89,7 +89,7 @@ export default function TrainPage({ isMobile }) {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: isMobile ? 0 : 2 }}>
       <Box
         sx={{
           display: "flex",
@@ -103,7 +103,7 @@ export default function TrainPage({ isMobile }) {
             {" "}
             Дообучение{" "}
           </Typography>
-          <Typography variant="p" sx={{ mb: 4, textAlign: "end" }}>
+          <Typography variant="p" sx={{ mb: 4, textAlign: "end", fontSize: isMobile ? "10px !important" : "auto" }}>
             {" "}
             Здесь мы можете отслеживать и создавать задачи дообучения{" "}
           </Typography>
@@ -164,7 +164,7 @@ export default function TrainPage({ isMobile }) {
       </Modal>
 
       {/* Добавьте список задач ниже */}
-      <FineTuneTasksList />
+      <FineTuneTasksList isMobile={isMobile} />
     </Box>
   );
 }

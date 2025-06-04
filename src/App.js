@@ -680,7 +680,7 @@ export function Layout() {
                       {isMobile ? (
                         <ResponsiveDrawer
                           variant="temporary"
-                          drawerWidth={114}
+                          drawerWidth={isDocsPage ? 120 : 72}
                           open={mobileOpen}
                           onClose={handleDrawerToggle}
                           isMobile={isMobile}

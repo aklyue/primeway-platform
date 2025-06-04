@@ -79,9 +79,9 @@ const YandexAuth = ({ setAuthenticating }) => {
             {
               client_id: "2bd62af38e644a86968d1b791431d881",
               response_type: "token",
-              redirect_uri: "https://platform.primeway.io/auth/callback",
+              redirect_uri: `${process.env.REACT_APP_PLATFORM_URL}/auth/callback`,
             },
-            "https://platform.primeway.io",
+            `${process.env.REACT_APP_PLATFORM_URL}`,
             {
               view: "button",
               parentId: "yandex-auth-container",
@@ -103,7 +103,7 @@ const YandexAuth = ({ setAuthenticating }) => {
               console.log("Auth data:", data);
               if (data.access_token) {
                 setAuthenticating(true);
-                fetch("https://api.primeway.io/auth/yandex", {
+                fetch(`${process.env.REACT_APP_API_URL}/auth/yandex`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",

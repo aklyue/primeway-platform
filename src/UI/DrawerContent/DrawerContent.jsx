@@ -25,7 +25,7 @@ export default function DrawerContent({
   return (
     <Box
       sx={{
-        width: isMobile ? "107px" : "100%",
+        width: isMobile ? (isDocsPage ? "113px" : "65px") : "100%",
       }}
     >
       {isMobile && (

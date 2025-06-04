@@ -33,7 +33,7 @@ function TPaymentWidget(props) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://api.primeway.io/tbank/inner/create-payment",
+        `${process.env.REACT_APP_API_URL}/tbank/inner/create-payment`,
         {
           method: "POST",
           headers: {
@@ -140,12 +140,12 @@ function TPaymentWidget(props) {
       <input
         type="hidden"
         name="SuccessURL"
-        value="https://platform.primeway.io/billing"
+        value={`${process.env.REACT_APP_PLATFORM_URL}/billing`}
       />
       <input
         type="hidden"
         name="FailURL"
-        value="https://platform.primeway.io/billing"
+        value={`${process.env.REACT_APP_PLATFORM_URL}/billing`}
       />
       {user?.email && <input type="hidden" name="email" value={user.email} />}
       {user?.phone && <input type="hidden" name="phone" value={user.phone} />}

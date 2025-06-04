@@ -14,9 +14,6 @@ import {
   Typography,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-
-import axiosInstance from "../../../../api";
-import { getDatasets, uploadDataset } from "../../api/datasetsApi";
 import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import useFineTuneFormModal from "../../../../hooks/NoCode/useFineTuneFormModal";
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://api.primeway.io',
+  baseURL: `${process.env.REACT_APP_API_URL}`,
 });
 // Interceptor to inject the token for every request
 axiosInstance.interceptors.request.use(

@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import { OrganizationContext } from "../../../Organization/OrganizationContext"
+import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import axiosInstance from "../../../../api";
 import { ContentCopy } from "@mui/icons-material";
 import useFineTuneActions from "../../../../hooks/useFineTuneActions";
@@ -34,7 +34,7 @@ import useFineTuneActions from "../../../../hooks/useFineTuneActions";
  * • onRetrain(row):              – Called with the clicked row when mode is
  *                                 "train". Useful for re‑training workflows.
  */
-export default function FineTuneTasksList() {
+export default function FineTuneTasksList({ isMobile }) {
   const navigate = useNavigate();
 
   const handleRowClick = (row) => {
@@ -64,7 +64,7 @@ export default function FineTuneTasksList() {
     <>
       {/* ───────────────────────────── Header */}
       <Toolbar disableGutters sx={{ mb: 2 }}>
-        <Typography variant="h5" sx={{ flexGrow: 1 }}>
+        <Typography variant={isMobile ? "h7" : "h5"} sx={{ flexGrow: 1 }}>
           Fine‑tuning jobs
         </Typography>
 
@@ -73,11 +73,24 @@ export default function FineTuneTasksList() {
           placeholder="Search job"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          sx={{ width: 280, mr: 2 }}
+          sx={{
+            width: isMobile ? 100 : 280,
+            mr: 2,
+            ml: isMobile ? 0 : 2,
+            ".css-yxgvbe-MuiInputBase-root-MuiOutlinedInput-root": {
+              pl: isMobile ? 0 : 1,
+            },
+            ".css-1q55ijt-MuiInputBase-input-MuiOutlinedInput-input": {
+              p: isMobile ? "8px 0" : "8px 8px 8px 0",
+            },
+          }}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
+              <InputAdornment
+                sx={{ fontSize: isMobile && "9px !important" }}
+                position="start"
+              >
+                {!isMobile && <SearchIcon fontSize="small" />}
               </InputAdornment>
             ),
           }}
@@ -86,15 +99,26 @@ export default function FineTuneTasksList() {
         <Tooltip title="New fine‑tuning job">
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
+            startIcon={!isMobile && <AddIcon />}
             onClick={() => navigate("/fine-tuning/new")}
             sx={{
+              px: isMobile ? "6px" : "16px",
+              fontSize: isMobile && "9px !important",
               color: "#fff",
               bgcolor: "#597ad3",
+              whiteSpace: "nowrap",
+              minWidth: isMobile ? "0" : "auto",
               "&:hover": { bgcolor: "#7c97de" },
             }}
           >
-            Новая fine-tuning задача
+            {isMobile ? (
+              "Новая задача"
+            ) : (
+              <>
+                Новая <span style={{ padding: "0 8px" }}>fine-tuning</span>{" "}
+                задача
+              </>
+            )}
           </Button>
         </Tooltip>
       </Toolbar>
@@ -112,11 +136,11 @@ export default function FineTuneTasksList() {
           <TableHead sx={{ backgroundColor: "rgba(102,179,238,0.1)" }}>
             <TableRow>
               <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
-              <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>
+              {!isMobile && <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>}
               <TableCell>АДАПТЕР</TableCell>
               <TableCell>СТАТУС</TableCell>
-              <TableCell>ВРЕМЯ РАБОТЫ</TableCell>
-              <TableCell sortDirection="desc">СОЗДАНО</TableCell>
+              {!isMobile && <TableCell>ВРЕМЯ РАБОТЫ</TableCell>}
+              {!isMobile && <TableCell sortDirection="desc">СОЗДАНО</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -178,11 +202,11 @@ export default function FineTuneTasksList() {
                       </IconButton>
                     </Tooltip>
                   </TableCell>
-                  <TableCell>{j.baseModel}</TableCell>
+                  {!isMobile && <TableCell>{j.baseModel}</TableCell>}
                   <TableCell>{j.suffix}</TableCell>
                   <TableCell>{j.lastExecutionStatus}</TableCell>
-                  <TableCell>{j.runTime}</TableCell>
-                  <TableCell>{j.createdAt}</TableCell>
+                  {!isMobile && <TableCell>{j.runTime}</TableCell>}
+                  {!isMobile && <TableCell>{j.createdAt}</TableCell>}
                 </TableRow>
               ))
             )}

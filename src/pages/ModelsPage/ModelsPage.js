@@ -268,7 +268,7 @@ function ModelsPage({ isMobile }) {
                   URL
                 </Typography>
               </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Grid item xs={3} sx={{ textAlign: "center" }}>
                 <Typography
                   variant="subtitle2"
                   fontWeight="light"
@@ -341,7 +341,7 @@ function ModelsPage({ isMobile }) {
                 borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
-                justifyContent: isMobile && "center",
+                justifyContent: "space-between",
                 gap: isMobile && "5px",
               }}
             >
@@ -351,14 +351,16 @@ function ModelsPage({ isMobile }) {
               >
                 НАЗВАНИЕ
               </Typography>
+              {!isMobile && (
+                <Typography
+                  sx={{ flexBasis: "18%", textAlign: "center" }}
+                  fontSize={{ xs: 10, sm: 14 }}
+                >
+                  БАЗОВАЯ МОДЕЛЬ
+                </Typography>
+              )}
               <Typography
-                sx={{ flexBasis: "18%", textAlign: "center" }}
-                fontSize={{ xs: 10, sm: 14 }}
-              >
-                БАЗОВАЯ МОДЕЛЬ
-              </Typography>
-              <Typography
-                sx={{ flexBasis: "18%", textAlign: "center" }}
+                sx={{ flexBasis: "24%", textAlign: "center" }}
                 fontSize={{ xs: 10, sm: 14 }}
               >
                 НАБОР ДАННЫХ
@@ -375,12 +377,6 @@ function ModelsPage({ isMobile }) {
               >
                 СТАТУС
               </Typography>
-              <Typography
-                sx={{ flexBasis: "6%", textAlign: "center" }}
-                fontSize={{ xs: 10, sm: 14 }}
-              >
-                {" "}
-              </Typography>
             </Box>
             {/* <Divider /> */}
 
@@ -389,6 +385,7 @@ function ModelsPage({ isMobile }) {
               {fineTunedModels.length ? (
                 fineTunedModels.map((ft, idx) => (
                   <FineTunedModelCard
+                    isMobile={isMobile}
                     key={ft.job_id}
                     ft={ft}
                     isLast={idx === fineTunedModels.length - 1}

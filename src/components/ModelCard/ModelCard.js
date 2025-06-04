@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import ConfigureModelForm from "../ConfigureModelForm";
 import { AuthContext } from "../../AuthContext";
@@ -30,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import useModelActions from "../../hooks/useModelActions";
 import useModelButtonLogic from "../../hooks/useModelButtonLogic";
 import ModelActions from "../../UI/ModelActions";
+import { ContentCopy } from "@mui/icons-material";
 
 function ModelCard({ model, isLast, isBasic, isMobile }) {
   // **Контексты**
@@ -138,6 +140,14 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
     }
   };
 
+  const handleCopy = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      alert("Не удалось скопировать");
+    }
+  };
+
   // **Определяем текст и действие кнопки в зависимости от статуса модели**
 
   return (
@@ -147,12 +157,12 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
         spacing={0}
         alignItems="center"
         sx={{
-          justifyContent: isMobile ? "space-around" : "center",
+          justifyContent: isMobile ? "space-between" : "center",
           cursor: "pointer",
           // transition: "background 0.2s",
           "&:hover": {
             background: "rgba(102, 179, 238, 0.2)",
-            borderBottomLeftRadius: isLast ? "24px" : "",
+            borderBottomLeftRadius: isLast ? "16px" : "",
             borderBottomRightRadius: isLast ? "16px" : "",
           },
           padding: "6px 0",
@@ -165,23 +175,34 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             return;
           }
 
-          navigate(`/models/${model.id.replaceAll("/", "__")}`, {
-            state: {
-              isMobile,
-              model,
-              isBasic,
-              actionButtonText,
-              isActionButtonDisabled,
-            },
-          });
+          console.log(model);
+
+          navigate(
+            `/models/${(model.job_id || model.id).replaceAll("/", "__")}`,
+            {
+              state: {
+                isMobile,
+                model,
+                isBasic,
+                actionButtonText,
+                isActionButtonDisabled,
+              },
+            }
+          );
         }}
       >
         {/* **Название модели** */}
-        <Grid item xs={isMobile ? 5 : isBasic ? 6 : 3}>
+        <Grid
+          item
+          xs={isMobile && isBasic ? 5 : isMobile ? 4 : isBasic ? 6 : 3}
+        >
           <Typography
             fontSize={{ xs: 10, sm: 14 }}
             variant="body2"
-            sx={{pl: !isBasic && "10px", fontSize: isMobile ? "9px !important" : "12px",}}
+            sx={{
+              pl: "16px",
+              fontSize: isMobile ? "9px !important" : "12px",
+            }}
           >
             {modelName}
           </Typography>
@@ -207,7 +228,11 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             </Grid>
 
             {/* **Действие (Кнопка запуска)** */}
-            <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
+            <Grid
+              item
+              xs={isMobile ? 3 : 2}
+              sx={{ textAlign: "center", pr: "24px" }}
+            >
               <ModelActions
                 isMobile={isMobile}
                 actionButtonHandler={actionButtonHandler}
@@ -222,30 +247,21 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             {/* **Дата создания** */}
             {!isMobile && (
               <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    width: isMobile ? "70px" : "120px",
-                    mx: "auto",
-                  }}
-                >
+                <Typography variant="body2">
                   {model.created_at || "N/A"}
                 </Typography>
               </Grid>
             )}
 
             {/* **Состояние** */}
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
               <Typography
                 variant="body2"
                 sx={{
                   overflow: "hidden",
                   whiteSpace: "nowrap",
                   textOverflow: "ellipsis",
-                  width: isMobile ? "70px" : "120px",
+                  width: isMobile ? "50px" : "120px",
                   mx: "auto",
                   fontSize: isMobile ? "9px !important" : "12px",
                 }}
@@ -255,31 +271,60 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             </Grid>
 
             {/* **URL** */}
-            <Grid item xs={3} sx={{ textAlign: "center" }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                  width: isMobile && "70px",
-                  mx: "auto",
-                  fontSize: isMobile ? "9px !important" : "12px",
+            <Grid item xs={isMobile ? 2 : 2} sx={{ textAlign: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                {model.job_url || "N/A"}
-              </Typography>
+                <Tooltip title={model.job_url || "N/A"} arrow placement="top">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      width: isMobile ? "60px" : "auto",
+                      textAlign: "center",
+                      mx: isMobile ? "5px" : "10px",
+                      marginLeft: !isMobile && "0",
+                      fontSize: isMobile ? "9px !important" : "12px",
+                      cursor: "pointer",
+                      userSelect: "text",
+                    }}
+                  >
+                    {model.job_url || "N/A"}
+                  </Typography>
+                </Tooltip>
+                {model.job_url && (
+                  <Tooltip title="Скопировать" placement="top">
+                    <IconButton
+                      data-no-navigate
+                      size="small"
+                      onClick={() => handleCopy(model.job_url)}
+                      sx={{ p: isMobile ? "2px" : "5px" }}
+                    >
+                      <ContentCopy
+                        sx={{ fontSize: isMobile ? "12px" : "18px" }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </div>
             </Grid>
 
             {/* **Действия (Кнопки запуска/остановки и получения логов)** */}
             <Grid
               item
-              xs={2}
+              xs={isMobile ? 3 : 3}
               sx={{
                 textAlign: "center",
                 display: "flex",
                 justifyContent: "center",
                 gap: 0.5,
+                pr: "10px",
               }}
             >
               <ModelActions

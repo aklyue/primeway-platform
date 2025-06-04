@@ -29,9 +29,9 @@ export default function ModelActions({
       }}
     >
       {actionButtonText}
-      {actionButtonText === "Запустить" && (
+      {actionButtonText === "Запустить" && !isMobile && (
         <RocketLaunchOutlinedIcon
-          sx={{ ml: 1, fontSize: isMobile ? 16 : 20, color: "#FFFFFF" }}
+          sx={{ ml: 1, fontSize: 20, color: "#FFFFFF" }}
         />
       )}
     </Button>

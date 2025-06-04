@@ -25,7 +25,7 @@ import BackArrow from "../../../../UI/BackArrow";
 import { Description, ExpandMore } from "@mui/icons-material";
 import useFineTuneJobDetails from "../../../../hooks/NoCode/useFineTuneJobDetails";
 
-export default function FineTuneJobDetails() {
+export default function FineTuneJobDetails({ isMobile }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const { currentOrganization } = useContext(OrganizationContext);
@@ -66,7 +66,7 @@ export default function FineTuneJobDetails() {
   /* ─── Main UI ──────────────────────────────────────────── */
   return (
     <>
-      <Box sx={{ px: 4, py: 2 }}>
+      <Box sx={{ px: isMobile ? 0 : 4, py: isMobile ? 1 : 2 }}>
         <BackArrow
           path={"/fine-tuning"}
           name={"Fine-tuning jobs"}
@@ -83,7 +83,13 @@ export default function FineTuneJobDetails() {
 
         <Paper
           elevation={0}
-          sx={{ border: "1px solid rgba(0,0,0,0.12)", borderRadius: 2, p: 3 }}
+          sx={{
+            border: "1px solid rgba(0,0,0,0.12)",
+            borderRadius: 2,
+            p: { xs: 1.5, md: 3 },
+            overflowX: "auto",
+            maxWidth: "100%",
+          }}
         >
           <Typography variant="h6" sx={{ mb: 3 }}>
             Job details
@@ -111,14 +117,31 @@ export default function FineTuneJobDetails() {
               ].map(([label, value, clipboard]) => (
                 <Box
                   key={label}
-                  sx={{ display: "flex", mb: 1, alignItems: "center" }}
+                  sx={{
+                    display: "flex",
+                    mb: 1,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}
                 >
                   <Typography
-                    sx={{ width: 160, color: "text.secondary", flexShrink: 0 }}
+                    sx={{
+                      width: isMobile ? 90 : 120,
+                      color: "text.secondary",
+                      flexShrink: 0,
+                      fontSize: isMobile ? "9px !important" : "14px",
+                    }}
                   >
                     {label}:
                   </Typography>
-                  <Typography sx={{ mr: 1 }}>{value ?? "-"}</Typography>
+                  <Typography
+                    sx={{
+                      mr: isMobile ? 0 : 1,
+                      fontSize: isMobile ? "9px !important" : "14px",
+                    }}
+                  >
+                    {value ?? "-"}
+                  </Typography>
                   {clipboard && (
                     <IconButton
                       size="small"
@@ -126,7 +149,9 @@ export default function FineTuneJobDetails() {
                         navigator.clipboard.writeText(String(value ?? ""))
                       }
                     >
-                      <ContentCopyIcon fontSize="inherit" />
+                      <ContentCopyIcon
+                        sx={{ fontSize: isMobile ? "15px" : "inherit" }}
+                      />
                     </IconButton>
                   )}
                 </Box>
@@ -162,14 +187,19 @@ export default function FineTuneJobDetails() {
                   >
                     <Typography
                       sx={{
-                        width: 190,
+                        width: isMobile ? 130 : 190,
                         color: "text.secondary",
                         flexShrink: 0,
+                        fontSize: isMobile ? "9px !important" : "14px",
                       }}
                     >
                       {name}:
                     </Typography>
-                    <Typography>{value}</Typography>
+                    <Typography
+                      sx={{ fontSize: isMobile ? "9px !important" : "14px" }}
+                    >
+                      {value}
+                    </Typography>
                   </Box>
                 ))
               ) : (
@@ -181,7 +211,7 @@ export default function FineTuneJobDetails() {
       </Box>
 
       {/* ─── NEW: modal with logs ──────────────────────────── */}
-      <Box sx={{ mx: 4 }}>
+      <Box sx={{ mx: isMobile ? 0 : 4 }}>
         <Accordion
           onClick={handleLogsClick}
           onChange={(_, expanded) => {

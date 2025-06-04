@@ -288,6 +288,7 @@ function Billing() {
           user={user}
           onSuccess={handlePaymentSuccess}
           onError={handlePaymentError}
+          isMobile={isMobile}
         />
       </Box>
 

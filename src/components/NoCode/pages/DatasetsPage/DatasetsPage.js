@@ -22,7 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import { useDatasetsPage } from "../../../../hooks/NoCode/useDatasetsPage/useDatasetsPage";
 
-export default function DatasetsPage() {
+export default function DatasetsPage({ isMobile }) {
   const { currentOrganization } = useContext(OrganizationContext);
 
   const {
@@ -68,44 +68,88 @@ export default function DatasetsPage() {
         </Button>
       </label>
 
-      <Table size="small" sx={{ mt: 2 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Id</TableCell>
-            <TableCell>Имя</TableCell>
-            <TableCell>Создан</TableCell>
-            <TableCell>Действие</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+      {isMobile ? (
+        <Box sx={{ mt: 2 }}>
+          {data.length === 0 && (
+            <Typography sx={{ fontSize: "12px", color: "#aaa" }}>
+              Нет наборов данных
+            </Typography>
+          )}
           {data.map((ds) => (
-            <TableRow key={ds.dataset_id}>
-              <TableCell>{ds.dataset_id}</TableCell>
-              <TableCell>{ds.name}</TableCell>
-              <TableCell>{new Date(ds.created_at).toLocaleString()}</TableCell>
-              <TableCell>
-                <IconButton onClick={() => handleDelete(ds.dataset_id)}>
-                  <DeleteIcon />
+            <Box
+              key={ds.dataset_id}
+              sx={{
+                mb: 2,
+                p: 1.5,
+                border: "1px solid #e0e0e0",
+                borderRadius: "12px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.8,
+                fontSize: "13px",
+              }}
+            >
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography sx={{ fontWeight: 500 }}>Id:</Typography>
+                <Typography sx={{ textAlign: "end", fontSize: "11px !important" }}>
+                  {ds.dataset_id}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography sx={{ fontWeight: 500 }}>Имя:</Typography>
+                <Typography sx={{ wordBreak: "break-all", fontSize: "11px !important"  }}>
+                  {ds.name}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography sx={{ fontWeight: 500 }}>Создан:</Typography>
+                <Typography sx={{fontSize: "11px !important" }}>
+                  {new Date(ds.created_at).toLocaleString()}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleDelete(ds.dataset_id)}
+                  aria-label="Удалить"
+                >
+                  <DeleteIcon fontSize="small" />
                 </IconButton>
-              </TableCell>
-            </TableRow>
+              </Box>
+            </Box>
           ))}
-        </TableBody>
-      </Table>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-      >
-        <Alert
-          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        </Box>
+      ) : (
+        <Box sx={{ mt: 2 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Id</TableCell>
+                <TableCell>Имя</TableCell>
+                <TableCell>Создан</TableCell>
+                <TableCell>Действие</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.map((ds) => (
+                <TableRow key={ds.dataset_id}>
+                  <TableCell>{ds.dataset_id}</TableCell>
+                  <TableCell>{ds.name}</TableCell>
+                  <TableCell>
+                    {new Date(ds.created_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleDelete(ds.dataset_id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
     </Box>
   );
 }

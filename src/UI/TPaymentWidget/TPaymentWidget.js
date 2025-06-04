@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ReactComponent as TBankLogo } from '../../assets/tbank.svg';
 
 function TPaymentWidget(props) {
-  const { user, token, onSuccess, onError } = props;
+  const { user, token, onSuccess, onError, isMobile } = props;
   const [addFunds, setAddFunds] = useState(""); // Сумма пополнения
   const [orderId, setOrderId] = useState("");
   const [loading, setLoading] = useState(false); // Индикатор загрузки
@@ -126,7 +126,7 @@ function TPaymentWidget(props) {
   };
 
   return (
-    <form ref={formRef} onSubmit={handleStartPayment} className="payform-tbank">
+    <form ref={formRef} onSubmit={handleStartPayment} className="payform-tbank" style={{width: isMobile ? "100%" : "auto",}}>
       <input
         type="hidden"
         name="terminalkey"
@@ -153,15 +153,18 @@ function TPaymentWidget(props) {
       <Box
         sx={{
           display: "flex",
-          alignItems: "flex-start",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "center" : "flex-start",
           gap: "15px",
           marginTop: "16px",
+          width: "100%"
         }}
       >
         <TextField
           type="number"
           label="Сумма пополнения"
           value={addFunds}
+          sx={{ width: isMobile ? "100%" : "auto" }}
           onChange={(e) => setAddFunds(e.target.value)}
           InputProps={{ inputProps: { min: 100, step: 1 } }}
           helperText="Минимальная сумма: 100 ₽"
@@ -180,6 +183,7 @@ function TPaymentWidget(props) {
             justifyContent: "center",
             alignItems: "center",
             whiteSpace: "nowrap",
+            width: isMobile ? "100%" : "auto"
           }}
           type="submit"
           className="payform-tbank-btn"

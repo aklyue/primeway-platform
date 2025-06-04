@@ -765,7 +765,7 @@ export function Layout() {
                         path="/datasets"
                         element={
                           <ProtectedRoute>
-                            <DatasetsPage />
+                            <DatasetsPage isMobile={isMobile}/>
                           </ProtectedRoute>
                         }
                       />
@@ -797,7 +797,7 @@ export function Layout() {
                         path="/fine-tuning/jobs/:jobId"
                         element={
                           <ProtectedRoute>
-                            <FineTuneJobDetails />
+                            <FineTuneJobDetails isMobile={isMobile}/>
                           </ProtectedRoute>
                         }
                       />

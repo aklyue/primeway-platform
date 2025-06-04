@@ -4,6 +4,7 @@ import {
   getDatasets,
   uploadDataset,
 } from "../../../components/NoCode/api/datasetsApi";
+import { useNavigate } from "react-router-dom";
 
 export const useFineTuningJobCreatePage = ({ currentOrganization }) => {
   const organizationId = currentOrganization?.id;
@@ -38,6 +39,8 @@ export const useFineTuningJobCreatePage = ({ currentOrganization }) => {
 
   /* file input ref (для триггера upload) */
   const fileInputRef = useRef(null);
+
+  const navigate = useNavigate()
 
   /* ───── LOAD DATASETS ───── */
   useEffect(() => {
@@ -142,6 +145,7 @@ export const useFineTuningJobCreatePage = ({ currentOrganization }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Задача дообучения успешно запущена");
+      navigate("/fine-tuning")
       // здесь можно сделать редирект, если нужно
     } catch (err) {
       console.error(err);

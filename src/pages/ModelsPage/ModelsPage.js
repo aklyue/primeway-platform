@@ -6,9 +6,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import FineTunedModelCard from "../../components/FineTunedModelCard";
 import { modelsData } from "../../data/modelsData";
-import { AuthContext } from "../../AuthContext";
-import { OrganizationContext } from "../../components/Organization/OrganizationContext";
 import axiosInstance from "../../api";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 // import {
 //   getFineTuned,
 //   subscribeFineTuned, // (you can delete these two lines if local storage is no longer needed)
@@ -26,9 +26,8 @@ function ModelsPage({ isMobile }) {
   // const allBasic = [...modelsData, ...fine];
   const allBasic = modelsData; /* 💡 */
 
-  /* ---------------- context --------------------------------------------- */
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   /* ---------------- polling refs ---------------------------------------- */
   const launchedIntervalRef = useRef(null); // ref to window.setInterval timer

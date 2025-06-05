@@ -6,15 +6,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
 import useModelActions from "../../hooks/useModelActions";
 import useModelButtonLogic from "../../hooks/useModelButtonLogic";
-import { AuthContext } from "../../AuthContext";
-import { OrganizationContext } from "../Organization/OrganizationContext";
 import ModelActions from "../../UI/ModelActions";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization);
   const { modelId } = useParams();
-
 
   const decodedModelId = modelId.replaceAll("__", "/");
 

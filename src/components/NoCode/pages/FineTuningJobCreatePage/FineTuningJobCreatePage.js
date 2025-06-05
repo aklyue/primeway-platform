@@ -1,4 +1,3 @@
-import React, { useContext } from "react";
 import {
   Box,
   Button,
@@ -19,18 +18,16 @@ import {
   Stack,
   TextField,
   Toolbar,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
-import { Link } from "react-router-dom";
 import useFineTuningJobCreatePage from "../../../../hooks/NoCode/useFineTuningJobCreatePage";
-        import BackArrow from "../../../../UI/BackArrow";
+import BackArrow from "../../../../UI/BackArrow";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
 import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 /* ───────────────────────── HELPERS ───────────────────────── */
 const formatBytes = (bytes) => {
@@ -42,7 +39,7 @@ const formatBytes = (bytes) => {
 
 /* ───────────────────────── COMPONENT ───────────────────────── */
 export default function FineTuningJobCreatePage() {
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     baseModel,
@@ -95,9 +92,20 @@ export default function FineTuningJobCreatePage() {
   /* ───── UI ───── */
   return (
     <Box sx={{ p: 3 }}>
-      <Toolbar disableGutters sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <BackArrow path={"/fine-tuning"} name={"Fine-tuning"}/>
-        <Typography variant="h5" sx={{ width: "min-content", whiteSpace: "nowrap" }}>
+      <Toolbar
+        disableGutters
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <BackArrow path={"/fine-tuning"} name={"Fine-tuning"} />
+        <Typography
+          variant="h5"
+          sx={{ width: "min-content", whiteSpace: "nowrap" }}
+        >
           Создать задачу дообучения
         </Typography>
       </Toolbar>

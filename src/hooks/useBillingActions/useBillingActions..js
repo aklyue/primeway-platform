@@ -120,7 +120,7 @@ export const useBillingActions = ({
 
   // useEffect для начальной загрузки данных
   useEffect(() => {
-    if (currentOrganization && isCurrentOrgOwner()) {
+    if (currentOrganization && isCurrentOrgOwner) {
       initialLoadRef.current = true;
       fetchAllData();
     }

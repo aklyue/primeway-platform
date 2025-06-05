@@ -79,17 +79,51 @@ import JupyterLabSessions from "./components/NoCode/components/JupyterLab";
 import ResponsiveDrawer from "./UI/ResponsiveDrawer";
 import SpecificModelPage from "./pages/SpecificModelPage/SpecificModelPage";
 
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setOpenCaptchaModal,
+  setOpenRegistrationModal,
+} from "./store/slices/authSlice";
+import { selectCurrentOrganization } from "./store/selectors/organizationsSelectors";
+import { fetchUserData } from "./store/slices/authSlice";
+import { setOrganizations } from "./store/slices/organizationSlice";
+import { fetchWalletBalance } from "./store/slices/organizationSlice";
+
 export function Layout() {
-  const {
-    isLoggedIn,
-    user,
-    openCaptchaModal,
-    setOpenCaptchaModal,
-    openRegistrationModal,
-    setOpenRegistrationModal,
-    loading,
-  } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchUserData());
+  }, [dispatch]);
+
+  const user = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    if (user && user.organizations) {
+      dispatch(setOrganizations(user.organizations));
+    }
+  }, [user, dispatch]);
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const openCaptchaModal = useSelector((state) => state.auth.openCaptchaModal);
+  const openRegistrationModal = useSelector(
+    (state) => state.auth.openRegistrationModal
+  );
+  const loading = useSelector((state) => state.auth.loading);
+
+  const currentOrganization = useSelector(selectCurrentOrganization);
+
+  const billingAccountId = useSelector(
+    (state) => state.auth.user?.billing_account_id
+  );
+
+  useEffect(() => {
+    if (!billingAccountId) return;
+    dispatch(fetchWalletBalance(billingAccountId));
+    const intervalId = setInterval(() => {
+      dispatch(fetchWalletBalance(billingAccountId));
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [billingAccountId, dispatch]);
+
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -126,16 +160,16 @@ export function Layout() {
   useEffect(() => {
     if (!loading) {
       const captchaRequired = checkCaptcha();
-      setOpenCaptchaModal(captchaRequired);
+      dispatch(setOpenCaptchaModal(captchaRequired));
 
       if (!isLoggedIn) {
         if (!captchaRequired) {
-          setOpenRegistrationModal(true);
+          dispatch(setOpenRegistrationModal(true));
         } else {
-          setOpenRegistrationModal(false);
+          dispatch(setOpenRegistrationModal(false));
         }
       } else {
-        setOpenRegistrationModal(false);
+        dispatch(setOpenRegistrationModal(false));
       }
 
       // Скрываем меню на главной странице и на странице доков
@@ -150,12 +184,12 @@ export function Layout() {
   };
 
   const handleCaptchaSuccess = () => {
-    setOpenCaptchaModal(false);
+    dispatch(setOpenCaptchaModal(false));
     const currentTime = Date.now();
     localStorage.setItem("lastCaptchaTime", currentTime.toString());
 
     if (!isLoggedIn) {
-      setOpenRegistrationModal(true);
+      dispatch(setOpenRegistrationModal(true));
     }
   };
 
@@ -765,7 +799,7 @@ export function Layout() {
                         path="/datasets"
                         element={
                           <ProtectedRoute>
-                            <DatasetsPage isMobile={isMobile}/>
+                            <DatasetsPage isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />
@@ -797,7 +831,7 @@ export function Layout() {
                         path="/fine-tuning/jobs/:jobId"
                         element={
                           <ProtectedRoute>
-                            <FineTuneJobDetails isMobile={isMobile}/>
+                            <FineTuneJobDetails isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />
@@ -959,7 +993,7 @@ export function Layout() {
         <SubscriptionToCaptcha
           open={openCaptchaModal}
           onSuccess={handleCaptchaSuccess}
-          onClose={() => setOpenCaptchaModal(false)}
+          onClose={() => dispatch(setOpenCaptchaModal(false))}
         />
       )}
 
@@ -1004,13 +1038,9 @@ export function Layout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <OrganizationProvider>
-        <Router>
-          <Layout />
-        </Router>
-      </OrganizationProvider>
-    </AuthProvider>
+    <Router>
+      <Layout />
+    </Router>
   );
 }
 

@@ -25,6 +25,15 @@ import {
 import "chartjs-adapter-date-fns";
 import { ru } from "date-fns/locale";
 import useBillingActions from "../../hooks/useBillingActions";
+import {
+  selectCurrentOrganization,
+  selectWalletBalance,
+  selectWalletLoading,
+  selectWalletError,
+  selectIsCurrentOrgOwner,
+  selectWalletSilentLoading,
+} from "../../store/selectors/organizationsSelectors";
+import { useSelector } from "react-redux";
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(
@@ -40,14 +49,13 @@ ChartJS.register(
 );
 
 function Billing() {
-  const { user } = useContext(AuthContext);
-  const {
-    currentOrganization,
-    isCurrentOrgOwner,
-    walletBalance,
-    walletLoading,
-    walletError,
-  } = useContext(OrganizationContext);
+  const user = useSelector((state) => state.auth.user);
+  const currentOrganization = useSelector(selectCurrentOrganization);
+  const walletBalance = useSelector(selectWalletBalance);
+  const walletLoading = useSelector(selectWalletLoading);
+  const walletSilentLoading = useSelector(selectWalletSilentLoading);
+  const walletError = useSelector(selectWalletError);
+  const isCurrentOrgOwner = useSelector(selectIsCurrentOrgOwner);
 
   const {
     isLoading,
@@ -79,7 +87,7 @@ function Billing() {
   }
 
   // Если пользователь не является владельцем организации
-  if (!isCurrentOrgOwner()) {
+  if (!isCurrentOrgOwner) {
     return (
       <Box>
         <Typography variant="h4" gutterBottom>
@@ -95,13 +103,13 @@ function Billing() {
   }
 
   // Если данные загружаются, отображаем индикатор загрузки
-  if (isLoading || walletLoading) {
+  if (isLoading || (walletLoading && walletBalance === null)) {
     return (
       <Box
         sx={{
           display: "flex",
           width: "100%",
-          height: "calc(100vh - 64px)", // Вычитаем высоту AppBar, если нужно
+          height: "calc(100vh - 64px)",
           justifyContent: "center",
           alignItems: "center",
         }}

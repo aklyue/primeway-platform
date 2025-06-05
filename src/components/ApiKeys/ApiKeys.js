@@ -25,6 +25,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import moment from "moment";
 import axiosInstance from "../../api";
 import useApiKeysActions from "../../hooks/useApiKeysActions";
+import { useSelector } from "react-redux";
 
 // Функции для работы с API (generateToken, listTokens, deleteToken)
 export const generateToken = async (organizationId, name) => {
@@ -62,7 +63,9 @@ export const deleteToken = async (tokenId) => {
 };
 
 function ApiKeys() {
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(
+    (state) => state.organization.currentOrganization
+  );
   const {
     handleOpen,
     handleClose,
@@ -82,7 +85,7 @@ function ApiKeys() {
     apiKeys,
     menuItemId,
     anchorEl,
-    open
+    open,
   } = useApiKeysActions({
     currentOrganization,
     listTokens,

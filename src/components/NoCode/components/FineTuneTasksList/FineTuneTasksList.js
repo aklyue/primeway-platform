@@ -24,6 +24,8 @@ import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import axiosInstance from "../../../../api";
 import { ContentCopy } from "@mui/icons-material";
 import useFineTuneActions from "../../../../hooks/useFineTuneActions";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 /**
  * Displays the list of running fine‑tune jobs for the current organisation.
@@ -42,7 +44,7 @@ export default function FineTuneTasksList({ isMobile }) {
   };
 
   /** org context */
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   /** jobs and search */
 

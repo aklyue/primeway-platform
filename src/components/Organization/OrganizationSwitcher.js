@@ -12,16 +12,25 @@ import Popover from "@mui/material/Popover";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  selectOrganizations,
+  selectCurrentOrganization,
+  selectWalletBalance,
+  selectWalletLoading,
+  selectWalletSilentLoading,
+  selectWalletError,
+  selectIsCurrentOrgOwner,
+} from "../../store/selectors/organizationsSelectors";
+import { switchOrganization } from "../../store/slices/organizationSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const OrganizationSwitcher = ({ isMainPage }) => {
-  const {
-    organizations,
-    currentOrganization,
-    switchOrganization,
-    walletBalance,
-    walletLoading,
-    walletError,
-  } = useContext(OrganizationContext);
+  const dispatch = useDispatch()
+  const organizations = useSelector(selectOrganizations);
+  const currentOrganization = useSelector(selectCurrentOrganization);
+  const walletBalance = useSelector(selectWalletBalance);
+  const walletLoading = useSelector(selectWalletLoading);
+  const walletError = useSelector(selectWalletError);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -37,7 +46,7 @@ const OrganizationSwitcher = ({ isMainPage }) => {
   };
 
   const handleOrganizationSelect = (org) => {
-    switchOrganization(org.id);
+    dispatch(switchOrganization(org.id));
     handleMenuClose();
   };
 

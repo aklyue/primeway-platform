@@ -18,19 +18,21 @@ import {
   useTheme,
   useMediaQuery, // Импортируем Divider
 } from "@mui/material";
-import { useOrganization } from "./OrganizationContext";
-import { AuthContext } from "../../AuthContext";
 import { getOrgMembers, addOrgMember, removeOrgMember } from "../../api.js";
 import OrganizationEvents from "./OrganizationEvents.js";
+import { useSelector } from "react-redux";
+import {
+  selectCurrentOrganization,
+  selectIsCurrentOrgOwner,
+} from "../../store/selectors/organizationsSelectors.js";
 
 const OrganizationSettings = () => {
-  const { currentOrganization, isCurrentOrgOwner } = useOrganization();
-  const { user } = useContext(AuthContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
+  const isCurrentOrgOwner = useSelector(selectIsCurrentOrgOwner);
+  const user = useSelector((state) => state.auth.user);
 
   const theme = useTheme();
-  const isMediumScreen = useMediaQuery(
-    theme.breakpoints.between("sm", "md")
-  );
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   // Состояния
   const [members, setMembers] = useState([]);
@@ -42,8 +44,7 @@ const OrganizationSettings = () => {
   const [newMemberEmail, setNewMemberEmail] = useState("");
 
   // Объединенное состояние загрузки
-  const isLoading =
-    isLoadingMembers || isAddingMember || isRemovingMember;
+  const isLoading = isLoadingMembers || isAddingMember || isRemovingMember;
 
   // Загрузка участников при изменении текущей организации
   useEffect(() => {
@@ -70,7 +71,7 @@ const OrganizationSettings = () => {
   // Функция для добавления нового участника
   const handleAddMember = async () => {
     if (!newMemberEmail.trim()) return;
-    if (!isCurrentOrgOwner()) {
+    if (!isCurrentOrgOwner) {
       alert("Только владельцы могут добавлять членов.");
       return;
     }
@@ -90,7 +91,7 @@ const OrganizationSettings = () => {
 
   // Функция для удаления участника
   const handleRemoveMember = async (email) => {
-    if (!isCurrentOrgOwner()) {
+    if (!isCurrentOrgOwner) {
       alert("Только владельцы могут удалять членов.");
       return;
     }
@@ -137,9 +138,16 @@ const OrganizationSettings = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100%", flexDirection: 'column', gap:'35px' }}>
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        gap: "35px",
+      }}
+    >
       {/* Левая сторона - Участники */}
-      <Box sx={{ flex: 1, pr: 2, mb:2 }}>
+      <Box sx={{ flex: 1, pr: 2, mb: 2 }}>
         <Typography variant="h4" sx={{ mb: 2 }}>
           Участники
         </Typography>
@@ -152,7 +160,7 @@ const OrganizationSettings = () => {
         )}
 
         {/* Форма добавления участника только для владельца организации */}
-        {isCurrentOrgOwner() && (
+        {isCurrentOrgOwner && (
           <Box sx={{ display: "flex", mb: 2, alignItems: "center" }}>
             <TextField
               label="Email нового участника"
@@ -195,10 +203,7 @@ const OrganizationSettings = () => {
                 {members.map((member) => (
                   <TableRow key={member.user_id}>
                     <TableCell>
-                      <Avatar
-                        alt={member.email}
-                        src={member.avatar_url}
-                      />
+                      <Avatar alt={member.email} src={member.avatar_url} />
                     </TableCell>
                     <TableCell>{member.email}</TableCell>
                     <TableCell>
@@ -213,7 +218,7 @@ const OrganizationSettings = () => {
       </Box>
 
       {/* Разделительная черта */}
-      <Divider orientation="horizontal"  flexItem />
+      <Divider orientation="horizontal" flexItem />
 
       {/* Правая сторона - События */}
       <Box sx={{ flex: 1 }}>
@@ -221,7 +226,6 @@ const OrganizationSettings = () => {
           События
         </Typography>
 
-        
         <OrganizationEvents organizationId={currentOrganization.id} />
       </Box>
     </Box>

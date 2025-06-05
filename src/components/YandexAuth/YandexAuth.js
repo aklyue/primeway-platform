@@ -4,10 +4,15 @@ import { AuthContext } from "../../AuthContext";
 import { CircularProgress } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../store/slices/authSlice";
 
 const YandexAuth = ({ setAuthenticating }) => {
+  const dispatch = useDispatch();
+
   const navigate = useNavigate();
-  const { login, authToken, loading } = useContext(AuthContext);
+  const authToken = useSelector((state) => state.auth.authToken);
+  const loading = useSelector((state) => state.auth.loading);
   const isInitialized = useRef(false);
   const [loadingButton, setLoadingButton] = useState(true);
 
@@ -115,7 +120,7 @@ const YandexAuth = ({ setAuthenticating }) => {
                     console.log("Полученные данные пользователя:", userData);
                     const token = userData.jwt_token;
                     const user = userData.user;
-                    login(token, user);
+                    dispatch(login({token, user}));
                     navigate("/tasks");
                   })
                   .catch((error) => {

@@ -1,6 +1,5 @@
 // src/components/Tasks/Tasks.js
 
-import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   Box,
   Typography,
@@ -25,20 +24,17 @@ import {
   ContentCopy as ContentCopyIcon,
   FiberManualRecord as FiberManualRecordIcon,
 } from "@mui/icons-material";
-import axiosInstance from "../../api";
-import { OrganizationContext } from "../Organization/OrganizationContext";
-import { format, parseISO } from "date-fns";
 import TasksDetailsDialog from "./TasksDetailsDialog";
 import TasksActions from "./TasksActions";
-import { AuthContext } from "../../AuthContext";
-import { useTheme } from "@mui/material/styles";
-import { wrap } from "framer-motion";
-import { TasksFiltersContext } from "./TasksFiltersContext";
 import useTasks from "../../hooks/Tasks/useTasks";
+import { useDispatch, useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 function Tasks() {
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const dispatch = useDispatch();
+
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     // Селекторы, значения
@@ -154,7 +150,7 @@ function Tasks() {
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
-          onClick={() => setSelectedStatus("")}
+          onClick={() => dispatch(setSelectedStatus(""))}
           size="small"
           sx={{
             borderRadius: "12px",
@@ -170,7 +166,7 @@ function Tasks() {
           <Button
             key={status}
             variant={selectedStatus === status ? "contained" : "outlined"}
-            onClick={() => setSelectedStatus(status)}
+            onClick={() => dispatch(setSelectedStatus(status))}
             size="small"
             sx={{
               borderRadius: "12px",

@@ -1,4 +1,3 @@
-import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -10,11 +9,12 @@ import {
   InputLabel,
   FormControl,
 } from "@mui/material";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
 
 import useTrainForm from "../../../../hooks/NoCode/useTrainForm";
 
 import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 export default function TrainForm({
   baseModel,
@@ -45,7 +45,7 @@ export default function TrainForm({
   setLoraDropout,
   setHfToken,
 }) {
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     selectedGpu,

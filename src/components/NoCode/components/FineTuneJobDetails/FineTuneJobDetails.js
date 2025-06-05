@@ -3,12 +3,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Grid,
   IconButton,
   Paper,
@@ -16,19 +11,17 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DescriptionIcon from "@mui/icons-material/Description"; // ← new (log button)
-import axiosInstance from "../../../../api";
-import { useEffect, useState, useContext, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import BackArrow from "../../../../UI/BackArrow";
 import { Description, ExpandMore } from "@mui/icons-material";
 import useFineTuneJobDetails from "../../../../hooks/NoCode/useFineTuneJobDetails";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 export default function FineTuneJobDetails({ isMobile }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     loading,

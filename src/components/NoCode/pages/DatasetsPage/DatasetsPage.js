@@ -1,9 +1,3 @@
-import { useEffect, useState, useContext, useRef } from "react";
-import {
-  getDatasets,
-  uploadDataset,
-  deleteDataset,
-} from "../../api/datasetsApi";
 import {
   Box,
   Button,
@@ -15,15 +9,14 @@ import {
   IconButton,
   Typography,
   CircularProgress,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import { useDatasetsPage } from "../../../../hooks/NoCode/useDatasetsPage/useDatasetsPage";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 export default function DatasetsPage({ isMobile }) {
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     handleUpload,
@@ -92,19 +85,23 @@ export default function DatasetsPage({ isMobile }) {
             >
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography sx={{ fontWeight: 500 }}>Id:</Typography>
-                <Typography sx={{ textAlign: "end", fontSize: "11px !important" }}>
+                <Typography
+                  sx={{ textAlign: "end", fontSize: "11px !important" }}
+                >
                   {ds.dataset_id}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography sx={{ fontWeight: 500 }}>Имя:</Typography>
-                <Typography sx={{ wordBreak: "break-all", fontSize: "11px !important"  }}>
+                <Typography
+                  sx={{ wordBreak: "break-all", fontSize: "11px !important" }}
+                >
                   {ds.name}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography sx={{ fontWeight: 500 }}>Создан:</Typography>
-                <Typography sx={{fontSize: "11px !important" }}>
+                <Typography sx={{ fontSize: "11px !important" }}>
                   {new Date(ds.created_at).toLocaleString()}
                 </Typography>
               </Box>

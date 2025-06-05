@@ -18,7 +18,6 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { OrganizationContext } from "../Organization/OrganizationContext";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";

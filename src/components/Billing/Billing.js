@@ -3,8 +3,6 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { Box, Typography, Alert, CircularProgress } from "@mui/material";
 import TPaymentWidget from "../../UI/TPaymentWidget/TPaymentWidget";
-import { AuthContext } from "../../AuthContext";
-import { OrganizationContext } from "../Organization/OrganizationContext";
 
 // Импортируем необходимые компоненты из react-chartjs-2 и chart.js
 import { Bar, Line } from "react-chartjs-2";

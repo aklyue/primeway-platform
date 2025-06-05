@@ -20,8 +20,6 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
-import axiosInstance from "../../../../api";
 import { ContentCopy } from "@mui/icons-material";
 import useFineTuneActions from "../../../../hooks/useFineTuneActions";
 import { useSelector } from "react-redux";

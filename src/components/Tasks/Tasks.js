@@ -405,7 +405,6 @@ function Tasks() {
                             sx={{
                               position: "absolute",
                               top: "50%",
-                              right: 5,
                               transform: "translateY(-50%)",
                             }}
                           >
@@ -534,18 +533,28 @@ function Tasks() {
                               {selectedJobType === "deploy" && (
                                 <>
                                   <Grid item xs={2.2}>
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        fontSize: job.job_url ? "11px" : "14px",
-                                        whiteSpace: isMinDesktop
-                                          ? "normal"
-                                          : "nowrap",
-                                        textAlign: "center",
-                                      }}
-                                    >
-                                      {job.job_url || "N/A"}
-                                    </Typography>
+                                    <Tooltip title={job.job_url || "N/A"} arrow>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          fontSize: job.job_url
+                                            ? "11px"
+                                            : "14px",
+                                          whiteSpace: "nowrap",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          maxWidth: "170px",
+                                          mx: "auto",
+                                          textAlign: "center",
+                                          cursor: job.job_url
+                                            ? "pointer"
+                                            : "default",
+                                          display: "block",
+                                        }}
+                                      >
+                                        {job.job_url || "N/A"}
+                                      </Typography>
+                                    </Tooltip>
                                   </Grid>
                                   <Grid item xs={1.2}>
                                     <Typography variant="body2">

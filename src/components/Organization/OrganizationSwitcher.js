@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { OrganizationContext } from "./OrganizationContext";
 import {
   MenuItem,
   Button,
@@ -25,7 +24,7 @@ import { switchOrganization } from "../../store/slices/organizationSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const OrganizationSwitcher = ({ isMainPage }) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const organizations = useSelector(selectOrganizations);
   const currentOrganization = useSelector(selectCurrentOrganization);
   const walletBalance = useSelector(selectWalletBalance);
@@ -165,7 +164,7 @@ const OrganizationSwitcher = ({ isMainPage }) => {
         <Box
           sx={{
             display: "flex",
-            padding: 2,
+            padding: isMobile ? 1 : 2,
             maxWidth: 600, // Ограничиваем максимальную ширину
           }}
         >
@@ -174,10 +173,21 @@ const OrganizationSwitcher = ({ isMainPage }) => {
             {organizations.length > 0 ? (
               organizations.map((org) => (
                 <MenuItem
+                  sx={{ px: isMobile ? 1 : 1, borderBottom: "1px solid lightgray" }}
                   key={org.id}
                   onClick={() => handleOrganizationSelect(org)}
                 >
-                  <ListItemText>{org.name}</ListItemText>
+                  <ListItemText
+                    sx={{
+                      whiteSpace: "wrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: { xs: "160px",},
+                      minWidth: 0,
+                    }}
+                  >
+                    {org.name}
+                  </ListItemText>
                 </MenuItem>
               ))
             ) : (

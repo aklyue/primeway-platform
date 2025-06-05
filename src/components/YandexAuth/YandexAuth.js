@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../AuthContext";
 import { CircularProgress } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";

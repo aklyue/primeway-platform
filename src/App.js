@@ -37,12 +37,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import DatasetIcon from "@mui/icons-material/Folder";
-import AuthProvider, { AuthContext } from "./AuthContext";
 import FineTuningJobCreatePage from "./components/NoCode/pages/FineTuningJobCreatePage";
-import {
-  OrganizationContext,
-  OrganizationProvider,
-} from "./components/Organization/OrganizationContext";
 import AuthCallback from "./components/AuthCallback";
 import Billing from "./components/Billing";
 import FineTuneJobDetails from "./components/NoCode/components/FineTuneJobDetails";
@@ -666,7 +661,7 @@ export function Layout() {
 
                       {isLoggedIn && (
                         <>
-                          <Tooltip title={user?.username || "Пользователь"}>
+                          <Tooltip sx={{borderRadius: "50%"}} title={user?.username || "Пользователь"}>
                             <ButtonBase onClick={handleAvatarClick}>
                               <Box
                                 sx={{
@@ -687,6 +682,7 @@ export function Layout() {
                                     display: "inline-flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    borderRadius: "50%",
                                   }}
                                 >
                                   <Avatar
@@ -695,6 +691,7 @@ export function Layout() {
                                     sx={{
                                       width: isMobile ? 32 : 40,
                                       height: isMobile ? 32 : 40,
+                                      borderRadius: "50%",
                                     }}
                                   />
                                 </Box>

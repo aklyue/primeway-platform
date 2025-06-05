@@ -8,6 +8,7 @@ export default function ResponsiveDrawer({
   open = true,
   onClose,
   anchor,
+  isMobile,
   ...contentProps
 }) {
   const [isDrawerHovered, setIsDrawerHovered] = useState(false);
@@ -18,8 +19,12 @@ export default function ResponsiveDrawer({
       variant={variant}
       open={open}
       onClose={onClose}
-      onMouseEnter={() => setIsDrawerHovered(true)}
-      onMouseLeave={() => setIsDrawerHovered(false)}
+      onMouseEnter={() => {
+        if (!isMobile) setIsDrawerHovered(true);
+      }}
+      onMouseLeave={() => {
+        if (!isMobile) setIsDrawerHovered(false);
+      }}
       ModalProps={variant === "temporary" ? { keepMounted: true } : undefined}
       sx={{
         width: drawerWidth,

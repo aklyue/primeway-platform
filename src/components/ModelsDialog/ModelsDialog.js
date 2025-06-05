@@ -30,12 +30,12 @@ import {
   ContentCopy as ContentCopyIcon,
 } from "@mui/icons-material";
 import JobEvents from "../Tasks/JobEvents";
-import { AuthContext } from "../../AuthContext";
 
 // Импортируем модуль yaml
 import yaml from "js-yaml";
 import TasksActions from "../Tasks/TasksActions"; // Импортируем TasksActions
 import useModelsDialogActions from "../../hooks/useModelsDialogActions";
+import { useSelector } from "react-redux";
 
 const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
   transition: "all 0.2s ease",
@@ -53,7 +53,7 @@ const ActionIconButton = styled(IconButton)(({ theme, colorvariant }) => ({
 }));
 
 function ModelsDialog({ open, onClose, model }) {
-  const { authToken } = useContext(AuthContext); // Получаем токен авторизации
+  const authToken = useSelector((state) => state.auth.authToken);
 
   const {
     jobDetails,

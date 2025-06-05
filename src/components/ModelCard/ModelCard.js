@@ -15,9 +15,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import ConfigureModelForm from "../ConfigureModelForm";
-import { AuthContext } from "../../AuthContext";
 import axiosInstance from "../../api";
-import { OrganizationContext } from "../Organization/OrganizationContext";
 import CloseIcon from "@mui/icons-material/Close";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ModelsDialog from "../ModelsDialog";
@@ -32,11 +30,13 @@ import useModelActions from "../../hooks/useModelActions";
 import useModelButtonLogic from "../../hooks/useModelButtonLogic";
 import ModelActions from "../../UI/ModelActions";
 import { ContentCopy } from "@mui/icons-material";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 function ModelCard({ model, isLast, isBasic, isMobile }) {
-  // **Контексты**
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization)
   const navigate = useNavigate();
 
   // **Состояния**

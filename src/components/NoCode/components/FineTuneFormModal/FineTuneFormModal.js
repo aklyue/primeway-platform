@@ -1,4 +1,3 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -14,15 +13,16 @@ import {
   Typography,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
 import useFineTuneFormModal from "../../../../hooks/NoCode/useFineTuneFormModal";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
 import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 /* ───────────────────────── COMPONENT ───────────────────────── */
 export default function FineTuningJobFormModal({ open, onClose }) {
-  const { currentOrganization } = useContext(OrganizationContext);
+  const currentOrganization = useSelector(selectCurrentOrganization)
 
   const {
     selectedGpu,

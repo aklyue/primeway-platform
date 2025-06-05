@@ -25,11 +25,11 @@ import {
   ArrowDropDown,
   ArrowDropUp,
 } from "@mui/icons-material";
-import { AuthContext } from "../../AuthContext";
-import { OrganizationContext } from "../../components/Organization/OrganizationContext";
 import axiosInstance from "../../api"; // Adjust the import path accordingly
 import dayjs from "dayjs";
 import { VLLM_ARGS, VLLM_FLAGS } from "../../data/VllmArgs";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 const AVAILABLE_GPUS = {
   "A100 PCIe": { memoryInGb: 80, costPerHour: 260 },
@@ -49,8 +49,8 @@ const AVAILABLE_GPUS = {
 };
 
 function ModelsPage() {
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const [modelName, setModelName] = useState("");
   const [args, setArgs] = useState([{ key: "", value: "" }]);
@@ -174,7 +174,10 @@ function ModelsPage() {
       ...modelConfig,
       schedule: {
         ...modelConfig.schedule,
-        [section]: [...(modelConfig.schedule[section] || []), { start: "", end: "" }],
+        [section]: [
+          ...(modelConfig.schedule[section] || []),
+          { start: "", end: "" },
+        ],
       },
     });
   };
@@ -265,7 +268,12 @@ function ModelsPage() {
     });
   };
 
-  const handleSpecificDayTimeWindowChange = (dayIndex, windowIndex, field, value) => {
+  const handleSpecificDayTimeWindowChange = (
+    dayIndex,
+    windowIndex,
+    field,
+    value
+  ) => {
     const newSpecificDays = [...(modelConfig.schedule.specific_days || [])];
     newSpecificDays[dayIndex].time_windows[windowIndex][field] = value;
     setModelConfig({
@@ -347,7 +355,9 @@ function ModelsPage() {
           errorMessage = error.response.data.detail;
         } else if (Array.isArray(error.response.data.detail)) {
           // Extract the 'msg' from each error detail and join them
-          errorMessage = error.response.data.detail.map((d) => d.msg).join(", ");
+          errorMessage = error.response.data.detail
+            .map((d) => d.msg)
+            .join(", ");
         }
       }
       setAlertMessage(errorMessage);
@@ -409,9 +419,11 @@ function ModelsPage() {
               <Autocomplete
                 freeSolo
                 options={VLLM_ARGS}
-                getOptionLabel={(option) => (typeof option === 'string' ? option : option.key)}
+                getOptionLabel={(option) =>
+                  typeof option === "string" ? option : option.key
+                }
                 onInputChange={(event, newInputValue) => {
-                  handleArgChange(index, 'key', newInputValue);
+                  handleArgChange(index, "key", newInputValue);
                 }}
                 value={arg.key}
                 sx={{ flex: 1 }}
@@ -419,7 +431,11 @@ function ModelsPage() {
                   <li {...props}>
                     <div>
                       <strong>{option.key}</strong>
-                      <Typography variant="caption" color="textSecondary" display="block">
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        display="block"
+                      >
                         {option.description}
                       </Typography>
                     </div>
@@ -437,7 +453,9 @@ function ModelsPage() {
               <TextField
                 label="Значение"
                 value={arg.value}
-                onChange={(e) => handleArgChange(index, "value", e.target.value)}
+                onChange={(e) =>
+                  handleArgChange(index, "value", e.target.value)
+                }
                 disabled={loading}
                 helperText="Значение аргумента"
                 sx={{ flex: 1 }} // Ensure flex is applied here as well
@@ -478,9 +496,11 @@ function ModelsPage() {
                 <Autocomplete
                   freeSolo
                   options={VLLM_FLAGS}
-                  getOptionLabel={(option) => (typeof option === 'string' ? option : option.key)}
+                  getOptionLabel={(option) =>
+                    typeof option === "string" ? option : option.key
+                  }
                   onInputChange={(event, newInputValue) => {
-                    handleFlagChange(index, 'key', newInputValue);
+                    handleFlagChange(index, "key", newInputValue);
                   }}
                   value={flag.key}
                   sx={{ flex: 1 }}
@@ -488,7 +508,11 @@ function ModelsPage() {
                     <li {...props}>
                       <div>
                         <strong>{option.key}</strong>
-                        <Typography variant="caption" color="textSecondary" display="block">
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          display="block"
+                        >
                           {option.description}
                         </Typography>
                       </div>
@@ -906,9 +930,7 @@ function ModelsPage() {
                       borderRadius: 2,
                     }}
                   >
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                    >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <TextField
                         label="Дата"
                         type="date"

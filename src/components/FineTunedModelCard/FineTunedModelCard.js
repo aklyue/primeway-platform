@@ -35,7 +35,7 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           px: "16px",
           py: 1,
           cursor: "pointer",
-          "&:hover": { background: "rgba(0,0,0,.05)" },
+          "&:hover": { background: "rgba(102, 179, 238, 0.2)" },
         }}
       >
         <Typography

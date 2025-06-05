@@ -6,14 +6,16 @@ import {
 import { format, parseISO } from "date-fns";
 import { useTheme } from "@mui/material/styles";
 import { wrap } from "framer-motion";
-import { TasksFiltersContext } from "../../../components/Tasks/TasksFiltersContext";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircularProgress, useMediaQuery } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setSelectedStatus,
+  setSelectedJobType,
+  setIsScheduledFilter,
+} from "../../../store/slices/tasksFilterSlice";
 
-export const useTasks = ({
-  authToken,
-  currentOrganization,
-}) => {
+export const useTasks = ({ authToken, currentOrganization }) => {
   const statusOptions = [
     "running",
     "stopped",
@@ -79,14 +81,17 @@ export const useTasks = ({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [jobToStop, setJobToStop] = useState(null);
 
-  const {
-    selectedStatus,
-    setSelectedStatus,
-    selectedJobType,
-    setSelectedJobType,
-    isScheduledFilter,
-    setIsScheduledFilter,
-  } = useContext(TasksFiltersContext);
+  const dispatch = useDispatch();
+
+  const selectedStatus = useSelector(
+    (state) => state.tasksFilters.selectedStatus
+  );
+  const selectedJobType = useSelector(
+    (state) => state.tasksFilters.selectedJobType
+  );
+  const isScheduledFilter = useSelector(
+    (state) => state.tasksFilters.isScheduledFilter
+  );
 
   const intervalRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -122,7 +127,7 @@ export const useTasks = ({
             !triedSwitchJobType
           ) {
             setTriedSwitchJobType(true);
-            setSelectedJobType("run");
+            dispatch(setSelectedJobType("run"));
           } else {
             if (initialLoadRef.current) {
               setLoading(false);
@@ -559,7 +564,7 @@ export const useTasks = ({
   const handleJobTypeChange = (jobType) => {
     if (jobType !== selectedJobType) {
       setJobTypeLoading(true);
-      setSelectedJobType(jobType);
+      dispatch(setSelectedJobType(jobType));
     }
   };
   return {

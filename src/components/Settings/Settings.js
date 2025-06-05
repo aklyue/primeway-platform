@@ -1,17 +1,20 @@
 import React, { useContext } from "react";
 import { Box, Typography, Button, Divider, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../store/slices/authSlice";
 
 function Settings({ setAuthenticating }) {
-  const { user, logout } = useContext(AuthContext);
+  const dispatch = useDispatch();
+
+  const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate("/");
     localStorage.removeItem("lastCaptchaTime");
-    setAuthenticating(false)
+    setAuthenticating(false);
   };
 
   return (
@@ -21,11 +24,11 @@ function Settings({ setAuthenticating }) {
       </Typography>
 
       {/* Информация о профиле */}
-      <Box sx={{ marginBottom: "32px", marginTop:'16px' }}>
+      <Box sx={{ marginBottom: "32px", marginTop: "16px" }}>
         <Typography variant="h6" gutterBottom>
           Информация о профиле
         </Typography>
-        <Divider sx={{ marginBottom: "16px",  }} />
+        <Divider sx={{ marginBottom: "16px" }} />
 
         {/* Аватар пользователя */}
         <Box

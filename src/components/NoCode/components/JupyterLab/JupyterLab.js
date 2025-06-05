@@ -1,4 +1,3 @@
-import { useEffect, useState, useContext } from "react";
 import {
   Box,
   Button,
@@ -25,14 +24,13 @@ import {
 import StopIcon from "@mui/icons-material/Stop";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 
-import axiosInstance from "../../../../api";
-import { OrganizationContext } from "../../../Organization/OrganizationContext";
-import { AuthContext } from "../../../../AuthContext";
 import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 export default function JupyterLabSessions({ isMobile }) {
-  const { currentOrganization } = useContext(OrganizationContext); // Получаем текущую организацию из контекста
-  const { authToken } = useContext(AuthContext);
+  const currentOrganization = useSelector(selectCurrentOrganization);
+  const authToken = useSelector((state) => state.auth.authToken);
 
   const {
     setOpenCreateModal,

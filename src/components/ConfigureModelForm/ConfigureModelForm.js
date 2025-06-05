@@ -25,12 +25,12 @@ import {
   ArrowDropDown,
   ArrowDropUp,
 } from "@mui/icons-material";
-import { AuthContext } from "../../AuthContext";
-import { OrganizationContext } from "../Organization/OrganizationContext";
 import axiosInstance from "../../api";
 import dayjs from "dayjs";
 import { VLLM_ARGS, VLLM_FLAGS } from "../../data/VllmArgs";
 import useConfigureModelForm from "../../hooks/useConfigureModelForm";
+import { useSelector } from "react-redux";
+import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 const AVAILABLE_GPUS = {
   "A100 PCIe": { memoryInGb: 80, costPerHour: 260 },
@@ -54,8 +54,8 @@ function ConfigureModelForm({
   onClose,
   readOnlyModelName = false,
 }) {
-  const { authToken } = useContext(AuthContext);
-  const { currentOrganization } = useContext(OrganizationContext);
+  const authToken = useSelector((state) => state.auth.authToken);
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     isMobile,

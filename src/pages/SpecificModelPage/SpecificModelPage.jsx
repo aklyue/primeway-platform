@@ -7,6 +7,8 @@ import { Box } from "@mui/material";
 function SpecificModelPage() {
   const location = useLocation();
   const { model, initialConfig, isBasic, isMobile } = location.state || {};
+
+  console.log(initialConfig)
   return (
     <div>
       <Box sx={{mx: 4}}>

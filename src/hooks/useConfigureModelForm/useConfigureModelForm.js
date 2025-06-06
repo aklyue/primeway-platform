@@ -9,14 +9,18 @@ export const useConfigureModelForm = ({
   authToken,
   currentOrganization,
 }) => {
+
+  console.log(initialConfig)
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
   const [args, setArgs] = useState(
-    initialConfig?.args?.length > 0
+    initialConfig?.args
       ? initialConfig.args
       : [{ key: "", value: "" }]
   );
+
+  console.log(initialConfig)
   const [flags, setFlags] = useState(
-    initialConfig?.flags?.length > 0
+    initialConfig?.flags
       ? initialConfig.flags
       : [{ key: "", value: "True" }]
   );

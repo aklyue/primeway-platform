@@ -4,6 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ConfigureModelForm from "../ConfigureModelForm";
 import { modelsData } from "../../data/modelsData";
+import { useNavigate } from "react-router-dom";
 
 const buildDefaultConfig = (ft) => {
   const base = modelsData.find((m) => m.name === ft.base_model) || {};
@@ -20,6 +21,7 @@ const buildDefaultConfig = (ft) => {
 };
 
 function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
+  const navigate = useNavigate()
   const [openCfg, setOpenCfg] = useState(false);
   const defaultConfig = buildDefaultConfig(ft);
 
@@ -27,7 +29,24 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
     <>
       {/* --------- строка списка --------- */}
       <Box
-        onClick={() => setOpenCfg(true)}
+        onClick={(e) => {
+          if (e.target.closest("[data-no-navigate]")) {
+            e.stopPropagation();
+            return;
+          }
+
+          console.log()
+
+          navigate(
+            `/models/${(defaultConfig.finetuned_job_id).replaceAll("/", "__")}`,
+            {
+              state: {
+                model: defaultConfig.modelName,
+                initialConfig: defaultConfig
+              },
+            }
+          );
+        }}
         sx={{
           display: "flex",
           justifyContent: "space-between",

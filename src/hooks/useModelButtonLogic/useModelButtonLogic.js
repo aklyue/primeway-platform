@@ -30,7 +30,6 @@ export const useModelButtonLogic = ({
   let actionButtonText = "";
   let actionButtonHandler = null;
   let isActionButtonDisabled = false;
-
   if (isBasic) {
     actionButtonText = "Запустить";
     actionButtonHandler = (e) => {
@@ -48,7 +47,8 @@ export const useModelButtonLogic = ({
       isActionButtonDisabled = actionLoading;
     } else if (
       modelStatus === "failed" ||
-      modelStatus === "stopped" ||
+      modelStatus === "stopped" || 
+      modelStatus === "completed" ||
       modelStatus === undefined
     ) {
       actionButtonText = "Запустить";

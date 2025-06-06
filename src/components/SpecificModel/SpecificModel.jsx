@@ -140,6 +140,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     currentOrganization,
     authToken,
     setModelStatus,
+    args,
+    flags,
   });
 
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
@@ -156,7 +158,9 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     loading,
     authToken,
     currentOrganization,
-    handleConfirmLaunchClose
+    handleConfirmLaunchClose,
+    args,
+    flags
   });
 
   const isLaunchedModel = !!launchedModel;

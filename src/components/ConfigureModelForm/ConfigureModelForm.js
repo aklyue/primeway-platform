@@ -1,6 +1,6 @@
 // src/components/ConfigureModelForm.jsx
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Box,
   Button,
@@ -38,10 +38,12 @@ function ConfigureModelForm({
   initialConfig,
   onClose,
   readOnlyModelName = false,
+  isFineTuned,
+  onFlagsChange,
+  onArgsChange
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
-
   const {
     isMobile,
     handleSubmit,
@@ -89,13 +91,26 @@ function ConfigureModelForm({
     alertOpen,
     alertSeverity,
     alertMessage,
+    isModalOpen,
+    setIsModalOpen
   } = useConfigureModelForm({
     initialConfig,
     onClose,
     readOnlyModelName,
     authToken,
     currentOrganization,
+    onFlagsChange,
+    onArgsChange,
+    isFineTuned,
   });
+
+  useEffect(() => {
+    onFlagsChange(flags);
+  }, [flags, onFlagsChange]);
+
+  useEffect(() => {
+    onArgsChange(args);
+  }, [args, onArgsChange]);
 
   return (
     <Paper
@@ -105,7 +120,6 @@ function ConfigureModelForm({
         maxHeight: "95vh",
         overflowY: "auto",
         margin: "auto",
-        maxWidth: 800,
       }}
     >
       <form onSubmit={handleSubmit} style={{ paddingBottom: "16px" }}>
@@ -114,14 +128,14 @@ function ConfigureModelForm({
 
         {/* Model Name */}
         <TextField
-          label="Имя модели (Hugging Face)"
+          label={isFineTuned ? "Имя базовой модели (Hugging Face)" : "Имя модели (Hugging Face)"}
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
           required
           margin="normal"
-          disabled={loading || readOnlyModelName}
-          helperText={modelNameErrorText || "Имя модели из Hugging Face"}
+          disabled={loading || readOnlyModelName || isFineTuned}
+          helperText={isFineTuned ? "Имя базовой модели из Hugging Face" : modelNameErrorText || "Имя модели из Hugging Face"}
           error={modelNameError}
         />
 
@@ -148,7 +162,7 @@ function ConfigureModelForm({
               onInputChange={(event, newInputValue) => {
                 handleArgChange(index, "key", newInputValue);
               }}
-              value={arg.key}
+              value={isFineTuned ? null : arg.key}
               sx={{ flex: 1 }}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -175,7 +189,7 @@ function ConfigureModelForm({
             />
             <TextField
               label="Значение"
-              value={arg.value}
+              value={isFineTuned ? null : arg.value}
               onChange={(e) => handleArgChange(index, "value", e.target.value)}
               disabled={loading}
               helperText="Значение аргумента"
@@ -222,7 +236,7 @@ function ConfigureModelForm({
               onInputChange={(event, newInputValue) => {
                 handleFlagChange(index, "key", newInputValue);
               }}
-              value={flag.key}
+              value={isFineTuned ? null : flag.key}
               sx={{ flex: 1 }}
               renderOption={(props, option) => (
                 <li {...props}>

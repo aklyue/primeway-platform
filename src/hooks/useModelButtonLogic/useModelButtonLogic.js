@@ -3,6 +3,7 @@ import useModelActions from "../useModelActions";
 
 export const useModelButtonLogic = ({
   isBasic,
+  isFineTuned,
   model,
   modelStatus,
   setModelStatus,
@@ -30,7 +31,7 @@ export const useModelButtonLogic = ({
   let actionButtonText = "";
   let actionButtonHandler = null;
   let isActionButtonDisabled = false;
-  if (isBasic) {
+  if (isBasic || isFineTuned) {
     actionButtonText = "Запустить";
     actionButtonHandler = (e) => {
       e.stopPropagation();
@@ -47,7 +48,7 @@ export const useModelButtonLogic = ({
       isActionButtonDisabled = actionLoading;
     } else if (
       modelStatus === "failed" ||
-      modelStatus === "stopped" || 
+      modelStatus === "stopped" ||
       modelStatus === "completed" ||
       modelStatus === undefined
     ) {

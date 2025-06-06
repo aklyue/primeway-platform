@@ -105,6 +105,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
       handleStart,
       handleStop,
       loading,
+      authToken
     });
 
   // **Функция для получения логов модели**
@@ -176,8 +177,6 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             e.stopPropagation();
             return;
           }
-
-          console.log(model);
 
           navigate(
             `/models/${(model.job_id || model.id).replaceAll("/", "__")}`,

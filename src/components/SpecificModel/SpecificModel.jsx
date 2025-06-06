@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
+import { fineTunedData } from "../../data/fineTunedData";
 import { Box, Typography, Button, Modal, Grid, Collapse } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
@@ -13,6 +14,7 @@ import axiosInstance from "../../api";
 function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
+  console.log(currentOrganization)
   const { modelId } = useParams();
 
   const decodedModelId = modelId.replaceAll("__", "/");
@@ -80,7 +82,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     );
     if (foundModel) {
       const buildDefaultConfig = (ft) => {
-        const base = modelsData.find((m) => m.name === ft.base_model) || {};
+        const base = fineTunedData.find((m) => m.name === ft.base_model) || {};
         const cfg = base.defaultConfig || {};
         return {
           ...cfg,
@@ -129,7 +131,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     handleStart,
     handleStop,
     loading,
-    authToken
+    authToken,
+    currentOrganization,
   });
 
   const isLaunchedModel = !!launchedModel;

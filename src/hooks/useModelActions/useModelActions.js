@@ -9,6 +9,7 @@ export const useModelActions = ({
   currentOrganization,
   setModelStatus,
 }) => {
+
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -60,12 +61,9 @@ export const useModelActions = ({
   };
 
   const handleRun = async () => {
-    if (!isBasic) return;
     setLoading(true);
-
     try {
       const { defaultConfig } = model;
-      console.log("defaultConfig", defaultConfig);
 
       const vllmConfig = {
         model: defaultConfig.modelName,

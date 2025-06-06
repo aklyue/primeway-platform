@@ -38,7 +38,6 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     }
   };
 
-  // Функция для получения дообученных моделей
   const fetchFineTunedModels = async () => {
     if (!currentOrganization || !authToken) return;
     try {
@@ -80,7 +79,6 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
       (model) => model.job_id === decodedModelId
     );
     if (foundModel) {
-      // Встраиваем функцию buildDefaultConfig сюда
       const buildDefaultConfig = (ft) => {
         const base = modelsData.find((m) => m.name === ft.base_model) || {};
         const cfg = base.defaultConfig || {};
@@ -95,17 +93,17 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
         };
       };
 
-      // Получаем объединенную конфигурацию
       const mergedModel = {
         ...foundModel,
-        defaultConfig: buildDefaultConfig(foundModel), // Объединяем конфигурацию
+        defaultConfig: buildDefaultConfig(foundModel),
       };
-
-      // Устанавливаем модель с объединенными данными
       setFineTunedModel(mergedModel);
       setModelStatus(foundModel.last_execution_status);
     }
   }, [fineTunedModels]);
+
+  const isFineTuned = !!fineTunedModel;
+
 
   const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
 
@@ -120,9 +118,10 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   });
 
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
-    model,
+    model: model || fineTunedModel,
     isBasic,
-    jobId: launchedModel?.job_id || fineTunedModel?.defaultConfig.
+    isFineTuned,
+    jobId: model?.job_id || launchedModel?.job_id || fineTunedModel?.defaultConfig.
       finetuned_job_id,
     setModelStatus,
     modelStatus,
@@ -130,6 +129,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     handleStart,
     handleStop,
     loading,
+    authToken
   });
 
   const isLaunchedModel = !!launchedModel;
@@ -183,17 +183,24 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
             value: renderData.defaultConfig?.modelConfig?.job_name || renderData.artifact_name,
           }
         ] : [
-          { label: "Job ID", value: renderData.job_id },
-          {
-            label: "Job Name", value: renderData.job_name || renderData.artifact_name
-          },
-          { label: "Created At", value: renderData.created_at },
-          ...(fineTunedModel ? [] : [
+          ...(fineTunedModel ? [
+            { label: "Job ID", value: renderData.job_id },
+            { label: "Artifact Name", value: renderData.artifact_name },
+            { label: "Base Model", value: renderData.base_model },
+            { label: "Status", value: renderData.status },
+            { label: "Dataset ID", value: renderData.dataset_id },
+            { label: "Created At", value: renderData.created_at },
+          ] : [
+            { label: "Job ID", value: renderData.job_id },
+            {
+              label: "Job Name", value: renderData.job_name || renderData.artifact_name
+            },
+            { label: "Created At", value: renderData.created_at },
             { label: "Last Execution Status", value: renderData.last_execution_status },
             { label: "Job URL", value: renderData.job_url },
             { label: "GPU Type", value: renderData.gpu_type?.type },
+            { label: "Health Status", value: renderData.health_status || renderData.status },
           ]),
-          { label: "Health Status", value: renderData.health_status || renderData.status },
         ]).map((row, index) => (
           <Grid
             container
@@ -211,21 +218,20 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
       </Box>
 
       <Box sx={{ p: 2, display: "flex", justifyContent: "space-between" }}>
-        {!fineTunedModel && (
-          <Button
-            onClick={toggleConfigure}
-            sx={{
-              color: "white",
-              padding: "8px 16px",
-              bgcolor: "#597ad3",
-              "&:hover": {
-                bgcolor: "#7c97de",
-              },
-            }}
-          >
-            {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
-          </Button>
-        )}
+
+        <Button
+          onClick={toggleConfigure}
+          sx={{
+            color: "white",
+            padding: "8px 16px",
+            bgcolor: "#597ad3",
+            "&:hover": {
+              bgcolor: "#7c97de",
+            },
+          }}
+        >
+          {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
+        </Button>
         <ModelActions
           actionButtonHandler={actionButtonHandler}
           actionButtonText={actionButtonText}
@@ -241,12 +247,10 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
             p: 1,
           }}
         >
-          {!fineTunedModel && (
-            <ConfigureModelForm
-              initialConfig={initialConfig || renderData.defaultConfig}
-              onClose={toggleConfigure}
-            />
-          )}
+          <ConfigureModelForm
+            initialConfig={initialConfig || renderData.defaultConfig}
+            onClose={toggleConfigure}
+          />
         </Box>
       </Collapse>
     </Box>

@@ -35,8 +35,6 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
             return;
           }
 
-          console.log()
-
           navigate(
             `/models/${(defaultConfig.finetuned_job_id).replaceAll("/", "__")}`,
             {

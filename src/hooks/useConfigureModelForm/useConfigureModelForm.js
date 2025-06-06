@@ -10,7 +10,6 @@ export const useConfigureModelForm = ({
   currentOrganization,
 }) => {
 
-  console.log(initialConfig)
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
   const [args, setArgs] = useState(
     initialConfig?.args
@@ -18,7 +17,6 @@ export const useConfigureModelForm = ({
       : [{ key: "", value: "" }]
   );
 
-  console.log(initialConfig)
   const [flags, setFlags] = useState(
     initialConfig?.flags
       ? initialConfig.flags
@@ -354,7 +352,6 @@ export const useConfigureModelForm = ({
 
     setLoading(true);
 
-    console.log("initialConfig", initialConfig);
     const vllmConfig = {
       model: modelName,
       args: {},

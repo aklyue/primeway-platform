@@ -105,7 +105,8 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
       handleStart,
       handleStop,
       loading,
-      authToken
+      authToken,
+      currentOrganization
     });
 
   // **Функция для получения логов модели**

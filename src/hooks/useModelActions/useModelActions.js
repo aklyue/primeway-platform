@@ -67,18 +67,23 @@ export const useModelActions = ({
 
       const vllmConfig = {
         model: defaultConfig.modelName,
-        args: defaultConfig.args.reduce(
-          (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
-          {}
-        ),
-        flags: defaultConfig.flags.reduce(
-          (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
-          {}
-        ),
+        args: (defaultConfig.args && defaultConfig.args.length > 0)
+          ? defaultConfig.args.reduce(
+            (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
+            {}
+          )
+          : {},
+        flags: (defaultConfig.flags && defaultConfig.flags.length > 0)
+          ? defaultConfig.flags.reduce(
+            (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
+            {}
+          )
+          : {},
         finetuned_job_id: defaultConfig.finetuned_job_id,
       };
 
       const formData = new FormData();
+      console.log(currentOrganization)
       formData.append("organization_id", currentOrganization?.id || "");
       formData.append("vllm_config_str", JSON.stringify(vllmConfig));
       formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));

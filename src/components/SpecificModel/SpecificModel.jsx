@@ -9,6 +9,7 @@ import useModelButtonLogic from "../../hooks/useModelButtonLogic";
 import ModelActions from "../../UI/ModelActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
+import axiosInstance from "../../api";
 
 function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const authToken = useSelector((state) => state.auth.authToken);
@@ -17,16 +18,52 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
 
   const decodedModelId = modelId.replaceAll("__", "/");
 
-  const model = modelsData.find((m) => m.id === decodedModelId);
+  const [launchedModels, setLaunchedModels] = useState([]);
+  const [model, setModel] = useState(null);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-  const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
+  const [launchedModel, setLaunchedModel] = useState(null)
+  const [modelStatus, setModelStatus] = useState(null);
 
-  const isBasic = passedIsBasic ?? model.isBasic;
-  const [modelStatus, setModelStatus] = useState(model.last_execution_status);
+  const fetchLaunchedModels = async () => {
+    if (!currentOrganization || !authToken) return;
+    try {
+      const { data = [] } = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
+        params: { organization_id: currentOrganization.id },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setLaunchedModels(data);
+    } catch (err) {
+      console.error("Ошибка при получении запущенных моделей:", err);
+    }
+  };
 
   useEffect(() => {
-    setModelStatus(model.last_execution_status);
-  }, [model.last_execution_status]);
+    fetchLaunchedModels();
+  }, [currentOrganization, authToken]);
+
+  useEffect(() => {
+    const foundModel = modelsData.find((m) => m.id === decodedModelId);
+    if (foundModel) {
+      setModel(foundModel);
+      setModelStatus(foundModel.last_execution_status);
+    }
+  }, [decodedModelId]);
+
+  useEffect(() => {
+    const foundModel = launchedModels.find(
+      (launched) => launched.job_id === decodedModelId
+    );
+    if (foundModel) {
+      setLaunchedModel(foundModel);
+      setModelStatus(foundModel.last_execution_status);
+      console.log(launchedModel)
+    }
+  }, [launchedModels]);
+
+  const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
+
+  const isBasic = passedIsBasic ?? model?.isBasic;
+
 
   const { handleRun, handleStart, handleStop, loading } = useModelActions({
     model,
@@ -35,20 +72,28 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     setModelStatus,
   });
 
-  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
-    useModelButtonLogic({
-      model,
-      isBasic,
-      modelStatus,
-      handleRun,
-      handleStart,
-      handleStop,
-      loading,
-    });
+  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
+    model,
+    isBasic,
+    jobId: launchedModel?.job_id,
+    setModelStatus,
+    modelStatus,
+    handleRun,
+    handleStart,
+    handleStop,
+    loading,
+  });
 
-  if (!model) {
+  const isLaunchedModel = !!launchedModel;
+
+  if (!model && !launchedModel) {
     return <Typography sx={{ p: 4 }}>Модель не найдена</Typography>;
   }
+  if (!model && !launchedModel) {
+    return <Typography sx={{ p: 4 }}>Модель не найдена</Typography>;
+  }
+
+  const renderData = model || launchedModel;
 
   return (
     <Box
@@ -82,16 +127,24 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
       </Grid>
 
       <Box sx={{ px: 2 }}>
-        {[
-          { label: "ID", value: model.id },
-          { label: "Тип", value: model.type },
-          { label: "Описание", value: model.description },
-          { label: "Модель (config)", value: model.defaultConfig.modelName },
+        {(model ? [
+          { label: "ID", value: renderData.id },
+          { label: "Тип", value: renderData.type },
+          { label: "Описание", value: renderData.description },
+          { label: "Модель (config)", value: renderData.defaultConfig?.modelName },
           {
             label: "Job name",
-            value: model.defaultConfig.modelConfig.job_name,
-          },
-        ].map((row, index) => (
+            value: renderData.defaultConfig?.modelConfig?.job_name,
+          }
+        ] : [
+          { label: "Job ID", value: renderData.job_id },
+          { label: "Job Name", value: renderData.job_name },
+          { label: "Created At", value: renderData.created_at },
+          { label: "Last Execution Status", value: renderData.last_execution_status },
+          { label: "Job URL", value: renderData.job_url },
+          { label: "GPU Type", value: renderData.gpu_type?.type },
+          { label: "Health Status", value: renderData.health_status },
+        ]).map((row, index) => (
           <Grid
             container
             key={index}
@@ -122,10 +175,9 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
           {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
         </Button>
         <ModelActions
-          // isBasic={isBasic}
           actionButtonHandler={actionButtonHandler}
           actionButtonText={actionButtonText}
-          isActionButtonDisabled={isActionButtonDisabled}
+          isActionButtonDisabled={false}
         />
       </Box>
 
@@ -138,7 +190,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
           }}
         >
           <ConfigureModelForm
-            initialConfig={initialConfig || model.defaultConfig}
+            initialConfig={initialConfig || renderData.defaultConfig}
             onClose={toggleConfigure}
           />
         </Box>

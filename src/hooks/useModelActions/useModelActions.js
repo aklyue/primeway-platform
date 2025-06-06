@@ -25,12 +25,11 @@ export const useModelActions = ({
         params: { job_id: jobId },
         headers: { Authorization: `Bearer ${authToken}` },
       });
-
+      console.log(setModelStatus)
       setModelStatus("running");
       alert("Модель успешно запущена.");
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
-      alert("Произошла ошибка при запуске модели.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +54,6 @@ export const useModelActions = ({
       alert("Модель успешно остановлена.");
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
-      alert("Произошла ошибка при остановке модели.");
     } finally {
       setLoading(false);
     }
@@ -103,7 +101,6 @@ export const useModelActions = ({
       );
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
-      alert("Произошла ошибка при запуске модели.");
     } finally {
       setLoading(false);
     }

@@ -44,6 +44,7 @@ export default function ResponsiveDrawer({
       <DrawerContent
         anchor={anchor}
         isDrawerHovered={isDrawerHovered}
+        isMobile={isMobile}
         {...contentProps}
       />
     </Drawer>

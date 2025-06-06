@@ -98,7 +98,9 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
     useModelButtonLogic({
       model,
       isBasic,
+      jobId,
       modelStatus,
+      setModelStatus,
       handleRun,
       handleStart,
       handleStop,

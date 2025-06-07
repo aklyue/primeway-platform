@@ -34,12 +34,14 @@ import { selectCurrentOrganization } from "../../store/selectors/organizationsSe
 
 import { AVAILABLE_GPUS } from "../../AVAILABLE_GPUS"
 
+
 function ConfigureModelForm({
   initialConfig,
   onClose,
   readOnlyModelName = false,
   isFineTuned,
   onFlagsChange,
+  onModelConfigChange,
   onArgsChange
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
@@ -101,6 +103,7 @@ function ConfigureModelForm({
     currentOrganization,
     onFlagsChange,
     onArgsChange,
+    onModelConfigChange,
     isFineTuned,
   });
 
@@ -111,6 +114,10 @@ function ConfigureModelForm({
   useEffect(() => {
     onArgsChange(args);
   }, [args, onArgsChange]);
+
+  useEffect(() => {
+    onModelConfigChange(modelConfig)
+  }, [modelConfig, onModelConfigChange])
 
   return (
     <Paper
@@ -143,7 +150,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Аргументы
         </Typography>
-        {args.map((arg, index) => (
+        {args?.map((arg, index) => (
           <Box
             sx={{
               display: "flex",
@@ -217,7 +224,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Флаги
         </Typography>
-        {flags.map((flag, index) => (
+        {flags?.map((flag, index) => (
           <Box
             sx={{
               display: "flex",
@@ -324,7 +331,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Тип GPU
         </Typography>
-        {modelConfig.gpu_types.map((gpuType, index) => (
+        {modelConfig?.gpu_types?.map((gpuType, index) => (
           <Box
             sx={{
               display: "flex",
@@ -349,7 +356,7 @@ function ConfigureModelForm({
                 }
                 disabled={loading}
               >
-                {Object.keys(AVAILABLE_GPUS).map((gpuName) => (
+                {Object.keys(AVAILABLE_GPUS)?.map((gpuName) => (
                   <MenuItem key={gpuName} value={gpuName}>
                     {gpuName}
                   </MenuItem>
@@ -390,7 +397,7 @@ function ConfigureModelForm({
         </Button>
 
         {/* Display GPU RAM and Cost */}
-        {modelConfig.gpu_types.map((gpuType, index) => {
+        {modelConfig?.gpu_types?.map((gpuType, index) => {
           const gpuDetails = AVAILABLE_GPUS[gpuType.type];
           if (gpuDetails) {
             return (
@@ -492,8 +499,8 @@ function ConfigureModelForm({
             {scheduleOpen.workdays ? <ArrowDropUp /> : <ArrowDropDown />}
             <Typography variant="subtitle1">Будни</Typography>
           </Box>
-          {scheduleOpen.workdays &&
-            (modelConfig.schedule.workdays || []).map((timeWindow, index) => (
+          {scheduleOpen?.workdays &&
+            (modelConfig?.schedule?.workdays || []).map((timeWindow, index) => (
               <Box
                 key={`workdays-${index}`}
                 sx={{
@@ -574,7 +581,7 @@ function ConfigureModelForm({
             <Typography variant="subtitle1">Выходные</Typography>
           </Box>
           {scheduleOpen.weekends &&
-            (modelConfig.schedule.weekends || []).map((timeWindow, index) => (
+            (modelConfig?.schedule?.weekends || []).map((timeWindow, index) => (
               <Box
                 key={`weekends-${index}`}
                 sx={{

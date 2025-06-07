@@ -10,6 +10,7 @@ export const useConfigureModelForm = ({
   currentOrganization,
   onFlagsChange,
   onArgsChange,
+  onModelConfigChange,
   isFineTuned
 }) => {
 
@@ -23,6 +24,7 @@ export const useConfigureModelForm = ({
   const [flags, setFlags] = useState(
     isFineTuned ? [{ key: "", value: "" }] : (initialConfig?.flags || [{ key: "", value: "True" }])
   );
+
   const [modelConfig, setModelConfig] = useState(
     initialConfig?.modelConfig || {
       job_name: "",
@@ -306,6 +308,12 @@ export const useConfigureModelForm = ({
       },
     });
   };
+
+  useEffect(() => {
+    if (onModelConfigChange) {
+      onModelConfigChange(modelConfig);
+    }
+  }, [modelConfig, onModelConfigChange]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

@@ -11,6 +11,7 @@ import ModelActions from "../../UI/ModelActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import axiosInstance from "../../api";
+
 function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -28,6 +29,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const [confirmLaunchOpen, setConfirmLaunchOpen] = useState(false);
   const [flags, setFlags] = useState([]);
   const [args, setArgs] = useState([]);
+  const [modelConfig, setModelConfig] = useState({})
 
   const handleFlagsChange = (newFlags) => {
     setFlags(newFlags);
@@ -36,6 +38,10 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const handleArgsChange = (newArgs) => {
     setArgs(newArgs);
   };
+
+  const handleModelConfigChange = (newConfig) => {
+    setModelConfig(newConfig);
+  }
 
 
   const handleConfirmLaunchOpen = () => {
@@ -285,6 +291,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
             isFineTuned={isFineTuned}
             onFlagsChange={handleFlagsChange}
             onArgsChange={handleArgsChange}
+            onModelConfigChange={handleModelConfigChange}
           />
         </Box>
       </Collapse>
@@ -308,19 +315,19 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2">Параметры модели:</Typography>
             <Typography>
-              <b>GPU Type:</b> {renderData?.defaultConfig?.modelConfig?.gpu_types?.map(gpu => gpu.type).join(", ") || "—"}
+              <b>GPU Type:</b> {modelConfig?.gpu_types?.map(gpu => gpu.type).join(", ") || "—"}
             </Typography>
             <Typography>
-              <b>Health Check Timeout:</b> {renderData?.defaultConfig?.modelConfig?.health_check_timeout || "—"} ms
+              <b>Health Check Timeout:</b> {modelConfig?.health_check_timeout || "—"} ms
             </Typography>
             <Typography>
-              <b>Disk Space:</b> {renderData?.defaultConfig?.modelConfig?.disk_space || "—"} GB
+              <b>Disk Space:</b> {modelConfig?.disk_space || "—"} GB
             </Typography>
             <Typography>
-              <b>Port:</b> {renderData?.defaultConfig?.modelConfig?.port || "—"}
+              <b>Port:</b> {modelConfig?.port || "—"}
             </Typography>
             <Typography>
-              <b>Autoscaler Timeout:</b> {renderData?.defaultConfig?.modelConfig?.autoscaler_timeout || "—"} sec
+              <b>Autoscaler Timeout:</b> {modelConfig?.autoscaler_timeout || "—"} sec
             </Typography>
           </Box>
 

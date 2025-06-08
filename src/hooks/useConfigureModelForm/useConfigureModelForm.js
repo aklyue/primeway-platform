@@ -1,5 +1,5 @@
 import { useMediaQuery } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../api";
 
 export const useConfigureModelForm = ({
@@ -8,20 +8,23 @@ export const useConfigureModelForm = ({
   readOnlyModelNames,
   authToken,
   currentOrganization,
+  onFlagsChange,
+  onArgsChange,
+  onModelConfigChange,
+  isFineTuned
 }) => {
 
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
+
+
   const [args, setArgs] = useState(
-    initialConfig?.args
-      ? initialConfig.args
-      : [{ key: "", value: "" }]
+    isFineTuned ? [{ key: "", value: "" }] : (initialConfig?.args || [{ key: "", value: "" }])
   );
 
   const [flags, setFlags] = useState(
-    initialConfig?.flags
-      ? initialConfig.flags
-      : [{ key: "", value: "True" }]
+    isFineTuned ? [{ key: "", value: "" }] : (initialConfig?.flags || [{ key: "", value: "True" }])
   );
+
   const [modelConfig, setModelConfig] = useState(
     initialConfig?.modelConfig || {
       job_name: "",
@@ -62,6 +65,8 @@ export const useConfigureModelForm = ({
   const [diskSpaceErrorText, setDiskSpaceErrorText] = useState("");
 
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleModelNameChange = (e) => {
     setModelName(e.target.value);
@@ -134,6 +139,14 @@ export const useConfigureModelForm = ({
     newFlags[index][field] = value;
     setFlags(newFlags);
   };
+
+  useEffect(() => {
+    onFlagsChange(flags);
+  }, [flags, onFlagsChange]);
+
+  useEffect(() => {
+    onArgsChange(args);
+  }, [args, onArgsChange]);
 
   // Handlers for environment variables
   const handleAddEnvVar = () => {
@@ -295,6 +308,12 @@ export const useConfigureModelForm = ({
       },
     });
   };
+
+  useEffect(() => {
+    if (onModelConfigChange) {
+      onModelConfigChange(modelConfig);
+    }
+  }, [modelConfig, onModelConfigChange]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

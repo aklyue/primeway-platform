@@ -19,12 +19,12 @@ export default function ModelActions({
           ? "4px 8px"
           : actionButtonText === "Остановить"
           ? "6px 13px"
-          : "6px 18px !important",
+          : "6px 18px",
         bgcolor: "#597ad3",
         "&:hover": {
           bgcolor: "#7c97de",
         },
-        maxWidth: "100px",
+        maxWidth: "120px",
         fontSize: isMobile ? "9px !important" : "12px",
       }}
     >

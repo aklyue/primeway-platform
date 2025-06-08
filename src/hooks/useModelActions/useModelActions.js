@@ -8,6 +8,8 @@ export const useModelActions = ({
   model,
   currentOrganization,
   setModelStatus,
+  args,
+  flags,
 }) => {
 
   const [loading, setLoading] = useState(false);
@@ -65,20 +67,34 @@ export const useModelActions = ({
     try {
       const { defaultConfig } = model;
 
+      console.log(args, flags)
+
       const vllmConfig = {
         model: defaultConfig.modelName,
-        args: (defaultConfig.args && defaultConfig.args.length > 0)
-          ? defaultConfig.args.reduce(
+        args: (args && args.length > 0)
+          ? args.reduce(
             (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
             {}
           )
-          : {},
-        flags: (defaultConfig.flags && defaultConfig.flags.length > 0)
-          ? defaultConfig.flags.reduce(
+          : (defaultConfig.args && defaultConfig.args.length > 0)
+            ? defaultConfig.args.reduce(
+              (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
+              {}
+            )
+            : {},
+
+        flags: (flags && flags.length > 0)
+          ? flags.reduce(
             (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
             {}
           )
-          : {},
+          : (defaultConfig.flags && defaultConfig.flags.length > 0)
+            ? defaultConfig.flags.reduce(
+              (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
+              {}
+            )
+            : {},
+
         finetuned_job_id: defaultConfig.finetuned_job_id,
       };
 

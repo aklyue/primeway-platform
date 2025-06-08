@@ -1,6 +1,6 @@
 // src/components/ConfigureModelForm.jsx
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Box,
   Button,
@@ -34,14 +34,18 @@ import { selectCurrentOrganization } from "../../store/selectors/organizationsSe
 
 import { AVAILABLE_GPUS } from "../../AVAILABLE_GPUS"
 
+
 function ConfigureModelForm({
   initialConfig,
   onClose,
   readOnlyModelName = false,
+  isFineTuned,
+  onFlagsChange,
+  onModelConfigChange,
+  onArgsChange
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
-
   const {
     isMobile,
     handleSubmit,
@@ -89,13 +93,31 @@ function ConfigureModelForm({
     alertOpen,
     alertSeverity,
     alertMessage,
+    isModalOpen,
+    setIsModalOpen
   } = useConfigureModelForm({
     initialConfig,
     onClose,
     readOnlyModelName,
     authToken,
     currentOrganization,
+    onFlagsChange,
+    onArgsChange,
+    onModelConfigChange,
+    isFineTuned,
   });
+
+  useEffect(() => {
+    onFlagsChange(flags);
+  }, [flags, onFlagsChange]);
+
+  useEffect(() => {
+    onArgsChange(args);
+  }, [args, onArgsChange]);
+
+  useEffect(() => {
+    onModelConfigChange(modelConfig)
+  }, [modelConfig, onModelConfigChange])
 
   return (
     <Paper
@@ -105,7 +127,6 @@ function ConfigureModelForm({
         maxHeight: "95vh",
         overflowY: "auto",
         margin: "auto",
-        maxWidth: 800,
       }}
     >
       <form onSubmit={handleSubmit} style={{ paddingBottom: "16px" }}>
@@ -114,14 +135,14 @@ function ConfigureModelForm({
 
         {/* Model Name */}
         <TextField
-          label="Имя модели (Hugging Face)"
+          label={isFineTuned ? "Имя базовой модели (Hugging Face)" : "Имя модели (Hugging Face)"}
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
           required
           margin="normal"
-          disabled={loading || readOnlyModelName}
-          helperText={modelNameErrorText || "Имя модели из Hugging Face"}
+          disabled={loading || readOnlyModelName || isFineTuned}
+          helperText={isFineTuned ? "Имя базовой модели из Hugging Face" : modelNameErrorText || "Имя модели из Hugging Face"}
           error={modelNameError}
         />
 
@@ -129,7 +150,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Аргументы
         </Typography>
-        {args.map((arg, index) => (
+        {args?.map((arg, index) => (
           <Box
             sx={{
               display: "flex",
@@ -148,7 +169,7 @@ function ConfigureModelForm({
               onInputChange={(event, newInputValue) => {
                 handleArgChange(index, "key", newInputValue);
               }}
-              value={arg.key}
+              value={isFineTuned ? null : arg.key}
               sx={{ flex: 1 }}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -175,7 +196,7 @@ function ConfigureModelForm({
             />
             <TextField
               label="Значение"
-              value={arg.value}
+              value={isFineTuned ? null : arg.value}
               onChange={(e) => handleArgChange(index, "value", e.target.value)}
               disabled={loading}
               helperText="Значение аргумента"
@@ -203,7 +224,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Флаги
         </Typography>
-        {flags.map((flag, index) => (
+        {flags?.map((flag, index) => (
           <Box
             sx={{
               display: "flex",
@@ -222,7 +243,7 @@ function ConfigureModelForm({
               onInputChange={(event, newInputValue) => {
                 handleFlagChange(index, "key", newInputValue);
               }}
-              value={flag.key}
+              value={isFineTuned ? null : flag.key}
               sx={{ flex: 1 }}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -310,7 +331,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Тип GPU
         </Typography>
-        {modelConfig.gpu_types.map((gpuType, index) => (
+        {modelConfig?.gpu_types?.map((gpuType, index) => (
           <Box
             sx={{
               display: "flex",
@@ -335,7 +356,7 @@ function ConfigureModelForm({
                 }
                 disabled={loading}
               >
-                {Object.keys(AVAILABLE_GPUS).map((gpuName) => (
+                {Object.keys(AVAILABLE_GPUS)?.map((gpuName) => (
                   <MenuItem key={gpuName} value={gpuName}>
                     {gpuName}
                   </MenuItem>
@@ -376,7 +397,7 @@ function ConfigureModelForm({
         </Button>
 
         {/* Display GPU RAM and Cost */}
-        {modelConfig.gpu_types.map((gpuType, index) => {
+        {modelConfig?.gpu_types?.map((gpuType, index) => {
           const gpuDetails = AVAILABLE_GPUS[gpuType.type];
           if (gpuDetails) {
             return (
@@ -478,8 +499,8 @@ function ConfigureModelForm({
             {scheduleOpen.workdays ? <ArrowDropUp /> : <ArrowDropDown />}
             <Typography variant="subtitle1">Будни</Typography>
           </Box>
-          {scheduleOpen.workdays &&
-            (modelConfig.schedule.workdays || []).map((timeWindow, index) => (
+          {scheduleOpen?.workdays &&
+            (modelConfig?.schedule?.workdays || []).map((timeWindow, index) => (
               <Box
                 key={`workdays-${index}`}
                 sx={{
@@ -560,7 +581,7 @@ function ConfigureModelForm({
             <Typography variant="subtitle1">Выходные</Typography>
           </Box>
           {scheduleOpen.weekends &&
-            (modelConfig.schedule.weekends || []).map((timeWindow, index) => (
+            (modelConfig?.schedule?.weekends || []).map((timeWindow, index) => (
               <Box
                 key={`weekends-${index}`}
                 sx={{

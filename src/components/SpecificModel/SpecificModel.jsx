@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
 import { fineTunedData } from "../../data/fineTunedData";
-import { Box, Typography, Button, Modal, Grid, Collapse } from "@mui/material";
+import { Box, Typography, Button, Modal, Grid, Collapse, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
 import useModelActions from "../../hooks/useModelActions";
@@ -11,10 +11,10 @@ import ModelActions from "../../UI/ModelActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import axiosInstance from "../../api";
+
 function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
-  console.log(currentOrganization)
   const { modelId } = useParams();
 
   const decodedModelId = modelId.replaceAll("__", "/");
@@ -26,6 +26,35 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const [launchedModel, setLaunchedModel] = useState(null)
   const [fineTunedModel, setFineTunedModel] = useState(null);
   const [modelStatus, setModelStatus] = useState(null);
+  const [confirmLaunchOpen, setConfirmLaunchOpen] = useState(false);
+  const [flags, setFlags] = useState([]);
+  const [args, setArgs] = useState([]);
+  const [modelConfig, setModelConfig] = useState({})
+
+  const handleFlagsChange = (newFlags) => {
+    setFlags(newFlags);
+  };
+
+  const handleArgsChange = (newArgs) => {
+    setArgs(newArgs);
+  };
+
+  const handleModelConfigChange = (newConfig) => {
+    setModelConfig(newConfig);
+  }
+
+
+  const handleConfirmLaunchOpen = () => {
+    setConfirmLaunchOpen(true);
+  };
+
+  const handleConfirmLaunchClose = () => {
+    setConfirmLaunchOpen(false);
+  };
+
+  const handleLaunchButtonClick = () => {
+    handleConfirmLaunchOpen();
+  };
 
   const fetchLaunchedModels = async () => {
     if (!currentOrganization || !authToken) return;
@@ -117,6 +146,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     currentOrganization,
     authToken,
     setModelStatus,
+    args,
+    flags,
   });
 
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
@@ -133,6 +164,9 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     loading,
     authToken,
     currentOrganization,
+    handleConfirmLaunchClose,
+    args,
+    flags
   });
 
   const isLaunchedModel = !!launchedModel;
@@ -143,6 +177,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   if (!renderData) {
     return <Typography sx={{ p: 4 }}>Модель не найдена</Typography>;
   }
+
 
   return (
     <Box
@@ -236,7 +271,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
           {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
         </Button>
         <ModelActions
-          actionButtonHandler={actionButtonHandler}
+          actionButtonHandler={actionButtonText === "Остановить" ? actionButtonHandler : handleLaunchButtonClick}
           actionButtonText={actionButtonText}
           isActionButtonDisabled={false}
         />
@@ -253,9 +288,92 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
           <ConfigureModelForm
             initialConfig={initialConfig || renderData.defaultConfig}
             onClose={toggleConfigure}
+            isFineTuned={isFineTuned}
+            onFlagsChange={handleFlagsChange}
+            onArgsChange={handleArgsChange}
+            onModelConfigChange={handleModelConfigChange}
           />
         </Box>
       </Collapse>
+
+      <Dialog
+        open={confirmLaunchOpen}
+        onClose={handleConfirmLaunchClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Подтвердите запуск модели</DialogTitle>
+        <DialogContent dividers>
+          <Typography>
+            Вы уверены, что хотите запустить модель <b>{renderData?.defaultConfig?.modelName || "—"}</b>?
+          </Typography>
+          <Typography>
+            Это действие инициирует выполнение модели с текущими настройками:
+          </Typography>
+
+          {/* Параметры модели */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2">Параметры модели:</Typography>
+            <Typography>
+              <b>GPU Type:</b> {modelConfig?.gpu_types?.map(gpu => gpu.type).join(", ") || "—"}
+            </Typography>
+            <Typography>
+              <b>Health Check Timeout:</b> {modelConfig?.health_check_timeout || "—"} ms
+            </Typography>
+            <Typography>
+              <b>Disk Space:</b> {modelConfig?.disk_space || "—"} GB
+            </Typography>
+            <Typography>
+              <b>Port:</b> {modelConfig?.port || "—"}
+            </Typography>
+            <Typography>
+              <b>Autoscaler Timeout:</b> {modelConfig?.autoscaler_timeout || "—"} sec
+            </Typography>
+          </Box>
+
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2">Аргументы:</Typography>
+            {args?.length > 0 ? (
+              args.map((arg, index) => (
+                <Typography key={index}>
+                  <b>{arg.key}:</b> {arg.value || "—"}
+                </Typography>
+              ))
+            ) : (
+              <Typography>—</Typography>
+            )}
+          </Box>
+
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2">Флаги:</Typography>
+            {flags?.length > 0 ? (
+              flags.map((flag, index) => (
+                <Typography key={index}>
+                  <b>{flag.key}:</b> {flag.value || "—"}
+                </Typography>
+              ))
+            ) : (
+              <Typography>—</Typography>
+            )}
+          </Box>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmLaunchClose}>Отмена</Button>
+          <Button
+            sx={{
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+              color: "white",
+            }}
+            onClick={actionButtonHandler}
+          >
+            Подтвердить
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

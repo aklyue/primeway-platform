@@ -5,9 +5,10 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ConfigureModelForm from "../ConfigureModelForm";
 import { modelsData } from "../../data/modelsData";
 import { useNavigate } from "react-router-dom";
+import { fineTunedData } from "../../data/fineTunedData"
 
 const buildDefaultConfig = (ft) => {
-  const base = modelsData.find((m) => m.name === ft.base_model) || {};
+  const base = fineTunedData.find((m) => m.name === ft.base_model) || {};
   const cfg = base.defaultConfig || {};
   return {
     ...cfg,

@@ -12,6 +12,9 @@ export const useModelButtonLogic = ({
   jobId,
   currentOrganization,
   authToken,
+  handleConfirmLaunchClose,
+  args,
+  flags
 }) => {
   const {
     handleStart,
@@ -26,6 +29,8 @@ export const useModelButtonLogic = ({
     setLoading,
     currentOrganization,
     authToken,
+    args,
+    flags
   });
 
   let actionButtonText = "";
@@ -36,6 +41,7 @@ export const useModelButtonLogic = ({
     actionButtonHandler = (e) => {
       e.stopPropagation();
       handleRun();
+      handleConfirmLaunchClose()
     };
     isActionButtonDisabled = actionLoading;
   } else {

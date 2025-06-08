@@ -97,9 +97,9 @@ export default function TrainPage({ isMobile }) {
           alignItems: "center",
         }}
       >
-        <BackArrow path={"/tasks"} name={"Tasks"} />
-        <Box sx={{width: isMobile ? "200px" : "auto", textAlign: "end"}}>
-          <Typography variant="h4" sx={{ mb: 1, textAlign: "end" }}>
+        {/* <BackArrow path={"/tasks"} name={"Tasks"} /> */}
+        <Box sx={{width: isMobile ? "200px" : "auto", textAlign: "start"}}>
+          <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
             {" "}
             Дообучение{" "}
           </Typography>

@@ -152,7 +152,7 @@ export const useConfigureModelForm = ({
   const handleAddEnvVar = () => {
     setModelConfig({
       ...modelConfig,
-      env: [...modelConfig.env, { name: "", value: "" }],
+      env: [...(modelConfig.env || []), { name: "", value: "" }],
     });
   };
 
@@ -172,7 +172,7 @@ export const useConfigureModelForm = ({
   const handleAddGpuType = () => {
     setModelConfig({
       ...modelConfig,
-      gpu_types: [...modelConfig.gpu_types, { type: "", count: 1 }],
+      gpu_types: [...(modelConfig.gpu_types || []), { type: "", count: 1 }],
     });
   };
 
@@ -197,9 +197,9 @@ export const useConfigureModelForm = ({
     setModelConfig({
       ...modelConfig,
       schedule: {
-        ...modelConfig.schedule,
+        ...(modelConfig.schedule || {}),
         [section]: [
-          ...(modelConfig.schedule[section] || []),
+          ...(modelConfig?.schedule?.[section] || []),
           { start: "", end: "" },
         ],
       },

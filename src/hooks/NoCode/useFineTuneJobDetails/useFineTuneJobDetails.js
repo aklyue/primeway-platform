@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axiosInstance from "../../../api";
 
 export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
@@ -10,12 +10,15 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
   const [logsLoading, setLogsLoading] = useState(false);
   const [currentLogs, setCurrentLogs] = useState("");
   const [firstLogsLoading, setFirstLogsLoading] = useState(true);
+  const [jobStatus, setJobStatus] = useState(job?.last_execution_status);
+  const intervalRef = useRef(null);
 
   /* ─── Fetch job once ───────────────────────────────────── */
+
   useEffect(() => {
     if (!currentOrganization?.id) return;
 
-    (async () => {
+    const fetchJob = async () => {
       try {
         const { data } = await axiosInstance.get(
           "/finetuning/get-running-jobs",
@@ -23,12 +26,31 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
         );
         const found = data.find((j) => j.job_id === jobId);
         setJob(found || null);
+        if (
+          found?.last_execution_status === "completed" ||
+          found?.last_execution_status === "failed"
+        ) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+        }
       } catch (err) {
         console.error("Failed to load job", err);
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    fetchJob();
+
+    intervalRef.current = setInterval(fetchJob, 5000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [jobId, currentOrganization?.id]);
 
   /* ─── NEW: fetch logs on-demand ─────────────────────────── */

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
 import { fineTunedData } from "../../data/fineTunedData";
-import { Box, Typography, Button, Modal, Grid, Collapse, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { Box, Typography, Button, Modal, Grid, Collapse, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
 import useModelActions from "../../hooks/useModelActions";
@@ -12,13 +12,12 @@ import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import axiosInstance from "../../api";
 
-function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
+function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
   const { modelId } = useParams();
 
   const decodedModelId = modelId.replaceAll("__", "/");
-
   const [launchedModels, setLaunchedModels] = useState([]);
   const [fineTunedModels, setFineTunedModels] = useState([]);
   const [model, setModel] = useState(null);
@@ -30,6 +29,9 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const [flags, setFlags] = useState([]);
   const [args, setArgs] = useState([]);
   const [modelConfig, setModelConfig] = useState({})
+  const [logsModalOpen, setLogsModalOpen] = useState(false);
+  const [currentLogs, setCurrentLogs] = useState("");
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const handleFlagsChange = (newFlags) => {
     setFlags(newFlags);
@@ -55,6 +57,42 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
   const handleLaunchButtonClick = () => {
     handleConfirmLaunchOpen();
   };
+
+
+
+  const toggleLogsModal = async () => {
+    setLogsModalOpen(true)
+    setLogsLoading(true);
+    setCurrentLogs(""); // Сбрасываем предыдущие логи
+
+    try {
+      if (!jobId) {
+        setCurrentLogs("Идентификатор задачи отсутствует.");
+        setLogsLoading(false);
+        return;
+      }
+
+      const response = await axiosInstance.get("/jobs/job-logs", {
+        params: { job_id: jobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      const logs = response.data.logs || "Логи отсутствуют.";
+      setCurrentLogs(logs);
+    } catch (error) {
+      console.error(`Ошибка при получении логов для задачи ${jobId}:`, error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        (error.response?.status === 404
+          ? "Логи недоступны."
+          : "Ошибка при получении логов.");
+      setCurrentLogs(errorMessage);
+    } finally {
+      setLogsLoading(false);
+    }
+  }
+
+
 
   const fetchLaunchedModels = async () => {
     if (!currentOrganization || !authToken) return;
@@ -148,6 +186,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     setModelStatus,
     args,
     flags,
+    modelConfig
   });
 
   const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
@@ -166,7 +205,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
     currentOrganization,
     handleConfirmLaunchClose,
     args,
-    flags
+    flags,
+    modelConfig
   });
 
   const isLaunchedModel = !!launchedModel;
@@ -257,19 +297,35 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
 
       <Box sx={{ p: 2, display: "flex", justifyContent: "space-between" }}>
 
-        <Button
-          onClick={toggleConfigure}
-          sx={{
-            color: "white",
-            padding: "8px 16px",
-            bgcolor: "#597ad3",
-            "&:hover": {
-              bgcolor: "#7c97de",
-            },
-          }}
-        >
-          {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
-        </Button>
+        {!isLaunchedModel ? (
+          <Button
+            onClick={toggleConfigure}
+            sx={{
+              color: "white",
+              padding: "8px 16px",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
+          >
+            {isConfigureOpen ? "Скрыть настройку" : "Настроить"}
+          </Button>
+        ) : (
+          <Button
+            onClick={toggleLogsModal}
+            sx={{
+              color: "white",
+              padding: "8px 16px",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
+          >
+            Логи
+          </Button>
+        )}
         <ModelActions
           actionButtonHandler={actionButtonText === "Остановить" ? actionButtonHandler : handleLaunchButtonClick}
           actionButtonText={actionButtonText}
@@ -371,6 +427,64 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile }) {
             onClick={actionButtonHandler}
           >
             Подтвердить
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={logsModalOpen}
+        onClose={() => setLogsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{`Логи модели: ${launchedModel?.job_name}`}</DialogTitle>
+        <DialogContent dividers>
+          {logsLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "200px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+            >
+              {currentLogs}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
+          <Button
+            onClick={() => {
+              // Копирование логов в буфер обмена
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(currentLogs).catch((error) => {
+                  console.error("Ошибка при копировании:", error);
+                });
+              } else {
+                const textarea = document.createElement("textarea");
+                textarea.value = currentLogs;
+                textarea.style.position = "fixed"; // Предотвращаем прокрутку страницы
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                  document.execCommand("copy");
+                } catch (error) {
+                  console.error("Ошибка при копировании:", error);
+                }
+                document.body.removeChild(textarea);
+              }
+            }}
+          >
+            Скопировать Логи
           </Button>
         </DialogActions>
       </Dialog>

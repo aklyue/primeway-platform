@@ -790,7 +790,7 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Переменные среды
         </Typography>
-        {modelConfig.env.map((envVar, index) => (
+        {modelConfig?.env?.map((envVar, index) => (
           <Box
             sx={{
               display: "flex",
@@ -840,33 +840,6 @@ function ConfigureModelForm({
         </Button>
 
         <Divider sx={{ my: 2 }} />
-        <Box sx={{ textAlign: "end" }}>
-          <Button variant="text" onClick={onClose} sx={{ mt: 2, ml: 2 }}>
-            Отмена
-          </Button>
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            variant="contained"
-            color="secondary"
-            disabled={loading}
-            sx={{
-              mt: 2,
-              color: "white",
-              padding: "7px 18px",
-              bgcolor: "#597ad3",
-              "&:hover": {
-                bgcolor: "#7c97de",
-              },
-            }}
-          >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Деплой"
-            )}
-          </Button>
-        </Box>
       </form>
 
       {/* Snackbar for alerts */}

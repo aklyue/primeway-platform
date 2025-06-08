@@ -34,7 +34,6 @@ export default function FineTuneJobDetails({ isMobile }) {
     currentLogs,
   } = useFineTuneJobDetails({ jobId, currentOrganization });
 
-  console.log(job);
 
   /* ─── Render states ────────────────────────────────────── */
   if (loading) {

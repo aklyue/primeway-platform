@@ -75,86 +75,47 @@ export default function JupyterLabSessions({ isMobile }) {
       </Box>
 
       <Paper elevation={0} sx={{ p: isMobile ? 0 : 2 }}>
-        <Box>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
-                >
-                  Имя проекта
-                </TableCell>
-                <TableCell
-                  sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
-                >
-                  Тип GPU
-                </TableCell>
-                <TableCell
-                  sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
-                >
-                  Статус
-                </TableCell>
-                <TableCell
-                  sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
-                >
-                  URl
-                </TableCell>
-                <TableCell
-                  sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
-                >
-                  Действие
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody sx={{ width: "100%" }}>
-              {sessions.map((session) => {
-                const startDisabled =
-                  loadingId === session.job_id || // идёт POST
-                  ["running", "starting", "queued", "creating"].includes(
-                    session.last_execution_status
-                  ); // статус ещё не «idle»
+        {isMobile ? (
+          <Box>
+            {sessions.map((session) => {
+              const startDisabled =
+                loadingId === session.job_id ||
+                ["running", "starting", "queued", "creating"].includes(
+                  session.last_execution_status
+                );
 
-                const stopDisabled =
-                  session.last_execution_status !== "running" ||
-                  loadingId === session.job_id;
-                // ────────────────────────────────────────────────────────
-
-                return (
-                  <TableRow key={session.job_id} hover>
-                    <TableCell
-                      sx={{ fontSize: isMobile ? "9px !important" : "11px" }}
-                    >
+              const stopDisabled =
+                session.last_execution_status !== "running" ||
+                loadingId === session.job_id;
+              return (
+                (
+                  <Box
+                    key={session.job_id}
+                    sx={{
+                      border: "1px solid lightgray",
+                      borderRadius: "8px",
+                      padding: 2,
+                      marginBottom: 2,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontSize: "14px" }}>
                       {session.job_name}
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: isMobile ? "9px !important" : "11px" }}
-                    >
-                      {session.gpu_type?.type || "N/A"}
-                    </TableCell>
+                    </Typography>
+                    <Typography sx={{ fontSize: "12px" }}>
+                      <b>Тип GPU:</b> {session.gpu_type?.type || "N/A"}
+                    </Typography>
+                    <Typography sx={{ fontSize: "12px" }}>
+                      <b>Статус:</b> {session.last_execution_status}
+                      {loadingId === session.job_id ||
+                        session.last_execution_status === "creating" ? (
+                        <CircularProgress size={14} sx={{ ml: 1 }} />
+                      ) : null}
+                    </Typography>
+                    <Typography sx={{ fontSize: "12px" }}>
+                      <b>URL:</b> {session.job_url || "N/A"}
+                    </Typography>
 
-                    <TableCell
-                      sx={{ fontSize: isMobile ? "9px !important" : "11px" }}
-                    >
-                      <Box
-                        sx={{ display: "inline-flex", alignItems: "center" }}
-                      >
-                        {loadingId === session.job_id ||
-                          (session.last_execution_status === "creating" && (
-                            <CircularProgress size={14} sx={{ mr: 1 }} />
-                          ))}
-                        {session.last_execution_status}
-                      </Box>
-                    </TableCell>
-
-                    <TableCell
-                      sx={{ fontSize: isMobile ? "9px !important" : "11px" }}
-                    >
-                      {session.job_url || "N/A"}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{ fontSize: isMobile ? "9px !important" : "11px" }}
-                    >
+                    <Box sx={{ display: "flex", gap: 1, marginTop: 1 }}>
                       {/* START */}
                       <IconButton
                         size="small"
@@ -176,14 +137,98 @@ export default function JupyterLabSessions({ isMobile }) {
                       >
                         <StopIcon fontSize="small" />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Box>
+                    </Box>
+                  </Box>
+                )
+              )
+            })}
+          </Box>
+        ) : (
+          <Box>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Имя проекта
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Тип GPU
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Статус
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    URL
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Действие
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ width: "100%" }}>
+                {sessions.map((session) => {
+                  const startDisabled =
+                    loadingId === session.job_id ||
+                    ["running", "starting", "queued", "creating"].includes(
+                      session.last_execution_status
+                    );
+
+                  const stopDisabled =
+                    session.last_execution_status !== "running" ||
+                    loadingId === session.job_id;
+
+                  return (
+                    <TableRow key={session.job_id} hover>
+                      <TableCell sx={{ fontSize: "11px" }}>
+                        {session.job_name}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "11px" }}>
+                        {session.gpu_type?.type || "N/A"}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "11px" }}>
+                        <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                          {loadingId === session.job_id ||
+                            (session.last_execution_status === "creating" && (
+                              <CircularProgress size={14} sx={{ mr: 1 }} />
+                            ))}
+                          {session.last_execution_status}
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "11px" }}>
+                        {session.job_url || "N/A"}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "11px" }}>
+                        {/* START */}
+                        <IconButton
+                          size="small"
+                          disabled={startDisabled}
+                          onClick={() => handleStartSession(session.job_id)}
+                          color="success.main"
+                          title="Запустить"
+                        >
+                          <PlayCircleFilledIcon fontSize="small" />
+                        </IconButton>
+
+                        {/* STOP */}
+                        <IconButton
+                          size="small"
+                          disabled={stopDisabled}
+                          onClick={() => handleStopSession(session.job_id)}
+                          color="error"
+                          title="Остановить"
+                        >
+                          <StopIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Box>
+        )}
       </Paper>
+
 
       {/* Create new session modal */}
       <Modal

@@ -14,7 +14,8 @@ export const useModelButtonLogic = ({
   authToken,
   handleConfirmLaunchClose,
   args,
-  flags
+  flags,
+  modelConfig
 }) => {
   const {
     handleStart,
@@ -30,7 +31,8 @@ export const useModelButtonLogic = ({
     currentOrganization,
     authToken,
     args,
-    flags
+    flags,
+    modelConfig
   });
 
   let actionButtonText = "";

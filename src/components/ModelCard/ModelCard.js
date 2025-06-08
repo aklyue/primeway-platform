@@ -188,6 +188,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                 isBasic,
                 actionButtonText,
                 isActionButtonDisabled,
+                jobId,
               },
             }
           );
@@ -317,7 +318,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
               </div>
             </Grid>
 
-            {/* **Действия (Кнопки запуска/остановки и получения логов)** */}
+            {/* **Действия (Кнопка получения логов)** */}
             <Grid
               item
               xs={isMobile ? 3 : 3}
@@ -329,12 +330,6 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                 pr: "10px",
               }}
             >
-              <ModelActions
-                isMobile={isMobile}
-                actionButtonHandler={actionButtonHandler}
-                actionButtonText={actionButtonText}
-                isActionButtonDisabled={isActionButtonDisabled}
-              />
               {!isMobile && (
                 <Button
                   onClick={handleLogsClick}

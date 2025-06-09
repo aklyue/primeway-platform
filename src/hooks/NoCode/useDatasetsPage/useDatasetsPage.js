@@ -14,10 +14,12 @@ export const useDatasetsPage = ({ currentOrganization }) => {
     severity: "success",
   });
   const fileInputRef = useRef();
-  const organizationId = currentOrganization.id;
 
-  const refresh = () =>
-    getDatasets(organizationId)
+  const organizationId = currentOrganization?.id;
+
+  const refresh = () => {
+    if (!organizationId) return Promise.resolve();
+    return getDatasets(organizationId)
       .then(setData)
       .catch((err) => {
         console.error(err);
@@ -27,14 +29,16 @@ export const useDatasetsPage = ({ currentOrganization }) => {
           severity: "error",
         });
       });
+  };
 
   useEffect(() => {
+    if (!organizationId) return;
     refresh();
   }, [organizationId]);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !organizationId) return;
     setUploading(true);
 
     try {
@@ -50,12 +54,12 @@ export const useDatasetsPage = ({ currentOrganization }) => {
       setSnackbar({ open: true, message: "Upload failed.", severity: "error" });
     } finally {
       setUploading(false);
-      // allow same file to be selected again
       fileInputRef.current.value = null;
     }
   };
 
   const handleDelete = async (id) => {
+    if (!organizationId) return;
     try {
       await deleteDataset(id);
       setSnackbar({

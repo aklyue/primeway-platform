@@ -32,8 +32,7 @@ import useConfigureModelForm from "../../hooks/useConfigureModelForm";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
-import { AVAILABLE_GPUS } from "../../AVAILABLE_GPUS"
-
+import { AVAILABLE_GPUS } from "../../AVAILABLE_GPUS";
 
 function ConfigureModelForm({
   initialConfig,
@@ -42,7 +41,7 @@ function ConfigureModelForm({
   isFineTuned,
   onFlagsChange,
   onModelConfigChange,
-  onArgsChange
+  onArgsChange,
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -94,7 +93,7 @@ function ConfigureModelForm({
     alertSeverity,
     alertMessage,
     isModalOpen,
-    setIsModalOpen
+    setIsModalOpen,
   } = useConfigureModelForm({
     initialConfig,
     onClose,
@@ -108,16 +107,22 @@ function ConfigureModelForm({
   });
 
   useEffect(() => {
-    onFlagsChange(flags);
+    if (onFlagsChange) {
+      onFlagsChange(flags);
+    }
   }, [flags, onFlagsChange]);
 
   useEffect(() => {
-    onArgsChange(args);
+    if (onArgsChange) {
+      onArgsChange(args);
+    }
   }, [args, onArgsChange]);
 
   useEffect(() => {
-    onModelConfigChange(modelConfig)
-  }, [modelConfig, onModelConfigChange])
+    if (onModelConfigChange) {
+      onModelConfigChange(modelConfig);
+    }
+  }, [modelConfig, onModelConfigChange]);
 
   return (
     <Paper
@@ -135,14 +140,22 @@ function ConfigureModelForm({
 
         {/* Model Name */}
         <TextField
-          label={isFineTuned ? "Имя базовой модели (Hugging Face)" : "Имя модели (Hugging Face)"}
+          label={
+            isFineTuned
+              ? "Имя базовой модели (Hugging Face)"
+              : "Имя модели (Hugging Face)"
+          }
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
           required
           margin="normal"
           disabled={loading || readOnlyModelName || isFineTuned}
-          helperText={isFineTuned ? "Имя базовой модели из Hugging Face" : modelNameErrorText || "Имя модели из Hugging Face"}
+          helperText={
+            isFineTuned
+              ? "Имя базовой модели из Hugging Face"
+              : modelNameErrorText || "Имя модели из Hugging Face"
+          }
           error={modelNameError}
         />
 

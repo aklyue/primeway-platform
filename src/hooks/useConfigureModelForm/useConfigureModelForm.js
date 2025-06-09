@@ -11,18 +11,20 @@ export const useConfigureModelForm = ({
   onFlagsChange,
   onArgsChange,
   onModelConfigChange,
-  isFineTuned
+  isFineTuned,
 }) => {
-
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
 
-
   const [args, setArgs] = useState(
-    isFineTuned ? [{ key: "", value: "" }] : (initialConfig?.args || [{ key: "", value: "" }])
+    isFineTuned
+      ? [{ key: "", value: "" }]
+      : initialConfig?.args || [{ key: "", value: "" }]
   );
 
   const [flags, setFlags] = useState(
-    isFineTuned ? [{ key: "", value: "" }] : (initialConfig?.flags || [{ key: "", value: "True" }])
+    isFineTuned
+      ? [{ key: "", value: "" }]
+      : initialConfig?.flags || [{ key: "", value: "True" }]
   );
 
   const [modelConfig, setModelConfig] = useState(
@@ -66,7 +68,7 @@ export const useConfigureModelForm = ({
 
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleModelNameChange = (e) => {
     setModelName(e.target.value);
@@ -141,11 +143,15 @@ export const useConfigureModelForm = ({
   };
 
   useEffect(() => {
-    onFlagsChange(flags);
+    if (onFlagsChange) {
+      onFlagsChange(flags);
+    }
   }, [flags, onFlagsChange]);
 
   useEffect(() => {
-    onArgsChange(args);
+    if (onArgsChange) {
+      onArgsChange(args);
+    }
   }, [args, onArgsChange]);
 
   // Handlers for environment variables

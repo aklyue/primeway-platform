@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axiosInstance from "../../api";
+import { modelsData } from "../../data/modelsData";
 
 export const useModelActions = ({
   isBasic,
@@ -10,6 +11,7 @@ export const useModelActions = ({
   setModelStatus,
   args,
   flags,
+  modelConfig
 }) => {
 
   const [loading, setLoading] = useState(false);
@@ -61,13 +63,12 @@ export const useModelActions = ({
       setLoading(false);
     }
   };
-
+  
   const handleRun = async () => {
     setLoading(true);
     try {
       const { defaultConfig } = model;
 
-      console.log(args, flags)
 
       const vllmConfig = {
         model: defaultConfig.modelName,
@@ -102,7 +103,7 @@ export const useModelActions = ({
       console.log(currentOrganization)
       formData.append("organization_id", currentOrganization?.id || "");
       formData.append("vllm_config_str", JSON.stringify(vllmConfig));
-      formData.append("config_str", JSON.stringify(defaultConfig.modelConfig));
+      formData.append("config_str", JSON.stringify(modelConfig));
 
       console.log(formData);
 

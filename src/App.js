@@ -33,6 +33,7 @@ import {
   CardActionArea,
   CardContent,
 } from "@mui/material";
+import ModelCreatePage from "./pages/ModelCreatePage";
 import MenuIcon from "@mui/icons-material/Menu";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
@@ -515,8 +516,8 @@ export function Layout() {
                         borderRadius: isMobile
                           ? "0"
                           : !isDocsPage
-                          ? "50px"
-                          : "0",
+                            ? "50px"
+                            : "0",
                         boxShadow:
                           !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
@@ -661,7 +662,7 @@ export function Layout() {
 
                       {isLoggedIn && (
                         <>
-                          <Tooltip sx={{borderRadius: "50%"}} title={user?.username || "Пользователь"}>
+                          <Tooltip sx={{ borderRadius: "50%" }} title={user?.username || "Пользователь"}>
                             <ButtonBase onClick={handleAvatarClick}>
                               <Box
                                 sx={{
@@ -707,38 +708,38 @@ export function Layout() {
                   {(showMenu ||
                     (location.pathname !== "/" &&
                       location.pathname !== "/docs")) && (
-                    <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
-                      {isMobile ? (
-                        <ResponsiveDrawer
-                          variant="temporary"
-                          drawerWidth={isDocsPage ? 120 : 72}
-                          open={mobileOpen}
-                          onClose={handleDrawerToggle}
-                          isMobile={isMobile}
-                          isDocsPage={isDocsPage}
-                          handleDrawerToggle={handleDrawerToggle}
-                          isSmallDesktop={isSmallDesktop}
-                          isTablet={isTablet}
-                          menuItems={menuItems}
-                          location={location}
-                          anchor="left"
-                        />
-                      ) : (
-                        <ResponsiveDrawer
-                          variant="permanent"
-                          drawerWidth={drawerWidth}
-                          isMobile={isMobile}
-                          isDocsPage={isDocsPage}
-                          handleDrawerToggle={handleDrawerToggle}
-                          isSmallDesktop={isSmallDesktop}
-                          isTablet={isTablet}
-                          menuItems={menuItems}
-                          location={location}
-                          anchor="left"
-                        />
-                      )}
-                    </Box>
-                  )}
+                      <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
+                        {isMobile ? (
+                          <ResponsiveDrawer
+                            variant="temporary"
+                            drawerWidth={isDocsPage ? 120 : 72}
+                            open={mobileOpen}
+                            onClose={handleDrawerToggle}
+                            isMobile={isMobile}
+                            isDocsPage={isDocsPage}
+                            handleDrawerToggle={handleDrawerToggle}
+                            isSmallDesktop={isSmallDesktop}
+                            isTablet={isTablet}
+                            menuItems={menuItems}
+                            location={location}
+                            anchor="left"
+                          />
+                        ) : (
+                          <ResponsiveDrawer
+                            variant="permanent"
+                            drawerWidth={drawerWidth}
+                            isMobile={isMobile}
+                            isDocsPage={isDocsPage}
+                            handleDrawerToggle={handleDrawerToggle}
+                            isSmallDesktop={isSmallDesktop}
+                            isTablet={isTablet}
+                            menuItems={menuItems}
+                            location={location}
+                            anchor="left"
+                          />
+                        )}
+                      </Box>
+                    )}
                 </>
               )}
 
@@ -750,8 +751,8 @@ export function Layout() {
                   margin: isMobile
                     ? "0 0 0 0"
                     : isDocsPage
-                    ? `0 0 0 ${drawerWidth}`
-                    : `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
+                      ? `0 0 0 ${drawerWidth}`
+                      : `0 ${isMobile || isMainPage ? "0" : drawerWidth}`,
                   minHeight: "90vh",
                   height: isDocsPage ? "calc(100vh - 64px)" : "",
                   backgroundColor: "#FFFFFF",
@@ -820,7 +821,7 @@ export function Layout() {
                         path="/fine-tuning/new"
                         element={
                           <ProtectedRoute>
-                            <FineTuningJobCreatePage isMobile={isMobile}/>
+                            <FineTuningJobCreatePage isMobile={isMobile} />
                           </ProtectedRoute>
                         }
                       />
@@ -841,10 +842,18 @@ export function Layout() {
                         }
                       />
                       <Route
+                        path="/model-create"
+                        element={
+                          <ProtectedRoute>
+                            <ModelCreatePage isMobile={isMobile}/>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
                         path="/models/:modelId"
                         element={
                           <ProtectedRoute>
-                            <SpecificModelPage/>
+                            <SpecificModelPage />
                           </ProtectedRoute>
                         }
                       />
@@ -901,23 +910,23 @@ export function Layout() {
               {(showMenu ||
                 (location.pathname !== "/" &&
                   !location.pathname.startsWith("/docs"))) && (
-                <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
-                  {!isMobile && (
-                    <ResponsiveDrawer
-                      variant="permanent"
-                      drawerWidth={drawerWidth}
-                      isMobile={isMobile}
-                      isDocsPage={isDocsPage}
-                      handleDrawerToggle={handleDrawerToggle}
-                      isSmallDesktop={isSmallDesktop}
-                      isTablet={isTablet}
-                      menuItems={rightMenuItems}
-                      location={location}
-                      anchor="right"
-                    />
-                  )}
-                </Box>
-              )}
+                  <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
+                    {!isMobile && (
+                      <ResponsiveDrawer
+                        variant="permanent"
+                        drawerWidth={drawerWidth}
+                        isMobile={isMobile}
+                        isDocsPage={isDocsPage}
+                        handleDrawerToggle={handleDrawerToggle}
+                        isSmallDesktop={isSmallDesktop}
+                        isTablet={isTablet}
+                        menuItems={rightMenuItems}
+                        location={location}
+                        anchor="right"
+                      />
+                    )}
+                  </Box>
+                )}
             </Box>
           </motion.div>
         )}
@@ -926,7 +935,7 @@ export function Layout() {
       {!loading && (
         <Modal
           open={openRegistrationModal}
-          onClose={() => {}}
+          onClose={() => { }}
           BackdropProps={{
             style: { backgroundColor: "#FFFFFF" },
           }}

@@ -1,6 +1,7 @@
 import { useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../api";
+import { useNavigate } from "react-router-dom";
 
 export const useConfigureModelForm = ({
   initialConfig,
@@ -14,6 +15,7 @@ export const useConfigureModelForm = ({
   isFineTuned,
 }) => {
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
+  const navigate = useNavigate()
 
   const [args, setArgs] = useState(
     isFineTuned
@@ -418,9 +420,8 @@ export const useConfigureModelForm = ({
       setAlertMessage(message);
       setAlertSeverity("success");
       setAlertOpen(true);
-
-      // Закрываем модальное окно
-      onClose();
+      navigate("/models")
+      
     } catch (error) {
       // Обработка ошибки
       console.error(error);

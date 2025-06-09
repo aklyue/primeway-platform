@@ -289,7 +289,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
-                      width: isMobile ? "60px" : "auto",
+                      width: isMobile ? "100px" : "auto",
                       textAlign: "center",
                       mx: isMobile ? "5px" : "10px",
                       marginLeft: !isMobile && "0",
@@ -319,18 +319,18 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             </Grid>
 
             {/* **Действия (Кнопка получения логов)** */}
-            <Grid
-              item
-              xs={isMobile ? 3 : 3}
-              sx={{
-                textAlign: "center",
-                display: "flex",
-                justifyContent: "center",
-                gap: 0.5,
-                pr: "10px",
-              }}
-            >
-              {!isMobile && (
+            {!isMobile && (
+              <Grid
+                item
+                xs={isMobile ? 3 : 3}
+                sx={{
+                  textAlign: "center",
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 0.5,
+                  pr: "10px",
+                }}
+              >
                 <Button
                   onClick={handleLogsClick}
                   variant="outlined"
@@ -345,8 +345,8 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                 >
                   Логи
                 </Button>
-              )}
-            </Grid>
+              </Grid>
+            )}
           </>
         )}
       </Grid>

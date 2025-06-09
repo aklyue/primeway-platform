@@ -12,6 +12,7 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
   const [firstLogsLoading, setFirstLogsLoading] = useState(true);
   const [jobStatus, setJobStatus] = useState(job?.last_execution_status);
   const intervalRef = useRef(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   /* ─── Fetch job once ───────────────────────────────────── */
 
@@ -38,7 +39,7 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
       } catch (err) {
         console.error("Failed to load job", err);
       } finally {
-        setLoading(false);
+        if (initialLoading) setInitialLoading(false);
       }
     };
 
@@ -46,11 +47,7 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
 
     intervalRef.current = setInterval(fetchJob, 5000);
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
+    return () => clearInterval(intervalRef.current);
   }, [jobId, currentOrganization?.id]);
 
   /* ─── NEW: fetch logs on-demand ─────────────────────────── */
@@ -81,29 +78,25 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
       .finally(() => setLogsLoading(false));
   }, [job]);
 
+  const isFirstRef = useRef(true);
+
   useEffect(() => {
     if (!isLogsOpen || !job) return;
 
-    let isFirst = true;
-
     const fetchLogs = () => {
-      setLogsLoading(isFirst);
-      if (isFirst) {
+      setLogsLoading(isFirstRef.current);
+      if (isFirstRef.current) {
         setFirstLogsLoading(true);
         setCurrentLogs("");
       }
+
       axiosInstance
         .get("/jobs/job-logs", { params: { job_id: job.job_id } })
         .then(({ data }) => {
           setCurrentLogs(data.logs || "Логи отсутствуют.");
         })
         .catch((error) => {
-          console.error(
-            `Ошибка при получении логов для задачи ${job.id}:`,
-            error
-          );
-          const msg =
-            error.response?.data?.detail ||
+          const msg = error.response?.data?.detail ||
             (error.response?.status === 404
               ? "Логи недоступны."
               : "Ошибка при получении логов.");
@@ -111,17 +104,15 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
         })
         .finally(() => {
           setLogsLoading(false);
-          if (isFirst) {
+          if (isFirstRef.current) {
             setFirstLogsLoading(false);
-            isFirst = false;
+            isFirstRef.current = false;
           }
         });
     };
 
     fetchLogs();
-
     const interval = setInterval(fetchLogs, 2000);
-
     return () => clearInterval(interval);
   }, [isLogsOpen, job]);
 
@@ -135,7 +126,7 @@ export const useFineTuneJobDetails = ({ jobId, currentOrganization }) => {
   };
 
   return {
-    loading,
+    loading: initialLoading,
     job,
     formatGpu,
     handleLogsClick,

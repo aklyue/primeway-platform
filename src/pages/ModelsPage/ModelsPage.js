@@ -222,7 +222,7 @@ function ModelsPage({ isMobile }) {
                 borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
-                justifyContent: isMobile && "center",
+                justifyContent: "space-between",
                 gap: isMobile && "5px",
               }}
               container
@@ -267,15 +267,17 @@ function ModelsPage({ isMobile }) {
                   URL
                 </Typography>
               </Grid>
-              <Grid item xs={3} sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="light"
-                  fontSize={{ xs: 10, sm: 14 }}
-                >
-                  ДЕЙСТВИЕ
-                </Typography>
-              </Grid>
+              {!isMobile && (
+                <Grid item xs={3} sx={{ textAlign: "center" }}>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="light"
+                    fontSize={{ xs: 10, sm: 14 }}
+                  >
+                    ДЕЙСТВИЕ
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
 
             {/* <Divider sx={{ my: 1 }} /> */}

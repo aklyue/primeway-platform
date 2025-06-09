@@ -27,6 +27,7 @@ import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
+import { Link } from "react-router-dom";
 
 export default function JupyterLabSessions({ isMobile }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -112,7 +113,9 @@ export default function JupyterLabSessions({ isMobile }) {
                       ) : null}
                     </Typography>
                     <Typography sx={{ fontSize: "12px" }}>
-                      <b>URL:</b> {session.job_url || "N/A"}
+                      <Link to={session.job_url} target="_blank" rel="noopener noreferrer" underline="hover">
+                        <b>URL:</b> {session.job_url || "N/A"}
+                      </Link>
                     </Typography>
 
                     <Box sx={{ display: "flex", gap: 1, marginTop: 1 }}>
@@ -195,7 +198,9 @@ export default function JupyterLabSessions({ isMobile }) {
                         </Box>
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
-                        {session.job_url || "N/A"}
+                        <Link to={session.job_url} target="_blank" rel="noopener noreferrer" underline="hover">
+                          {session.job_url || "N/A"}
+                        </Link>
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
                         {/* START */}

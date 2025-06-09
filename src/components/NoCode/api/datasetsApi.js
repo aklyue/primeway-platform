@@ -28,4 +28,4 @@ export const uploadDataset = (file, organizationId) => {
 
 // Delete a dataset
 export const deleteDataset = (datasetId) =>
-  axiosInstance.delete(`/datasets/${datasetId}`).then((res) => res.data);
+  axiosInstance.delete(`/datasets/delete/${datasetId}`).then((res) => res.data);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axiosInstance from "../../api";
 import { modelsData } from "../../data/modelsData";
+import { useNavigate } from "react-router-dom";
 
 export const useModelActions = ({
   isBasic,
@@ -13,7 +14,7 @@ export const useModelActions = ({
   flags,
   modelConfig
 }) => {
-
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -119,6 +120,7 @@ export const useModelActions = ({
       alert(
         'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
       );
+      navigate("/models")
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
     } finally {

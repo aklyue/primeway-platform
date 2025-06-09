@@ -203,7 +203,40 @@ export default function FineTuneTasksList({ isMobile }) {
                     </Tooltip>
                   </TableCell>
                   {!isMobile && <TableCell>{j.baseModel}</TableCell>}
-                  <TableCell>{j.suffix}</TableCell>
+                  <TableCell
+                    sx={{
+                      maxWidth: isMobile ? 120 : "auto",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      px: 1,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box
+                        sx={{
+                          maxWidth: 80,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Tooltip title={j.suffix}>{j.suffix}</Tooltip>
+                      </Box>
+                      {isMobile && (
+                        <Tooltip title="Скопировать адаптер">
+                          <IconButton
+                            size="small"
+                            sx={{ ml: 0.5, flexShrink: 0 }}
+                            onClick={(e) => handleCopy(e, j.suffix)}
+                          >
+                            <ContentCopy fontSize="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </TableCell>
+
                   <TableCell>{j.lastExecutionStatus}</TableCell>
                   {!isMobile && <TableCell>{j.runTime}</TableCell>}
                   {!isMobile && <TableCell>{j.createdAt}</TableCell>}

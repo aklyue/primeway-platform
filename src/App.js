@@ -820,7 +820,7 @@ export function Layout() {
                         path="/fine-tuning/new"
                         element={
                           <ProtectedRoute>
-                            <FineTuningJobCreatePage />
+                            <FineTuningJobCreatePage isMobile={isMobile}/>
                           </ProtectedRoute>
                         }
                       />
@@ -844,7 +844,7 @@ export function Layout() {
                         path="/models/:modelId"
                         element={
                           <ProtectedRoute>
-                            <SpecificModelPage />
+                            <SpecificModelPage/>
                           </ProtectedRoute>
                         }
                       />

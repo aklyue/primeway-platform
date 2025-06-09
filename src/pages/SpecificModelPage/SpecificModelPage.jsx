@@ -11,7 +11,7 @@ function SpecificModelPage() {
 
   return (
     <div>
-      <Box sx={{ mx: 4 }}>
+      <Box sx={{ mx: isMobile ? 0 : 4 }}>
         <BackArrow path={"/models"} name={"Models"} model={model} config={initialConfig} />
       </Box>
       <SpecificModel

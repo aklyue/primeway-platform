@@ -38,7 +38,7 @@ const formatBytes = (bytes) => {
 };
 
 /* ───────────────────────── COMPONENT ───────────────────────── */
-export default function FineTuningJobCreatePage() {
+export default function FineTuningJobCreatePage({isMobile}) {
   const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
@@ -91,7 +91,7 @@ export default function FineTuningJobCreatePage() {
 
   /* ───── UI ───── */
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: isMobile ? 0 : 3 }}>
       <Toolbar
         disableGutters
         sx={{
@@ -104,7 +104,7 @@ export default function FineTuningJobCreatePage() {
         <BackArrow path={"/fine-tuning"} name={"Fine-tuning"} />
         <Typography
           variant="h5"
-          sx={{ width: "min-content", whiteSpace: "nowrap" }}
+          sx={{ width: "min-content", whiteSpace: "nowrap", fontSize: isMobile ? "14px !important" : "inherit" }}
         >
           Создать задачу дообучения
         </Typography>

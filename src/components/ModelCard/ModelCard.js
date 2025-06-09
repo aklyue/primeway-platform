@@ -274,7 +274,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             </Grid>
 
             {/* **URL** */}
-            <Grid item xs={isMobile ? 2 : 2} sx={{ textAlign: "center" }}>
+            <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
               <div
                 style={{
                   display: "flex",

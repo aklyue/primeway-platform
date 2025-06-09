@@ -204,6 +204,12 @@ function ConfigureModelForm({
                   label="Ключ"
                   disabled={loading}
                   helperText="Ключ аргумента"
+                  FormHelperTextProps={{
+                    sx: {
+                      maxHeight: isMobile && "20px",
+                      mb: isMobile && "15px",
+                    },
+                  }}
                 />
               )}
             />
@@ -213,6 +219,9 @@ function ConfigureModelForm({
               onChange={(e) => handleArgChange(index, "value", e.target.value)}
               disabled={loading}
               helperText="Значение аргумента"
+              FormHelperTextProps={{
+                sx: { maxHeight: isMobile && "20px", mb: isMobile && "15px" },
+              }}
               sx={{ flex: 1 }}
             />
             <IconButton
@@ -278,12 +287,18 @@ function ConfigureModelForm({
                   label="Ключ"
                   disabled={loading}
                   helperText="Ключ флага"
+                  FormHelperTextProps={{
+                    sx: {
+                      maxHeight: isMobile && "20px",
+                      mb: isMobile && "17px",
+                    },
+                  }}
                 />
               )}
             />
             <FormControl sx={{ flex: 1 }}>
               <InputLabel id={`flag-value-label-${index}`}>
-                Значение (True/False)
+                {isMobile ? "True/False" : "Значение (True/False)"}
               </InputLabel>
               <Select
                 labelId={`flag-value-label-${index}`}

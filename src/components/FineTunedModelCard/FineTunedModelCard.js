@@ -41,7 +41,8 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
             {
               state: {
                 model: defaultConfig.modelName,
-                initialConfig: defaultConfig
+                initialConfig: defaultConfig,
+                isMobile,
               },
             }
           );

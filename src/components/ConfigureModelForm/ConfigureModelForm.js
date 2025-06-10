@@ -145,7 +145,7 @@ function ConfigureModelForm({
             isFineTuned
               ? "Имя базовой модели (Hugging Face)"
               : "Имя модели (Hugging Face)"
-          }
+          }z
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth

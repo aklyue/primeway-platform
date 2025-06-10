@@ -34,9 +34,8 @@ import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
 function ModelCard({ model, isLast, isBasic, isMobile }) {
-
   const authToken = useSelector((state) => state.auth.authToken);
-  const currentOrganization = useSelector(selectCurrentOrganization)
+  const currentOrganization = useSelector(selectCurrentOrganization);
   const navigate = useNavigate();
 
   // **Состояния**
@@ -54,6 +53,19 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
 
   const modelName = isBasic ? model.name : model.job_name || "N/A";
   const modelType = isBasic ? model.type : model.author || "N/A";
+
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [tooltipCopyOpen, setTooltipCopyOpen] = useState(false);
+
+  useEffect(() => {
+    if (!tooltipOpen && !tooltipCopyOpen) return;
+    const handleScroll = () => {
+      setTooltipOpen(false);
+      setTooltipCopyOpen(false);
+    };
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, [tooltipOpen, tooltipCopyOpen]);
 
   // **Состояние статуса модели**
   const [modelStatus, setModelStatus] = useState(model.last_execution_status);
@@ -106,7 +118,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
       handleStop,
       loading,
       authToken,
-      currentOrganization
+      currentOrganization,
     });
 
   // **Функция для получения логов модели**
@@ -161,7 +173,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
         spacing={0}
         alignItems="center"
         sx={{
-          justifyContent: isMobile ? "space-between" : "center",
+          justifyContent: "space-between",
           cursor: "pointer",
           // transition: "background 0.2s",
           "&:hover": {
@@ -169,7 +181,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             borderBottomLeftRadius: isLast ? "16px" : "",
             borderBottomRightRadius: isLast ? "16px" : "",
           },
-          padding: "6px 0",
+          padding: isBasic ? "6px 0" : "12px 0",
           overflow: "hidden",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
         }}
@@ -197,7 +209,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
         {/* **Название модели** */}
         <Grid
           item
-          xs={isMobile && isBasic ? 5 : isMobile ? 4 : isBasic ? 6 : 3}
+          xs={isMobile && isBasic ? 5 : isMobile ? 4 : isBasic ? 6 : 4.8}
         >
           <Typography
             fontSize={{ xs: 10, sm: 14 }}
@@ -248,16 +260,42 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
           // **Запущенные модели**
           <>
             {/* **Дата создания** */}
-            {!isMobile && (
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography variant="body2">
-                  {model.created_at || "N/A"}
-                </Typography>
-              </Grid>
-            )}
+            <Grid
+              item
+              xs={2}
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
+              >
+                {model.base_model}
+              </Typography>
+            </Grid>
+            <Grid item xs={2} sx={{ textAlign: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  textWrap: "nowrap",
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+              >
+                {model.created_at || "N/A"}
+              </Typography>
+            </Grid>
+            <Grid item xs={2.5} sx={{ textAlign: "center", pr: "16px" }}>
+              <Typography
+                variant="body2"
+                sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
+              >
+                Запущенная
+              </Typography>
+            </Grid>
 
             {/* **Состояние** */}
-            <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
+            {/* <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
               <Typography
                 variant="body2"
                 sx={{
@@ -271,10 +309,10 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
               >
                 {modelStatus || "N/A"}
               </Typography>
-            </Grid>
+            </Grid> */}
 
             {/* **URL** */}
-            <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
+            {/* <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
               <div
                 style={{
                   display: "flex",
@@ -282,9 +320,18 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   justifyContent: "center",
                 }}
               >
-                <Tooltip title={model.job_url || "N/A"} arrow placement="top">
+                <Tooltip
+                  title={model.job_url || "N/A"}
+                  arrow
+                  placement="top"
+                  open={tooltipOpen}
+                  onOpen={() => setTooltipOpen(true)}
+                  onClose={() => setTooltipOpen(false)}
+                >
                   <Typography
                     variant="body2"
+                    onMouseEnter={() => setTooltipOpen(true)}
+                    onMouseLeave={() => setTooltipOpen(false)}
                     sx={{
                       overflow: "hidden",
                       whiteSpace: "nowrap",
@@ -302,8 +349,16 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   </Typography>
                 </Tooltip>
                 {model.job_url && (
-                  <Tooltip title="Скопировать" placement="top">
+                  <Tooltip
+                    title="Скопировать"
+                    placement="top"
+                    open={tooltipCopyOpen}
+                    onOpen={() => setTooltipCopyOpen(true)}
+                    onClose={() => setTooltipCopyOpen(false)}
+                  >
                     <IconButton
+                      onMouseEnter={() => setTooltipCopyOpen(true)}
+                      onMouseLeave={() => setTooltipCopyOpen(false)}
                       data-no-navigate
                       size="small"
                       onClick={() => handleCopy(model.job_url)}
@@ -316,10 +371,10 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   </Tooltip>
                 )}
               </div>
-            </Grid>
+            </Grid> */}
 
             {/* **Действия (Кнопка получения логов)** */}
-            {!isMobile && (
+            {/* {!isMobile && (
               <Grid
                 item
                 xs={isMobile ? 3 : 3}
@@ -346,7 +401,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   Логи
                 </Button>
               </Grid>
-            )}
+            )} */}
           </>
         )}
       </Grid>

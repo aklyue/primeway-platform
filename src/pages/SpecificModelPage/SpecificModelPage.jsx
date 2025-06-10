@@ -1,19 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import BackArrow from "../../UI/BackArrow";
 import SpecificModel from "../../components/SpecificModel";
-import { Accordion, AccordionDetails, AccordionSummary, Box, CircularProgress, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import axiosInstance from "../../api";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import { Description, ExpandMore } from "@mui/icons-material";
+import JobTable from "../../UI/JobTable";
 
 function SpecificModelPage() {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
 
   const location = useLocation();
-  const { model, initialConfig, isBasic, isMobile, jobId } = location.state || {};
+  const { model, initialConfig, isBasic, isMobile } = location.state || {};
+  const { modelId: jobId } = useParams();
+  console.log(jobId);
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentLogs, setCurrentLogs] = useState("");
   const [logsLoading, setLogsLoading] = useState(false);
@@ -22,6 +32,8 @@ function SpecificModelPage() {
   const intervalRef = useRef(null);
   const isFirstRef = useRef(true);
   const [isLaunchedModel, setIsLaunchedModel] = useState(false);
+  const [jobs, setJobs] = useState(null);
+  const [job, setJob] = useState(null);
 
   useEffect(() => {
     if (!currentOrganization?.id || !jobId) return;
@@ -50,7 +62,6 @@ function SpecificModelPage() {
   /* ─── NEW: fetch logs on-demand ─────────────────────────── */
   const handleLogsClick = useCallback(() => {
     if (!jobId) return;
-
     setIsLogsOpen(true);
     setLogsLoading(true);
     setCurrentLogs("");
@@ -70,7 +81,6 @@ function SpecificModelPage() {
       })
       .finally(() => setLogsLoading(false));
   }, [jobId]);
-
 
   useEffect(() => {
     if (!isLogsOpen || !jobId) return;
@@ -109,10 +119,49 @@ function SpecificModelPage() {
     return () => clearInterval(interval);
   }, [isLogsOpen, jobId]);
 
+  const fetchJobs = () => {
+    if (currentOrganization && authToken) {
+      const endpoint = `/jobs/get-organization-jobs`;
+      const params = {
+        organization_id: currentOrganization.id,
+      };
+
+      axiosInstance
+        .get(endpoint, { params })
+        .then((response) => {
+          const data = response.data || [];
+          setJobs(data);
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Ошибка при получении списка задач:", error);
+          const errorMessage =
+            error.response?.data?.detail ||
+            "Не удалось загрузить список задач.";
+        });
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+  useEffect(() => {
+    if (jobs && jobs.length > 0) {
+      const currentJob = jobs.find((j) => j.job_id === jobId);
+      setJob(currentJob);
+      console.log("Current job:", currentJob);
+    }
+  }, [jobs, jobId]);
+
   return (
     <div>
       <Box sx={{ mx: isMobile ? 0 : 4 }}>
-        <BackArrow path={"/models"} name={"Models"} model={model} config={initialConfig} />
+        <BackArrow
+          path={"/models"}
+          name={"Models"}
+          model={model}
+          config={initialConfig}
+        />
       </Box>
       <SpecificModel
         isMobile={isMobile}
@@ -122,6 +171,11 @@ function SpecificModelPage() {
         jobId={jobId}
         onLaunchedModelChange={setIsLaunchedModel}
       />
+      {!isBasic && !isLaunchedModel && (
+        <Box sx={{ mx: 4 }}>
+          <JobTable job={job} isMobile={isMobile} />
+        </Box>
+      )}
       {isLaunchedModel && (
         <Box sx={{ mx: isMobile ? 0 : 4 }}>
           <Accordion

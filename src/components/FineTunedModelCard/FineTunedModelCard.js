@@ -5,7 +5,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ConfigureModelForm from "../ConfigureModelForm";
 import { modelsData } from "../../data/modelsData";
 import { useNavigate } from "react-router-dom";
-import { fineTunedData } from "../../data/fineTunedData"
+import { fineTunedData } from "../../data/fineTunedData";
 
 const buildDefaultConfig = (ft) => {
   const base = fineTunedData.find((m) => m.name === ft.base_model) || {};
@@ -22,7 +22,7 @@ const buildDefaultConfig = (ft) => {
 };
 
 function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [openCfg, setOpenCfg] = useState(false);
   const defaultConfig = buildDefaultConfig(ft);
 
@@ -37,12 +37,13 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           }
 
           navigate(
-            `/models/${(defaultConfig.finetuned_job_id).replaceAll("/", "__")}`,
+            `/models/${defaultConfig.finetuned_job_id.replaceAll("/", "__")}`,
             {
               state: {
                 model: defaultConfig.modelName,
                 initialConfig: defaultConfig,
                 isMobile,
+                jobId: defaultConfig.finetuned_job_id
               },
             }
           );
@@ -52,14 +53,14 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           justifyContent: "space-between",
           alignItems: "center",
           px: "16px",
-          py: 1,
+          py: "12px",
           cursor: "pointer",
           "&:hover": { background: "rgba(102, 179, 238, 0.2)" },
         }}
       >
         <Typography
           sx={{
-            flexBasis: "25%",
+            flexBasis: "40%",
             fontSize: isMobile ? "9px !important" : "12px",
           }}
         >
@@ -68,7 +69,7 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
         {!isMobile && (
           <Typography
             sx={{
-              flexBasis: "18%",
+              flexBasis: "20%",
               textAlign: "center",
               fontSize: isMobile ? "9px !important" : "12px",
             }}
@@ -76,7 +77,7 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
             {ft.base_model || "—"}
           </Typography>
         )}
-        <Typography
+        {/* <Typography
           sx={{
             flexBasis: "24%",
             textAlign: "center",
@@ -89,17 +90,17 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           }}
         >
           {ft.dataset_id || "—"}
-        </Typography>
+        </Typography> */}
         <Typography
           sx={{
-            flexBasis: "18%",
+            flexBasis: "20%",
             textAlign: "center",
             fontSize: isMobile ? "9px !important" : "12px",
           }}
         >
           {new Date(ft.created_at).toLocaleDateString()}
         </Typography>
-        <Typography
+        {/* <Typography
           sx={{
             flexBasis: "15%",
             textAlign: "center",
@@ -107,10 +108,19 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           }}
         >
           {ft.status || "—"}
+        </Typography> */}
+        <Typography
+          sx={{
+            flexBasis: "20%",
+            textAlign: "center",
+            fontSize: isMobile ? "9px !important" : "12px",
+          }}
+        >
+          Дообученная
         </Typography>
       </Box>
 
-      {!isLast && <Divider />}
+      <Divider />
 
       {/* --------- модальное окно --------- */}
       <Modal open={openCfg} onClose={() => setOpenCfg(false)}>

@@ -42,6 +42,7 @@ function ConfigureModelForm({
   onFlagsChange,
   onModelConfigChange,
   onArgsChange,
+  isCreate
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -868,6 +869,24 @@ function ConfigureModelForm({
         </Button>
 
         <Divider sx={{ my: 2 }} />
+        {isCreate && (
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            sx={{
+              mt: 2,
+              color: "white",
+              padding: "8px 16px",
+              bgcolor: "#597ad3",
+              "&:hover": {
+                bgcolor: "#7c97de",
+              },
+            }}
+          >
+            Добавить
+          </Button>
+        )}
       </form>
 
       {/* Snackbar for alerts */}

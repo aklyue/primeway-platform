@@ -9,12 +9,15 @@ import { modelsData } from "../../data/modelsData";
 import axiosInstance from "../../api";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
+import { useNavigate } from "react-router-dom";
 // import {
 //   getFineTuned,
 //   subscribeFineTuned, // (you can delete these two lines if local storage is no longer needed)
 // } from "../../components/NoCode/api/fineTuneStorage";
 
 function ModelsPage({ isMobile }) {
+  const navigate = useNavigate()
+  const [isCreate, setIsCreate] = useState(true)
   /* ---------------- state ------------------------------------------------ */
   const [launchedModels, setLaunchedModels] = useState([]);
   const [fineTunedModels, setFineTunedModels] = useState([]); /* 💡 */
@@ -186,7 +189,11 @@ function ModelsPage({ isMobile }) {
               Запущенные модели
             </Typography>
             <Button
-              onClick={handleConfigureOpen}
+              onClick={() => navigate("/model-create", {
+                state: {
+                  isCreate
+                },
+              })}
               variant="contained"
               color="primary"
               sx={{

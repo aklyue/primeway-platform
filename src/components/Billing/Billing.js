@@ -18,6 +18,7 @@ import {
   Filler, // Добавляем Filler для градиентной заливки
   TimeScale,
 } from "chart.js";
+import { PriceChange } from "@mui/icons-material";
 
 // Импортируем адаптер для работы с временем
 import "chartjs-adapter-date-fns";
@@ -88,9 +89,12 @@ function Billing() {
   if (!isCurrentOrgOwner) {
     return (
       <Box>
-        <Typography variant="h4" gutterBottom>
-          Биллинг и Кошелек
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <PriceChange />
+          <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+            Биллинг и Кошелек
+          </Typography>
+        </Box>
         <Alert severity="info" sx={{ mt: 2 }}>
           Биллинг для {currentOrganization.name} управляется владельцем
           организации. Пожалуйста, свяжитесь с администратором организации по
@@ -257,9 +261,12 @@ function Billing() {
   // Основной контент после загрузки данных
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Биллинг и Кошелек
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", }}>
+        <PriceChange />
+        <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+          Биллинг и Кошелек
+        </Typography>
+      </Box>
 
       {/* Кнопка оплаты и баланс кошелька */}
       <Box

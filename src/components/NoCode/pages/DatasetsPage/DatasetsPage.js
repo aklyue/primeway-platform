@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useDatasetsPage } from "../../../../hooks/NoCode/useDatasetsPage/useDatasetsPage";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
+import { Folder } from "@mui/icons-material";
 
 export default function DatasetsPage({ isMobile }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -29,10 +30,13 @@ export default function DatasetsPage({ isMobile }) {
   } = useDatasetsPage({ currentOrganization });
 
   return (
-    <Box p={2}>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Наборы Данных
-      </Typography>
+    <Box>
+      <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+        <Folder />
+        <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+          Наборы Данных
+        </Typography>
+      </Box>
 
       <input
         id="ds-upload"

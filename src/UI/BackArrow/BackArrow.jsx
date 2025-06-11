@@ -10,7 +10,7 @@ function BackArrow({ path, name, model, config }) {
     model?.job_name ||
     null
   return (
-    <Box sx={{ my: 2, width: "fit-content", }}>
+    <Box sx={{ my: 1, width: "fit-content", }}>
       <Link to={path} style={{ textDecoration: "none" }}>
         <Box
           sx={{
@@ -19,7 +19,7 @@ function BackArrow({ path, name, model, config }) {
             color: "#5282ff",
             "&:hover": {
               color: "#3a63cc",
-              transform: "scale(1.1)",
+              transform: "scale(1.05)",
             },
             transition: "all 0.2s",
           }}

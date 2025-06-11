@@ -25,6 +25,7 @@ import {
   selectCurrentOrganization,
   selectIsCurrentOrgOwner,
 } from "../../store/selectors/organizationsSelectors.js";
+import { RecentActors } from "@mui/icons-material";
 
 const OrganizationSettings = () => {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -148,9 +149,12 @@ const OrganizationSettings = () => {
     >
       {/* Левая сторона - Участники */}
       <Box sx={{ flex: 1, pr: 2, mb: 2 }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          Участники
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <RecentActors />
+          <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+            Участники
+          </Typography>
+        </Box>
 
         {/* Сообщение об ошибке */}
         {error && (
@@ -176,7 +180,14 @@ const OrganizationSettings = () => {
               color="secondary"
               onClick={handleAddMember}
               disabled={isLoading}
-              sx={{ maxHeight: "40px" }}
+              sx={{
+                maxHeight: "40px",
+                color: "white",
+                bgcolor: "#597ad3",
+                "&:hover": {
+                  bgcolor: "#7c97de",
+                },
+              }}
             >
               Добавить участника
             </Button>

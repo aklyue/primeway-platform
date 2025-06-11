@@ -199,8 +199,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
         border: "1px solid rgba(0, 0, 0, 0.12)",
         borderRadius: "16px",
         overflow: "hidden",
-        m: 4,
-        mx: isMobile ? 0 : 4,
+        my: 4,
         bgcolor: "#ffffff",
       }}
     >

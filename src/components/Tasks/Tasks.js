@@ -29,6 +29,7 @@ import TasksActions from "./TasksActions";
 import useTasks from "../../hooks/Tasks/useTasks";
 import { useDispatch, useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
+import { Assignment } from "@mui/icons-material";
 
 function Tasks() {
   const dispatch = useDispatch();
@@ -107,12 +108,17 @@ function Tasks() {
       <Box
         sx={{
           display: "flex",
-          alignItems: "flex-start",
+          alignItems: "center",
           gap: 5,
-          p: 2,
+          mb: 1,
         }}
       >
-        <Typography variant="h4">Задачи</Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Assignment />
+          <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
+            Задачи
+          </Typography>
+        </Box>
         <Box>
           <Button
             variant={"outlined"}
@@ -146,7 +152,7 @@ function Tasks() {
         </Box>
       </Box>
       {/* Кнопки фильтров статусов */}
-      <Box sx={{ ml: 2, mb: 1, display: "flex", flexWrap: "wrap", gap: "5px" }}>
+      <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap" }}>
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
@@ -156,8 +162,14 @@ function Tasks() {
             borderRadius: "12px",
             fontSize: "12px",
             mr: 1,
-            backgroundColor: selectedStatus === "" ? "#6c757d" : "inherit",
+            backgroundColor: selectedStatus === "" ? "#597ad3" : "inherit",
             color: selectedStatus === "" ? "white" : "#6c757d",
+            "&:hover":
+              selectedStatus === ""
+                ? {
+                    backgroundColor: "#7c97de",
+                  }
+                : undefined,
           }}
         >
           Все
@@ -174,8 +186,14 @@ function Tasks() {
               mr: 1,
 
               backgroundColor:
-                selectedStatus === status ? statusColors[status] : "inherit",
+                selectedStatus === status ? "#597ad3" : "inherit",
               color: selectedStatus === status ? "white" : statusColors[status],
+              "&:hover":
+                selectedStatus === status
+                  ? {
+                      backgroundColor: "#7c97de",
+                    }
+                  : undefined,
             }}
           >
             {status}

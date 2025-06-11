@@ -91,24 +91,7 @@ export default function FineTuningJobCreatePage({ isMobile }) {
 
   /* ───── UI ───── */
   return (
-    <Box sx={{ p: isMobile ? 0 : 2 }}>
-      <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
-        <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
-          {" "}
-          Задача{" "}
-        </Typography>
-        <Typography
-          variant="p"
-          sx={{
-            mb: 4,
-            textAlign: "end",
-            fontSize: isMobile ? "10px !important" : "auto",
-          }}
-        >
-          {" "}
-          Здесь вы можете создать задачу дообучения{" "}
-        </Typography>
-      </Box>
+    <Box>
       <Toolbar
         disableGutters
         sx={{
@@ -118,7 +101,7 @@ export default function FineTuningJobCreatePage({ isMobile }) {
           alignItems: "center",
         }}
       >
-        <BackArrow path={"/fine-tuning"} name={"Fine-tuning jobs"} />
+        <BackArrow path={"/fine-tuning"} name={"Задачи Дообучения"} />
       </Toolbar>
 
       <Paper

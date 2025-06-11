@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Box, Button, Grid, Divider, Modal, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Divider,
+  Modal,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import { ModelTraining } from "@mui/icons-material";
 import ModelCard from "../../components/ModelCard";
 import ConfigureModelForm from "../../components/ConfigureModelForm";
 import CloseIcon from "@mui/icons-material/Close";
@@ -22,6 +31,8 @@ function ModelsPage({ isMobile }) {
   const [launchedModels, setLaunchedModels] = useState([]);
   const [fineTunedModels, setFineTunedModels] = useState([]); /* 💡 */
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+  const [launchedLoading, setLaunchedLoading] = useState(true);
+  const [fineTunedLoading, setFineTunedLoading] = useState(true);
 
   // If you still want to keep the local-storage fallback, leave this in:
   // const [fine, setFine] = useState(getFineTuned());
@@ -48,9 +59,11 @@ function ModelsPage({ isMobile }) {
         }
       );
       setLaunchedModels(data);
-      console.log(data)
+      console.log(data);
     } catch (err) {
       console.error("Ошибка при получении запущенных моделей:", err);
+    } finally {
+      setLaunchedLoading(false);
     }
   };
 
@@ -110,6 +123,8 @@ function ModelsPage({ isMobile }) {
       setFineTunedModels(data);
     } catch (err) {
       console.error("Ошибка при получении fine-tune моделей:", err);
+    } finally {
+      setFineTunedLoading(false);
     }
   };
 
@@ -170,25 +185,21 @@ function ModelsPage({ isMobile }) {
       {/* ---------- container for sections -------------------------------- */}
       <Box sx={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
         {/* ============ Запущенные модели ================================= */}
+
         <Box
           sx={{
-            maxHeight: "50vh",
             display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-            }}
-          >
-            {/* <Typography variant="h5" gutterBottom>
-              Запущенные модели
-            </Typography> */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <ModelTraining />
+            <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
+              Models
+            </Typography>
+          </Box>
+          <Box>
             <Button
               onClick={() =>
                 navigate("/model-create", {
@@ -200,6 +211,7 @@ function ModelsPage({ isMobile }) {
               variant="contained"
               color="primary"
               sx={{
+                height: "40px",
                 color: "white",
                 padding: "8px 16px",
                 bgcolor: "#597ad3",
@@ -212,113 +224,7 @@ function ModelsPage({ isMobile }) {
               <AddIcon sx={{ color: "#FFFFFF", fontSize: "20px", ml: 0.5 }} />
             </Button>
           </Box>
-          <Box
-            sx={{
-              // border: "1px solid rgba(0, 0, 0, 0.12)",
-              borderRadius: "16px",
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              minHeight: 0,
-              maxHeight: "90%",
-              overflow: "hidden",
-            }}
-          >
-            {/* **Заголовки колонок** */}
-            {/* <Grid
-              sx={{
-                p: { xs: 1, sm: 2 },
-                backgroundColor: "rgba(102, 179, 238, 0.1)",
-                borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-                borderTopLeftRadius: "16px",
-                borderTopRightRadius: "16px",
-                justifyContent: "space-between",
-                gap: isMobile && "5px",
-              }}
-              container
-              spacing={0}
-              alignItems="center"
-            >
-              <Grid item xs={isMobile ? 4 : 3}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="light"
-                  fontSize={{ xs: 10, sm: 14 }}
-                >
-                  НАЗВАНИЕ
-                </Typography>
-              </Grid>
-              {!isMobile && (
-                <Grid item xs={2} sx={{ textAlign: "center" }}>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="light"
-                    fontSize={{ xs: 10, sm: 14 }}
-                  >
-                    ДАТА СОЗДАНИЯ
-                  </Typography>
-                </Grid>
-              )}
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="light"
-                  fontSize={{ xs: 10, sm: 14 }}
-                >
-                  СОСТОЯНИЕ
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="light"
-                  fontSize={{ xs: 10, sm: 14 }}
-                >
-                  URL
-                </Typography>
-              </Grid>
-              {!isMobile && (
-                <Grid item xs={3} sx={{ textAlign: "center" }}>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="light"
-                    fontSize={{ xs: 10, sm: 14 }}
-                  >
-                    ДЕЙСТВИЕ
-                  </Typography>
-                </Grid>
-              )}
-            </Grid> */}
-
-            {/* <Divider sx={{ my: 1 }} /> */}
-
-            {/* **Область с прокруткой** */}
-            {/* <Box
-              sx={{
-                overflowY: "auto",
-                minHeight: 0,
-              }}
-            > */}
-            {/* **Список "Запущенных моделей"** */}
-            {/* {launchedModels.length > 0 ? (
-                launchedModels.map((model, idx) => (
-                  <ModelCard
-                    isMobile={isMobile}
-                    key={model.job_id || idx}
-                    model={model}
-                    isLast={idx === launchedModels.length - 1}
-                    isBasic={false}
-                  />
-                ))
-              ) : (
-                <Typography align="center" sx={{ my: 2 }}>
-                  Нет запущенных моделей.
-                </Typography>
-              )} */}
-            {/* </Box> */}
-          </Box>
         </Box>
-
         {/* === Дообученные модели ============================================= */}
         <Box
           sx={{
@@ -328,12 +234,29 @@ function ModelsPage({ isMobile }) {
             flexDirection: "column",
           }}
         >
-          <Typography variant="h5" gutterBottom>
-            Мои модели
-          </Typography>
-          <Typography variant="h7" gutterBottom>
-            Здесь находятся дообученные и запущенные модели
-          </Typography>
+          <Box
+            sx={{
+              my: 1,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box
+              sx={{
+                maxHeight: "60vh",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Typography variant="h5" gutterBottom>
+                Мои модели
+              </Typography>
+              <Typography variant="h7" gutterBottom>
+                Здесь находятся дообученные и запущенные модели
+              </Typography>
+            </Box>
+          </Box>
 
           <Box
             sx={{
@@ -402,32 +325,48 @@ function ModelsPage({ isMobile }) {
 
             {/* ---------- rows ---------- */}
             <Box sx={{ overflowY: "auto", minHeight: 0 }}>
-              {fineTunedModels.length > 0 && (
-                fineTunedModels.map((ft, idx) => (
-                  <FineTunedModelCard
-                    isMobile={isMobile}
-                    key={ft.job_id}
-                    ft={ft}
-                    isLast={idx === fineTunedModels.length - 1}
-                    onRun={runFineTunedModel}
-                  />
-                ))
-              )}
-              {launchedModels.length > 0 && (
-                launchedModels.map((model, idx) => (
-                  <ModelCard
-                    isMobile={isMobile}
-                    key={model.job_id || idx}
-                    model={model}
-                    isLast={idx === launchedModels.length - 1}
-                    isBasic={false}
-                  />
-                ))
-              )}
-              {(!launchedModels.length && !fineTunedModels.length) && (
-                <Typography p={2} fontSize={"12px"}>
-                  Нет моделей
-                </Typography>
+              {fineTunedLoading && launchedLoading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: 60,
+                  }}
+                >
+                  <CircularProgress size={32} />
+                </Box>
+              ) : (
+                <>
+                  {fineTunedModels.length > 0 &&
+                    fineTunedModels.map((ft, idx) => (
+                      <FineTunedModelCard
+                        isMobile={isMobile}
+                        key={ft.job_id}
+                        ft={ft}
+                        isLast={idx === fineTunedModels.length - 1}
+                        onRun={runFineTunedModel}
+                      />
+                    ))}
+                  {launchedModels.length > 0 &&
+                    launchedModels.map((model, idx) => (
+                      <ModelCard
+                        isMobile={isMobile}
+                        key={model.job_id || idx}
+                        model={model}
+                        isLast={idx === launchedModels.length - 1}
+                        isBasic={false}
+                      />
+                    ))}
+                  {!launchedModels.length &&
+                    !fineTunedModels.length &&
+                    !launchedLoading &&
+                    !fineTunedLoading && (
+                      <Typography p={2} fontSize={"12px"}>
+                        Нет моделей
+                      </Typography>
+                    )}
+                </>
               )}
             </Box>
           </Box>

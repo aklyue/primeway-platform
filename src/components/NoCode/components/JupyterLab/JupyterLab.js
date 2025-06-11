@@ -28,6 +28,7 @@ import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 import { Link } from "react-router-dom";
+import { Code } from "@mui/icons-material";
 
 export default function JupyterLabSessions({ isMobile }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -56,9 +57,14 @@ export default function JupyterLabSessions({ isMobile }) {
   } = useJupyterLab({ currentOrganization, authToken });
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h6">Проекты JupyterLab</Typography>
+        <Box sx={{display: "flex", alignItems: "center"}}>
+          <Code />
+          <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
+            Проекты JupyterLab
+          </Typography>
+        </Box>
         <Button
           variant="contained"
           color="primary"
@@ -89,61 +95,64 @@ export default function JupyterLabSessions({ isMobile }) {
                 session.last_execution_status !== "running" ||
                 loadingId === session.job_id;
               return (
-                (
-                  <Box
-                    key={session.job_id}
-                    sx={{
-                      border: "1px solid lightgray",
-                      borderRadius: "8px",
-                      padding: 2,
-                      marginBottom: 2,
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontSize: "14px" }}>
-                      {session.job_name}
-                    </Typography>
-                    <Typography sx={{ fontSize: "12px" }}>
-                      <b>Тип GPU:</b> {session.gpu_type?.type || "N/A"}
-                    </Typography>
-                    <Typography sx={{ fontSize: "12px" }}>
-                      <b>Статус:</b> {session.last_execution_status}
-                      {loadingId === session.job_id ||
-                        session.last_execution_status === "creating" ? (
-                        <CircularProgress size={14} sx={{ ml: 1 }} />
-                      ) : null}
-                    </Typography>
-                    <Typography sx={{ fontSize: "12px" }}>
-                      <Link to={session.job_url} target="_blank" rel="noopener noreferrer" underline="hover">
-                        <b>URL:</b> {session.job_url || "N/A"}
-                      </Link>
-                    </Typography>
+                <Box
+                  key={session.job_id}
+                  sx={{
+                    border: "1px solid lightgray",
+                    borderRadius: "8px",
+                    padding: 2,
+                    marginBottom: 2,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontSize: "14px" }}>
+                    {session.job_name}
+                  </Typography>
+                  <Typography sx={{ fontSize: "12px" }}>
+                    <b>Тип GPU:</b> {session.gpu_type?.type || "N/A"}
+                  </Typography>
+                  <Typography sx={{ fontSize: "12px" }}>
+                    <b>Статус:</b> {session.last_execution_status}
+                    {loadingId === session.job_id ||
+                    session.last_execution_status === "creating" ? (
+                      <CircularProgress size={14} sx={{ ml: 1 }} />
+                    ) : null}
+                  </Typography>
+                  <Typography sx={{ fontSize: "12px" }}>
+                    <Link
+                      to={session.job_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="hover"
+                    >
+                      <b>URL:</b> {session.job_url || "N/A"}
+                    </Link>
+                  </Typography>
 
-                    <Box sx={{ display: "flex", gap: 1, marginTop: 1 }}>
-                      {/* START */}
-                      <IconButton
-                        size="small"
-                        disabled={startDisabled}
-                        onClick={() => handleStartSession(session.job_id)}
-                        color="success.main"
-                        title="Запустить"
-                      >
-                        <PlayCircleFilledIcon fontSize="small" />
-                      </IconButton>
+                  <Box sx={{ display: "flex", gap: 1, marginTop: 1 }}>
+                    {/* START */}
+                    <IconButton
+                      size="small"
+                      disabled={startDisabled}
+                      onClick={() => handleStartSession(session.job_id)}
+                      color="success.main"
+                      title="Запустить"
+                    >
+                      <PlayCircleFilledIcon fontSize="small" />
+                    </IconButton>
 
-                      {/* STOP */}
-                      <IconButton
-                        size="small"
-                        disabled={stopDisabled}
-                        onClick={() => handleStopSession(session.job_id)}
-                        color="error"
-                        title="Остановить"
-                      >
-                        <StopIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
+                    {/* STOP */}
+                    <IconButton
+                      size="small"
+                      disabled={stopDisabled}
+                      onClick={() => handleStopSession(session.job_id)}
+                      color="error"
+                      title="Остановить"
+                    >
+                      <StopIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-                )
-              )
+                </Box>
+              );
             })}
           </Box>
         ) : (
@@ -151,21 +160,11 @@ export default function JupyterLabSessions({ isMobile }) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontSize: "12px" }}>
-                    Имя проекта
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "12px" }}>
-                    Тип GPU
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "12px" }}>
-                    Статус
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "12px" }}>
-                    URL
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "12px" }}>
-                    Действие
-                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>Имя проекта</TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>Тип GPU</TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>Статус</TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>URL</TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>Действие</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody sx={{ width: "100%" }}>
@@ -189,7 +188,9 @@ export default function JupyterLabSessions({ isMobile }) {
                         {session.gpu_type?.type || "N/A"}
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
-                        <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "inline-flex", alignItems: "center" }}
+                        >
                           {loadingId === session.job_id ||
                             (session.last_execution_status === "creating" && (
                               <CircularProgress size={14} sx={{ mr: 1 }} />
@@ -198,7 +199,12 @@ export default function JupyterLabSessions({ isMobile }) {
                         </Box>
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
-                        <Link to={session.job_url} target="_blank" rel="noopener noreferrer" underline="hover">
+                        <Link
+                          to={session.job_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          underline="hover"
+                        >
                           {session.job_url || "N/A"}
                         </Link>
                       </TableCell>
@@ -233,7 +239,6 @@ export default function JupyterLabSessions({ isMobile }) {
           </Box>
         )}
       </Paper>
-
 
       {/* Create new session modal */}
       <Modal

@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { DeveloperBoard } from "@mui/icons-material";
 
 import NvidiaIcon from "../../UI/NvidiaIcon/NvidiaIcon";
 import axiosInstance from "../../api";
@@ -80,10 +81,13 @@ const GPUList = () => {
   }
 
   return (
-    <Box sx={{ padding: { xs: "15px", sm: "25px" } }}>
-      <Typography variant="h4" gutterBottom>
-        Доступные GPU
-      </Typography>
+    <Box>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <DeveloperBoard />
+        <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+          Доступные GPU
+        </Typography>
+      </Box>
       <Typography variant="body1" paragraph>
         Ознакомьтесь с доступными GPU и их характеристиками. Кликните по
         карточке, чтобы скопировать имя и использовать его в вашем конфиге.

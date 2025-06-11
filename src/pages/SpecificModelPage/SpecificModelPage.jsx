@@ -8,17 +8,25 @@ import {
   AccordionSummary,
   Box,
   CircularProgress,
+  IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import axiosInstance from "../../api";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
-import { Description, ExpandMore } from "@mui/icons-material";
+import {
+  Description,
+  ExpandMore,
+  ContentCopy,
+  Check,
+} from "@mui/icons-material";
 import JobTable from "../../UI/JobTable";
 
 function SpecificModelPage() {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
+  const [copied, setCopied] = useState(false);
 
   const location = useLocation();
   const { model, initialConfig, isBasic, isMobile } = location.state || {};
@@ -158,7 +166,7 @@ function SpecificModelPage() {
 
   return (
     <div>
-      <Box sx={{ mx: isMobile ? 0 : 4 }}>
+      <Box>
         <BackArrow
           path={"/models"}
           name={"Models"}
@@ -175,12 +183,12 @@ function SpecificModelPage() {
         onLaunchedModelChange={setIsLaunchedModel}
       />
       {!isBasic && !isLaunchedModel && (
-        <Box sx={{ mx: 4 }}>
+        <Box>
           <JobTable job={job} isMobile={isMobile} />
         </Box>
       )}
       {isLaunchedModel && (
-        <Box sx={{ mx: isMobile ? 0 : 4 }}>
+        <Box>
           <Accordion
             onClick={handleLogsClick}
             onChange={(_, expanded) => {
@@ -204,6 +212,35 @@ function SpecificModelPage() {
               <Typography variant="h6" sx={{ userSelect: "none" }}>
                 Логи задачи
               </Typography>
+              <Tooltip
+                arrow
+                placement="top"
+                title={copied ? "Скопировано" : "Скопировать"}
+              >
+                <IconButton
+                  sx={{ ml: 1 }}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(String(currentLogs ?? ""));
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? (
+                    <Check
+                      sx={{
+                        fontSize: isMobile ? "15px" : "inherit",
+                        color: "success.main",
+                      }}
+                    />
+                  ) : (
+                    <ContentCopy
+                      sx={{ fontSize: isMobile ? "15px" : "inherit" }}
+                    />
+                  )}
+                </IconButton>
+              </Tooltip>
             </AccordionSummary>
             <AccordionDetails>
               {firstLogsLoading ? (
@@ -211,17 +248,28 @@ function SpecificModelPage() {
                   <CircularProgress />
                 </Box>
               ) : (
-                <pre
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-all",
-                    margin: 0,
-                    fontFamily: "monospace",
-                    fontSize: 14,
+                <Box
+                  sx={{
+                    maxHeight: 320,
+                    overflowY: "auto",
+                    borderRadius: 1,
+                    bgcolor: "#f8f9fa",
+                    px: 1,
+                    py: 0.5,
                   }}
                 >
-                  {currentLogs}
-                </pre>
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-all",
+                      margin: 0,
+                      fontFamily: "monospace",
+                      fontSize: 14,
+                    }}
+                  >
+                    {currentLogs}
+                  </pre>
+                </Box>
               )}
             </AccordionDetails>
           </Accordion>

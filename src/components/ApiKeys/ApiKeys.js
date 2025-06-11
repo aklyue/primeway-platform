@@ -25,6 +25,7 @@ import moment from "moment";
 import axiosInstance from "../../api";
 import useApiKeysActions from "../../hooks/useApiKeysActions";
 import { useSelector } from "react-redux";
+import { Key } from "@mui/icons-material";
 
 // Функции для работы с API (generateToken, listTokens, deleteToken)
 export const generateToken = async (organizationId, name) => {
@@ -111,9 +112,12 @@ function ApiKeys() {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        API-Ключи
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Key />
+        <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+          API-Ключи
+        </Typography>
+      </Box>
 
       {/* Описание */}
       <Typography variant="body1" gutterBottom>
@@ -128,7 +132,14 @@ function ApiKeys() {
         variant="contained"
         color="secondary"
         onClick={handleOpen}
-        sx={{ marginTop: "16px" }}
+        sx={{
+          marginTop: "16px",
+          color: "white",
+          bgcolor: "#597ad3",
+          "&:hover": {
+            bgcolor: "#7c97de",
+          },
+        }}
       >
         Создать новый API-Ключ
       </Button>

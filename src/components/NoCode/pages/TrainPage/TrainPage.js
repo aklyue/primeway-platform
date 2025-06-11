@@ -11,6 +11,7 @@ import { api } from "../../api/mockApi";
 import FineTuneTasksList from "../../components/FineTuneTasksList";
 import TrainForm from "../../components/TrainForm";
 import CloseIcon from "@mui/icons-material/Close";
+import { Task } from "@mui/icons-material";
 import FineTuneFormModal from "../../components/FineTuneFormModal";
 import { modelsData } from "../../../../data/modelsData";
 import BackArrow from "../../../../UI/BackArrow";
@@ -89,7 +90,7 @@ export default function TrainPage({ isMobile }) {
   };
 
   return (
-    <Box sx={{ p: isMobile ? 0 : 2 }}>
+    <Box>
       <Box
         sx={{
           display: "flex",
@@ -98,16 +99,6 @@ export default function TrainPage({ isMobile }) {
         }}
       >
         {/* <BackArrow path={"/tasks"} name={"Tasks"} /> */}
-        <Box sx={{width: isMobile ? "200px" : "auto", textAlign: "start"}}>
-          <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
-            {" "}
-            Дообучение{" "}
-          </Typography>
-          <Typography variant="p" sx={{ mb: 4, textAlign: "end", fontSize: isMobile ? "10px !important" : "auto" }}>
-            {" "}
-            Здесь мы можете отслеживать и создавать задачи дообучения{" "}
-          </Typography>
-        </Box>
       </Box>
 
       <Modal open={openTrainModal} onClose={() => setOpenTrainModal(false)}>

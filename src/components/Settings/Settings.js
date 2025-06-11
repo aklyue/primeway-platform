@@ -3,6 +3,7 @@ import { Box, Typography, Button, Divider, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/slices/authSlice";
+import { Settings as SettingsIcon } from "@mui/icons-material";
 
 function Settings({ setAuthenticating }) {
   const dispatch = useDispatch();
@@ -19,9 +20,12 @@ function Settings({ setAuthenticating }) {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Настройки
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <SettingsIcon />
+        <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
+          Настройки
+        </Typography>
+      </Box>
 
       {/* Информация о профиле */}
       <Box sx={{ marginBottom: "32px", marginTop: "16px" }}>

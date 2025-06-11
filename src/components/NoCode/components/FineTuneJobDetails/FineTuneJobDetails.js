@@ -7,21 +7,24 @@ import {
   Grid,
   IconButton,
   Paper,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate, useParams } from "react-router-dom";
 import BackArrow from "../../../../UI/BackArrow";
-import { Description, ExpandMore } from "@mui/icons-material";
+import { Check, ContentCopy, Description, ExpandMore } from "@mui/icons-material";
 import useFineTuneJobDetails from "../../../../hooks/NoCode/useFineTuneJobDetails";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
+import { useState } from "react";
 
 export default function FineTuneJobDetails({ isMobile }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const currentOrganization = useSelector(selectCurrentOrganization);
+  const [copied, setCopied] = useState(false);
 
   const {
     loading,
@@ -57,11 +60,12 @@ export default function FineTuneJobDetails({ isMobile }) {
   /* ─── Main UI ──────────────────────────────────────────── */
   return (
     <>
-      <Box sx={{ px: isMobile ? 0 : 2, py: isMobile ? 1 : 2 }}>
-        <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+      <Box>
+        {/* <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
           <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
             {" "}
-            Детали{" "}
+            Задачи дообучения{" "}
+            <span style={{ color: "#5282ff" }}>{job.job_name}</span>{" "}
           </Typography>
           <Typography
             variant="p"
@@ -74,19 +78,19 @@ export default function FineTuneJobDetails({ isMobile }) {
             {" "}
             Здесь вы можете просмотреть детали дообучения{" "}
           </Typography>
-        </Box>
+        </Box> */}
         <BackArrow
           path={"/fine-tuning"}
-          name={"Fine-tuning jobs"}
-          model={"jobs"}
+          name={"Задачи Дообучения"}
+          model={job}
         />
 
         <Typography
           variant="h6"
           sx={{ mb: 3, fontSize: "14px", fontWeight: "normal" }}
         >
-          Fine-tuning job{" "}
-          <span style={{ color: "#5282ff" }}>{job.job_name}</span> details
+          {" "}
+          Здесь вы можете просмотреть детали дообучения{" "}
         </Typography>
 
         <Paper
@@ -219,7 +223,7 @@ export default function FineTuneJobDetails({ isMobile }) {
       </Box>
 
       {/* ─── NEW: modal with logs ──────────────────────────── */}
-      <Box sx={{ mx: isMobile ? 0 : 4 }}>
+      <Box sx={{ mx: isMobile ? 0 : 2 }}>
         <Accordion
           onClick={handleLogsClick}
           onChange={(_, expanded) => {
@@ -243,6 +247,35 @@ export default function FineTuneJobDetails({ isMobile }) {
             <Typography variant="h6" sx={{ userSelect: "none" }}>
               Логи задачи
             </Typography>
+            <Tooltip
+              arrow
+              placement="top"
+              title={copied ? "Скопировано" : "Скопировать"}
+            >
+              <IconButton
+                sx={{ ml: 1 }}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(String(currentLogs ?? ""));
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? (
+                  <Check
+                    sx={{
+                      fontSize: isMobile ? "15px" : "inherit",
+                      color: "success.main",
+                    }}
+                  />
+                ) : (
+                  <ContentCopy
+                    sx={{ fontSize: isMobile ? "15px" : "inherit" }}
+                  />
+                )}
+              </IconButton>
+            </Tooltip>
           </AccordionSummary>
           <AccordionDetails>
             {firstLogsLoading ? (
@@ -250,17 +283,28 @@ export default function FineTuneJobDetails({ isMobile }) {
                 <CircularProgress />
               </Box>
             ) : (
-              <pre
-                style={{
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-all",
-                  margin: 0,
-                  fontFamily: "monospace",
-                  fontSize: 14,
+              <Box
+                sx={{
+                  maxHeight: 320,
+                  overflowY: "auto",
+                  borderRadius: 1,
+                  bgcolor: "#f8f9fa",
+                  px: 1,
+                  py: 0.5,
                 }}
               >
-                {currentLogs}
-              </pre>
+                <pre
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-all",
+                    margin: 0,
+                    fontFamily: "monospace",
+                    fontSize: 14,
+                  }}
+                >
+                  {currentLogs}
+                </pre>
+              </Box>
             )}
           </AccordionDetails>
         </Accordion>

@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import { ContentCopy } from "@mui/icons-material";
+import { ContentCopy, Psychology } from "@mui/icons-material";
 import useFineTuneActions from "../../../../hooks/useFineTuneActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
@@ -67,12 +67,36 @@ export default function FineTuneTasksList({ isMobile }) {
       {/* ───────────────────────────── Header */}
       <Toolbar disableGutters sx={{ mb: 2 }}>
         <Box display={"flex"} sx={{ flexGrow: 1 }}>
-          <Box sx={{mr: 1}} >
-            <TaskIcon />
+          <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 1
+              }}
+            >
+              <Psychology />
+              <Typography
+                fontSize={"1.25rem"}
+                fontWeight={500}
+                sx={{ textAlign: "start", ml: 1 }}
+              >
+                {" "}
+                Дообучение{" "}
+              </Typography>
+            </Box>
+            <Typography
+              variant="p"
+              sx={{
+                mb: 4,
+                textAlign: "end",
+                fontSize: isMobile ? "10px !important" : "auto",
+              }}
+            >
+              {" "}
+              Здесь мы можете отслеживать и создавать задачи дообучения{" "}
+            </Typography>
           </Box>
-          <Typography variant={isMobile ? "h7" : "h5"}>
-            Fine‑tuning jobs
-          </Typography>
         </Box>
 
         <TextField

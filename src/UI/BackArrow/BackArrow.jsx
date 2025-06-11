@@ -25,7 +25,7 @@ function BackArrow({ path, name, model, config }) {
           }}
         >
           <ArrowBackIcon sx={{ mr: 1 }} />
-          <Typography variant="body1" fontSize={20} fontWeight={500}>
+          <Typography variant="body1" fontSize={"1.25rem"} fontWeight={500}>
             {name}
             {modelName && (
               <>

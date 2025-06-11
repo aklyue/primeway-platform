@@ -38,7 +38,7 @@ const formatBytes = (bytes) => {
 };
 
 /* ───────────────────────── COMPONENT ───────────────────────── */
-export default function FineTuningJobCreatePage({isMobile}) {
+export default function FineTuningJobCreatePage({ isMobile }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
@@ -91,7 +91,24 @@ export default function FineTuningJobCreatePage({isMobile}) {
 
   /* ───── UI ───── */
   return (
-    <Box sx={{ p: isMobile ? 0 : 3 }}>
+    <Box sx={{ p: isMobile ? 0 : 2 }}>
+      <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+        <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
+          {" "}
+          Задача{" "}
+        </Typography>
+        <Typography
+          variant="p"
+          sx={{
+            mb: 4,
+            textAlign: "end",
+            fontSize: isMobile ? "10px !important" : "auto",
+          }}
+        >
+          {" "}
+          Здесь вы можете создать задачу дообучения{" "}
+        </Typography>
+      </Box>
       <Toolbar
         disableGutters
         sx={{
@@ -101,13 +118,7 @@ export default function FineTuningJobCreatePage({isMobile}) {
           alignItems: "center",
         }}
       >
-        <BackArrow path={"/fine-tuning"} name={"Fine-tuning"} />
-        <Typography
-          variant="h5"
-          sx={{ width: "min-content", whiteSpace: "nowrap", fontSize: isMobile ? "14px !important" : "inherit" }}
-        >
-          Создать задачу дообучения
-        </Typography>
+        <BackArrow path={"/fine-tuning"} name={"Fine-tuning jobs"} />
       </Toolbar>
 
       <Paper

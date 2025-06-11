@@ -32,7 +32,7 @@ function SpecificModelPage() {
   const intervalRef = useRef(null);
   const isFirstRef = useRef(true);
   const [isLaunchedModel, setIsLaunchedModel] = useState(false);
-  const [jobs, setJobs] = useState(null);
+  const [jobs, setJobs] = useState([]);
   const [job, setJob] = useState(null);
 
   useEffect(() => {
@@ -143,8 +143,11 @@ function SpecificModelPage() {
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (currentOrganization && authToken) {
+      fetchJobs();
+    }
+  }, [currentOrganization, authToken]);
+
   useEffect(() => {
     if (jobs && jobs.length > 0) {
       const currentJob = jobs.find((j) => j.job_id === jobId);

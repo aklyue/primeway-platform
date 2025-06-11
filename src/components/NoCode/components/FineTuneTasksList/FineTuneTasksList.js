@@ -17,6 +17,7 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  TaskIc,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -24,6 +25,7 @@ import { ContentCopy } from "@mui/icons-material";
 import useFineTuneActions from "../../../../hooks/useFineTuneActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
+import TaskIcon from "@mui/icons-material/Task";
 
 /**
  * Displays the list of running fine‑tune jobs for the current organisation.
@@ -64,9 +66,14 @@ export default function FineTuneTasksList({ isMobile }) {
     <>
       {/* ───────────────────────────── Header */}
       <Toolbar disableGutters sx={{ mb: 2 }}>
-        <Typography variant={isMobile ? "h7" : "h5"} sx={{ flexGrow: 1 }}>
-          Fine‑tuning jobs
-        </Typography>
+        <Box display={"flex"} sx={{ flexGrow: 1 }}>
+          <Box sx={{mr: 1}} >
+            <TaskIcon />
+          </Box>
+          <Typography variant={isMobile ? "h7" : "h5"}>
+            Fine‑tuning jobs
+          </Typography>
+        </Box>
 
         <TextField
           size="small"

@@ -14,7 +14,6 @@ import { ContentCopy as ContentCopyIcon } from "@mui/icons-material";
 import { format, parseISO } from "date-fns";
 
 function JobTable({ job, isMobile }) {
-  console.log(job);
   const [executions, setExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(true);
   const [executionsError, setExecutionsError] = useState(null);
@@ -122,6 +121,7 @@ function JobTable({ job, isMobile }) {
     navigator.clipboard.writeText(text);
     alert("Скопировано в буфер обмена.");
   };
+
   if (!job) {
     return <div></div>;
   }
@@ -249,17 +249,8 @@ function JobTable({ job, isMobile }) {
               {execution.gpu_info?.type || "N/A"}
             </Typography>
             <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {execution.gpu_info?.type || "N/A"}
+              {execution.health_status || "N/A"}
             </Typography>
-            {job.job_type !== "run" && (
-              <Typography
-                variant="body2"
-                flexBasis={"14%"}
-                textAlign={"center"}
-              >
-                {execution.health_status || "N/A"}
-              </Typography>
-            )}
           </Box>
         ))}
       </Box>

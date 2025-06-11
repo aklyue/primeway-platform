@@ -32,6 +32,7 @@ import ModelActions from "../../UI/ModelActions";
 import { ContentCopy } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
+import { format, parseISO } from "date-fns";
 
 function ModelCard({ model, isLast, isBasic, isMobile }) {
   const authToken = useSelector((state) => state.auth.authToken);
@@ -274,7 +275,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                 {model.base_model}
               </Typography>
             </Grid>
-            <Grid item xs={2} sx={{ textAlign: "center" }}>
+            <Grid item xs={1.75} sx={{ textAlign: "center" }}>
               <Typography
                 variant="body2"
                 sx={{
@@ -282,7 +283,9 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   fontSize: isMobile ? "9px !important" : "12px",
                 }}
               >
-                {model.created_at || "N/A"}
+                {model.created_at
+                  ? format(parseISO(model.created_at), "dd.MM.yyyy")
+                  : "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={2.5} sx={{ textAlign: "center", pr: "16px" }}>

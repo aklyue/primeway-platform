@@ -34,7 +34,6 @@ export default function FineTuneJobDetails({ isMobile }) {
     currentLogs,
   } = useFineTuneJobDetails({ jobId, currentOrganization });
 
-
   /* ─── Render states ────────────────────────────────────── */
   if (loading) {
     return (
@@ -58,7 +57,24 @@ export default function FineTuneJobDetails({ isMobile }) {
   /* ─── Main UI ──────────────────────────────────────────── */
   return (
     <>
-      <Box sx={{ px: isMobile ? 0 : 4, py: isMobile ? 1 : 2 }}>
+      <Box sx={{ px: isMobile ? 0 : 2, py: isMobile ? 1 : 2 }}>
+        <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+          <Typography variant="h4" sx={{ mb: 1, textAlign: "start" }}>
+            {" "}
+            Детали{" "}
+          </Typography>
+          <Typography
+            variant="p"
+            sx={{
+              mb: 4,
+              textAlign: "end",
+              fontSize: isMobile ? "10px !important" : "auto",
+            }}
+          >
+            {" "}
+            Здесь вы можете просмотреть детали дообучения{" "}
+          </Typography>
+        </Box>
         <BackArrow
           path={"/fine-tuning"}
           name={"Fine-tuning jobs"}

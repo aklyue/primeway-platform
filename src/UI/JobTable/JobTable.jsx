@@ -128,132 +128,316 @@ function JobTable({ job, isMobile }) {
 
   return (
     <div>
-      <Box
-        sx={{
-          border: "1px solid rgba(0,0,0,.12)",
-          borderRadius: "16px",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minHeight: 0,
-          overflow: "hidden",
-        }}
-      >
-        {/* ---------- header row ---------- */}
+      {!isMobile ? (
         <Box
           sx={{
+            border: "1px solid rgba(0,0,0,.12)",
+            borderRadius: "16px",
             display: "flex",
-            p: { xs: 1, sm: 2 },
-            backgroundColor: "rgba(102, 179, 238, 0.1)",
-            borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-            borderTopLeftRadius: "16px",
-            borderTopRightRadius: "16px",
-            justifyContent: "space-between",
-            gap: isMobile && "5px",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
           }}
         >
-          <Typography
-            sx={{ flexBasis: "14%" }}
-            fontSize={{ xs: 10, sm: 14 }}
-            textAlign={"center"}
+          {/* ---------- header row ---------- */}
+          <Box
+            sx={{
+              display: "flex",
+              p: { xs: 1, sm: 2 },
+              backgroundColor: "rgba(102, 179, 238, 0.1)",
+              borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+              borderTopLeftRadius: "16px",
+              borderTopRightRadius: "16px",
+              justifyContent: "space-between",
+              gap: isMobile && "5px",
+            }}
           >
-            JOB EXEC ID
-          </Typography>
-          {!isMobile && (
+            <Typography
+              sx={{ flexBasis: "14%" }}
+              fontSize={{ xs: 10, sm: 14 }}
+              textAlign={"center"}
+            >
+              JOB EXEC ID
+            </Typography>
+            {!isMobile && (
+              <Typography
+                sx={{ flexBasis: "14%", textAlign: "center" }}
+                fontSize={{ xs: 10, sm: 14 }}
+              >
+                СОЗДАНО
+              </Typography>
+            )}
             <Typography
               sx={{ flexBasis: "14%", textAlign: "center" }}
               fontSize={{ xs: 10, sm: 14 }}
             >
-              СОЗДАНО
+              СТАТУС
             </Typography>
-          )}
-          <Typography
-            sx={{ flexBasis: "14%", textAlign: "center" }}
-            fontSize={{ xs: 10, sm: 14 }}
-          >
-            СТАТУС
-          </Typography>
-          <Typography
-            sx={{ flexBasis: "14%", textAlign: "center" }}
-            fontSize={{ xs: 10, sm: 14 }}
-          >
-            НАЧАЛО
-          </Typography>
-          <Typography
-            sx={{ flexBasis: "14%", textAlign: "center" }}
-            fontSize={{ xs: 10, sm: 14 }}
-          >
-            КОНЕЦ
-          </Typography>
-          <Typography
-            sx={{ flexBasis: "14%", textAlign: "center" }}
-            fontSize={{ xs: 10, sm: 14 }}
-          >
-            GPU
-          </Typography>
-          <Typography
-            sx={{ flexBasis: "14%", textAlign: "center" }}
-            fontSize={{ xs: 10, sm: 14 }}
-          >
-            HEALTH
-          </Typography>
-        </Box>
+            <Typography
+              sx={{ flexBasis: "14%", textAlign: "center" }}
+              fontSize={{ xs: 10, sm: 14 }}
+            >
+              НАЧАЛО
+            </Typography>
+            <Typography
+              sx={{ flexBasis: "14%", textAlign: "center" }}
+              fontSize={{ xs: 10, sm: 14 }}
+            >
+              КОНЕЦ
+            </Typography>
+            <Typography
+              sx={{ flexBasis: "14%", textAlign: "center" }}
+              fontSize={{ xs: 10, sm: 14 }}
+            >
+              GPU
+            </Typography>
+            <Typography
+              sx={{ flexBasis: "14%", textAlign: "center" }}
+              fontSize={{ xs: 10, sm: 14 }}
+            >
+              HEALTH
+            </Typography>
+          </Box>
 
-        {/* ---------- rows ---------- */}
-        {executions.map((execution) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              px: "16px",
-              py: "12px",
-              cursor: "pointer",
-              "&:hover": { background: "rgba(102, 179, 238, 0.2)" },
-            }}
-          >
+          {/* ---------- rows ---------- */}
+          {executions.map((execution) => (
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexBasis: "14%",
+                justifyContent: "space-between",
+                px: "16px",
+                py: "12px",
+                cursor: "pointer",
+                "&:hover": { background: "rgba(102, 179, 238, 0.2)" },
               }}
             >
-              <Typography variant="body2">
-                {formatJobExecutionId(execution.job_execution_id)}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexBasis: "14%",
+                }}
+              >
+                <Typography variant="body2">
+                  {formatJobExecutionId(execution.job_execution_id)}
+                </Typography>
+                <Tooltip title="Скопировать ID выполнения">
+                  <IconButton
+                    onClick={() => handleCopy(execution.job_execution_id)}
+                    size="small"
+                  >
+                    <ContentCopyIcon
+                      fontSize="small"
+                      sx={{ fontSize: "1rem" }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {formatDateTime(execution.created_at)}
               </Typography>
-              <Tooltip title="Скопировать ID выполнения">
-                <IconButton
-                  onClick={() => handleCopy(execution.job_execution_id)}
-                  size="small"
-                >
-                  <ContentCopyIcon fontSize="small" sx={{ fontSize: "1rem" }} />
-                </IconButton>
-              </Tooltip>
-            </Box>
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {formatDateTime(execution.created_at)}
-            </Typography>
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {execution.status}
-            </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {execution.status}
+              </Typography>
 
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {formatDateTime(execution.start_time)}
-            </Typography>
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {formatDateTime(execution.end_time)}
-            </Typography>
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {execution.gpu_info?.type || "N/A"}
-            </Typography>
-            <Typography variant="body2" flexBasis={"14%"} textAlign={"center"}>
-              {execution.health_status || "N/A"}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {formatDateTime(execution.start_time)}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {formatDateTime(execution.end_time)}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {execution.gpu_info?.type || "N/A"}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
+                flexBasis={"14%"}
+                textAlign={"center"}
+              >
+                {execution.health_status || "N/A"}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Box>
+          {executions.map((execution) => (
+            <Box
+              key={execution.job_execution_id}
+              sx={{
+                border: "1px solid rgba(0,0,0,.12)",
+                borderRadius: "16px",
+                p: 2,
+                mb: 2,
+                boxShadow: "0 2px 8px 0 rgba(102, 179, 238, 0.07)",
+                background: "white",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.5,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: 12, color: "#8698b0", }}
+                >
+                  JOB EXEC ID:
+                </Typography>
+                <Typography sx={{ fontSize: 12, flex: 1 }}>
+                  {formatJobExecutionId(execution.job_execution_id)}
+                </Typography>
+                <Tooltip title="Скопировать ID выполнения">
+                  <IconButton
+                    onClick={() => handleCopy(execution.job_execution_id)}
+                    size="small"
+                  >
+                    <ContentCopyIcon
+                      fontSize="small"
+                      sx={{ fontSize: "1rem" }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  СОЗДАНО:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {formatDateTime(execution.created_at)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  СТАТУС:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {execution.status}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  НАЧАЛО:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {formatDateTime(execution.start_time)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  КОНЕЦ:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {formatDateTime(execution.end_time)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  GPU:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {execution.gpu_info?.type || "N/A"}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: 12,
+                    color: "#8698b0",
+                    minWidth: 80,
+                  }}
+                >
+                  HEALTH:
+                </Typography>
+                <Typography sx={{ fontSize: 12 }}>
+                  {execution.health_status || "N/A"}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
     </div>
   );
 }

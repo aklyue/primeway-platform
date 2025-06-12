@@ -208,21 +208,23 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
         }}
       >
         {/* **Название модели** */}
-        <Grid
-          item
-          xs={isMobile && isBasic ? 5 : isMobile ? 4 : isBasic ? 6 : 4.8}
-        >
-          <Typography
-            fontSize={{ xs: 10, sm: 14 }}
-            variant="body2"
-            sx={{
-              pl: "16px",
-              fontSize: isMobile ? "9px !important" : "12px",
-            }}
+        {isBasic && (
+          <Grid
+            item
+            xs={isMobile && isBasic ? 5 : isMobile ? 4 : isBasic ? 6 : 4.8}
           >
-            {modelName}
-          </Typography>
-        </Grid>
+            <Typography
+              fontSize={{ xs: 10, sm: 14 }}
+              variant="body2"
+              sx={{
+                pl: "16px",
+                fontSize: isMobile ? "9px !important" : "12px",
+              }}
+            >
+              {modelName}
+            </Typography>
+          </Grid>
+        )}
 
         {isBasic ? (
           // **Базовые модели**
@@ -261,25 +263,42 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
           // **Запущенные модели**
           <>
             {/* **Дата создания** */}
-            <Grid
-              item
-              xs={2}
+            <Box
               sx={{
-                textAlign: "center",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                px: "16px",
+                cursor: "pointer",
+                width: "100%",
               }}
             >
               <Typography
                 variant="body2"
-                sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
+                sx={{
+                  flexBasis: "40%",
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
               >
-                {model.base_model}
+                {modelName}
               </Typography>
-            </Grid>
-            <Grid item xs={1.75} sx={{ textAlign: "center" }}>
+              {!isMobile && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    flexBasis: "20%",
+                    textAlign: "center",
+                    fontSize: isMobile ? "9px !important" : "12px",
+                  }}
+                >
+                  {model.base_model}
+                </Typography>
+              )}
               <Typography
                 variant="body2"
                 sx={{
-                  textWrap: "nowrap",
+                  flexBasis: "20%",
+                  textAlign: "center",
                   fontSize: isMobile ? "9px !important" : "12px",
                 }}
               >
@@ -287,15 +306,20 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
                   ? format(parseISO(model.created_at), "dd.MM.yyyy")
                   : "N/A"}
               </Typography>
-            </Grid>
-            <Grid item xs={2.5} sx={{ textAlign: "center", pr: "16px" }}>
               <Typography
                 variant="body2"
-                sx={{ fontSize: isMobile ? "9px !important" : "12px" }}
+                sx={{
+                  flexBasis: "20%",
+                  textAlign: "center",
+                  fontSize: isMobile ? "9px !important" : "12px",
+                }}
               >
-                Запущенная
+                {model.last_execution_status === "creating" ||
+                model.last_execution_status === "running"
+                  ? "Запущенная"
+                  : "Остановленная"}
               </Typography>
-            </Grid>
+            </Box>
 
             {/* **Состояние** */}
             {/* <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>

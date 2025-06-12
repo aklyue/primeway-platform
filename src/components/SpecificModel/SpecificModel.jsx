@@ -288,7 +288,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
         <ModelActions
           actionButtonHandler={actionButtonText === "Остановить" ? actionButtonHandler : handleLaunchButtonClick}
           actionButtonText={actionButtonText}
-          isActionButtonDisabled={false}
+          isActionButtonDisabled={isActionButtonDisabled}
         />
       </Box>
 

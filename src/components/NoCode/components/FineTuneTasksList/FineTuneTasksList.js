@@ -65,93 +65,106 @@ export default function FineTuneTasksList({ isMobile }) {
   return (
     <>
       {/* ───────────────────────────── Header */}
-      <Toolbar disableGutters sx={{ mb: 2 }}>
-        <Box display={"flex"} sx={{ flexGrow: 1 }}>
-          <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                mb: 1
-              }}
-            >
-              <Psychology />
-              <Typography
-                fontSize={"1.25rem"}
-                fontWeight={500}
-                sx={{ textAlign: "start", ml: 1 }}
-              >
-                {" "}
-                Дообучение{" "}
-              </Typography>
-            </Box>
-            <Typography
-              variant="p"
-              sx={{
-                mb: 4,
-                textAlign: "end",
-                fontSize: isMobile ? "10px !important" : "auto",
-              }}
-            >
-              {" "}
-              Здесь мы можете отслеживать и создавать задачи дообучения{" "}
-            </Typography>
-          </Box>
-        </Box>
-
-        <TextField
-          size="small"
-          placeholder="Search job"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          sx={{
-            width: isMobile ? 100 : 280,
-            mr: 2,
-            ml: isMobile ? 0 : 2,
-            ".css-yxgvbe-MuiInputBase-root-MuiOutlinedInput-root": {
-              pl: isMobile ? 0 : 1,
-            },
-            ".css-1q55ijt-MuiInputBase-input-MuiOutlinedInput-input": {
-              p: isMobile ? "8px 0" : "8px 8px 8px 0",
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment
-                sx={{ fontSize: isMobile && "9px !important" }}
-                position="start"
-              >
-                {!isMobile && <SearchIcon fontSize="small" />}
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <Tooltip title="New fine‑tuning job">
-          <Button
-            variant="contained"
-            startIcon={!isMobile && <AddIcon />}
-            onClick={() => navigate("/fine-tuning/new")}
+      <Toolbar
+        disableGutters
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "start" : "center"
+        }}
+      >
+        <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+          <Box
             sx={{
-              px: isMobile ? "6px" : "16px",
-              fontSize: isMobile && "9px !important",
-              color: "#fff",
-              bgcolor: "#597ad3",
-              whiteSpace: "nowrap",
-              minWidth: isMobile ? "0" : "auto",
-              "&:hover": { bgcolor: "#7c97de" },
+              display: "flex",
+              alignItems: "center",
+              mb: 1,
+              flexGrow: 1,
             }}
           >
-            {isMobile ? (
-              "Новая задача"
-            ) : (
-              <>
-                Новая <span style={{ padding: "0 8px" }}>fine-tuning</span>{" "}
-                задача
-              </>
-            )}
-          </Button>
-        </Tooltip>
+            <Psychology />
+            <Typography
+              fontSize={"1.25rem"}
+              fontWeight={500}
+              sx={{ textAlign: "start", ml: 1 }}
+            >
+              {" "}
+              Дообучение{" "}
+            </Typography>
+          </Box>
+          <Typography
+            variant="p"
+            sx={{
+              mb: 4,
+              textAlign: "end",
+              fontSize: isMobile ? "10px !important" : "auto",
+            }}
+          >
+            {" "}
+            Здесь мы можете отслеживать и создавать задачи дообучения{" "}
+          </Typography>
+        </Box>
+
+        <Box sx={{
+          display: "flex",
+          alignItems: "center"
+        }}>
+          <TextField
+            size="small"
+            placeholder="Search job"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            sx={{
+              width: isMobile ? 200 : 280,
+              mr: 2,
+              ml: isMobile ? 0 : 2,
+              ".css-yxgvbe-MuiInputBase-root-MuiOutlinedInput-root": {
+                pl: isMobile ? 0 : 1,
+              },
+              ".css-1q55ijt-MuiInputBase-input-MuiOutlinedInput-input": {
+                p: isMobile ? "8px 0" : "8px 8px 8px 0",
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment
+                  sx={{ fontSize: isMobile && "9px !important" }}
+                  position="start"
+                >
+                  {!isMobile && <SearchIcon fontSize="small" />}
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Tooltip title="New fine‑tuning job">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate("/fine-tuning/new")}
+              sx={{
+                px: isMobile ? "6px" : "16px",
+                fontSize: isMobile && "9px !important",
+                color: "#fff",
+                bgcolor: "#597ad3",
+                whiteSpace: "nowrap",
+                minWidth: isMobile ? "0" : "auto",
+                "&:hover": { bgcolor: "#7c97de" },
+              }}
+            >
+              {isMobile ? (
+                "Новая задача"
+              ) : (
+                <>
+                  Новая <span style={{ padding: "0 8px" }}>fine-tuning</span>{" "}
+                  задача
+                </>
+              )}
+            </Button>
+          </Tooltip>
+        </Box>
       </Toolbar>
 
       {/* ───────────────────────────── Table */}

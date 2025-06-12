@@ -31,7 +31,6 @@ function SpecificModelPage() {
   const location = useLocation();
   const { model, initialConfig, isBasic, isMobile } = location.state || {};
   const { modelId: jobId } = useParams();
-  console.log(jobId);
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentLogs, setCurrentLogs] = useState("");
   const [logsLoading, setLogsLoading] = useState(false);
@@ -139,7 +138,6 @@ function SpecificModelPage() {
         .then((response) => {
           const data = response.data || [];
           setJobs(data);
-          console.log(data);
         })
         .catch((error) => {
           console.error("Ошибка при получении списка задач:", error);
@@ -160,7 +158,6 @@ function SpecificModelPage() {
     if (jobs && jobs.length > 0) {
       const currentJob = jobs.find((j) => j.job_id === jobId);
       setJob(currentJob);
-      console.log("Current job:", currentJob);
     }
   }, [jobs, jobId]);
 

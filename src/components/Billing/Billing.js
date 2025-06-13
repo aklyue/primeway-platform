@@ -273,9 +273,9 @@ function Billing() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          mt: isMobile ? 2 : 0,
-          flexDirection: isMobile || isTablet ? "column" : "row",
+          alignItems: isTablet ? "start" : "center",
+          mt: (isMobile || isTablet) ? 2 : 0,
+          flexDirection: (isMobile || isTablet) ? "column" : "row",
           marginBottom: "10px",
           whiteSpace: "nowrap",
           gap: "8px",

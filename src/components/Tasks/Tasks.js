@@ -202,7 +202,7 @@ function Tasks() {
       </Box>
 
       {/* Основное содержимое */}
-      <Box sx={{ p: 2, wordWrap: "break-word" }}>
+      <Box sx={{ mt: 2, wordWrap: "break-word" }}>
         {jobTypeLoading ? (
           // Если идет загрузка при переключении типов задач, показываем спиннер на всю таблицу
           <Box

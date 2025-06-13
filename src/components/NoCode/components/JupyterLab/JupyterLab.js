@@ -59,7 +59,7 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{display: "flex", alignItems: "center"}}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <Code />
           <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
             Проекты JupyterLab
@@ -81,8 +81,8 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
         </Button>
       </Box>
 
-      <Paper elevation={0} sx={{ p: isMobile ? 0 : 2 }}>
-        {(isMobile || isTablet) ? (
+      <Paper elevation={0} sx={{ p: isMobile || isTablet ? 0 : 2 }}>
+        {isMobile || isTablet ? (
           <Box>
             {sessions.map((session) => {
               const startDisabled =
@@ -124,7 +124,14 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
                       rel="noopener noreferrer"
                       underline="hover"
                     >
-                      <b>URL:</b> {session.job_url || "N/A"}
+                      <b>URL:</b>{" "}
+                      <span
+                        style={{
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {session.job_url || "N/A"}
+                      </span>
                     </Link>
                   </Typography>
 
@@ -134,7 +141,7 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
                       size="small"
                       disabled={startDisabled}
                       onClick={() => handleStartSession(session.job_id)}
-                      color="success.main"
+                      color="success"
                       title="Запустить"
                     >
                       <PlayCircleFilledIcon fontSize="small" />
@@ -205,7 +212,13 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
                           rel="noopener noreferrer"
                           underline="hover"
                         >
-                          {session.job_url || "N/A"}
+                          <span
+                            style={{
+                              textDecoration: "underline",
+                            }}
+                          >
+                            {session.job_url || "N/A"}
+                          </span>
                         </Link>
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
@@ -214,7 +227,7 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
                           size="small"
                           disabled={startDisabled}
                           onClick={() => handleStartSession(session.job_id)}
-                          color="success.main"
+                          color="success"
                           title="Запустить"
                         >
                           <PlayCircleFilledIcon fontSize="small" />

@@ -205,7 +205,13 @@ export function Layout() {
   const isDocsPage = location.pathname.startsWith("/docs");
   const isMainPage = location.pathname === "/";
   const drawerWidth =
-    isTablet || isMinDesktop ? "8%" : isDocsPage ? "17%" : "6%";
+    isTablet || isMinDesktop
+      ? isDocsPage
+        ? "25%"
+        : "8%"
+      : isDocsPage
+      ? "17%"
+      : "6%";
 
   const groupKey = isDocsPage ? "docs" : "dashboard";
 
@@ -369,6 +375,10 @@ export function Layout() {
     );
   }
 
+  const itemsInRow = 3;
+  const total = dashboardMenuItems.length;
+  const itemsInLastRow = total % itemsInRow || itemsInRow;
+
   const HomePage = () => {
     return (
       <Box
@@ -385,75 +395,164 @@ export function Layout() {
         </Typography>
 
         <Grid container spacing={4} sx={{ maxWidth: "1500px" }}>
-          {dashboardMenuItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item.to}>
-              <Card
-                component={Link}
-                to={item.to}
-                onClick={() => setShowMenu(true)}
-                sx={{
-                  flexGrow: 1,
-                  height: "100%",
-                  textDecoration: "none",
-                  transition: "transform 0.2s",
-                  "&:hover": {
-                    transform: "scale(1.03)",
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                <CardActionArea sx={{ flexGrow: 1, height: "100%" }}>
-                  <CardContent
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      p: 2.5,
-                      backgroundColor: "#fff",
-                      boxShadow: 2,
-                      borderRadius: "6px",
-                    }}
-                  >
-                    <Box
+          {dashboardMenuItems.map((item, idx) => {
+            if (
+              Math.floor(idx / itemsInRow) ===
+                Math.floor((total - 1) / itemsInRow) &&
+              idx % itemsInRow === 0 &&
+              itemsInLastRow < itemsInRow
+            ) {
+              const emptyCols = Math.floor((itemsInRow - itemsInLastRow) / 2);
+              return (
+                <React.Fragment key={item.to}>
+                  {Array.from({ length: emptyCols }).map((_, i) => (
+                    <Grid
+                      item
+                      md={4}
+                      key={`empty-${i}`}
+                      sx={{ display: { xs: "none", md: "block" } }}
+                    />
+                  ))}
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Card
+                      component={Link}
+                      to={item.to}
+                      onClick={() => setShowMenu(true)}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        mb: 2,
-                        width: "100%",
-                        justifyContent: "space-between",
+                        flexGrow: 1,
+                        height: "100%",
+                        textDecoration: "none",
+                        transition: "transform 0.2s",
+                        "&:hover": {
+                          transform: "scale(1.03)",
+                          boxShadow: 6,
+                        },
                       }}
                     >
-                      <Typography variant="h5" component="div">
-                        {item.name}
-                      </Typography>
+                      <CardActionArea sx={{ flexGrow: 1, height: "100%" }}>
+                        <CardContent
+                          sx={{
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            p: 2.5,
+                            backgroundColor: "#fff",
+                            boxShadow: 2,
+                            borderRadius: "6px",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                              width: "100%",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography variant="h5" component="div">
+                              {item.name}
+                            </Typography>
+                            <Box
+                              sx={{
+                                transform: "scale(1.1)",
+                                borderRadius: "50%",
+                                bgcolor: "#5282ff",
+                                width: 40,
+                                height: 40,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              {item.icon}
+                            </Box>
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ width: "100%" }}
+                          >
+                            {item.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                </React.Fragment>
+              );
+            }
+            return (
+              <Grid item xs={12} sm={6} md={4} key={item.to}>
+                <Card
+                  component={Link}
+                  to={item.to}
+                  onClick={() => setShowMenu(true)}
+                  sx={{
+                    flexGrow: 1,
+                    height: "100%",
+                    textDecoration: "none",
+                    transition: "transform 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.03)",
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <CardActionArea sx={{ flexGrow: 1, height: "100%" }}>
+                    <CardContent
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        p: 2.5,
+                        backgroundColor: "#fff",
+                        boxShadow: 2,
+                        borderRadius: "6px",
+                      }}
+                    >
                       <Box
                         sx={{
-                          transform: "scale(1.1)",
-                          borderRadius: "50%",
-                          bgcolor: "#5282ff",
-                          width: 40,
-                          height: 40,
                           display: "flex",
-                          justifyContent: "center",
                           alignItems: "center",
+                          mb: 2,
+                          width: "100%",
+                          justifyContent: "space-between",
                         }}
                       >
-                        {item.icon}
+                        <Typography variant="h5" component="div">
+                          {item.name}
+                        </Typography>
+                        <Box
+                          sx={{
+                            transform: "scale(1.1)",
+                            borderRadius: "50%",
+                            bgcolor: "#5282ff",
+                            width: 40,
+                            height: 40,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          {item.icon}
+                        </Box>
                       </Box>
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ width: "100%" }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ width: "100%" }}
+                      >
+                        {item.description}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       </Box>
     );
@@ -483,7 +582,7 @@ export function Layout() {
               sx={{
                 display: "flex",
                 width: "100%",
-                height: "100%", 
+                height: "100%",
                 backgroundColor: "#FFFFFF",
               }}
             >
@@ -493,20 +592,23 @@ export function Layout() {
                   <header
                     style={{
                       position: "fixed",
-                      marginTop: !isDocsPage && !isMobile && !isTablet ? "1%" : "",
+                      marginTop:
+                        !isDocsPage && !isMobile && !isTablet ? "1%" : "",
                       width:
                         isDocsPage || isMainPage || isMobile || isTablet
                           ? "100%"
                           : `calc(100% - (2 * ${drawerWidth}))`,
                       zIndex: 1201,
-                      padding: (isMobile || isTablet) ? "0 0" : !isDocsPage && "0 1%",
+                      padding:
+                        isMobile || isTablet ? "0 0" : !isDocsPage && "0 1%",
                       marginLeft:
                         !isDocsPage && !isMainPage && !isMobile && !isTablet
                           ? drawerWidth
                           : "",
                       marginRight:
                         !isDocsPage && !isMainPage ? drawerWidth : "",
-                      borderRadius: (isMobile || isTablet) ? "0" : !isDocsPage ? "50px" : "0",
+                      borderRadius:
+                        isMobile || isTablet ? "0" : !isDocsPage ? "50px" : "0",
                     }}
                   >
                     <Toolbar
@@ -516,11 +618,12 @@ export function Layout() {
                           : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
-                        borderRadius: (isMobile || isTablet)
-                          ? "0"
-                          : !isDocsPage
-                          ? "50px"
-                          : "0",
+                        borderRadius:
+                          isMobile || isTablet
+                            ? "0"
+                            : !isDocsPage
+                            ? "50px"
+                            : "0",
                         boxShadow:
                           !isDocsPage && "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
@@ -811,7 +914,10 @@ export function Layout() {
                         path="/jupyter"
                         element={
                           <ProtectedRoute>
-                            <JupyterLabSessions isMobile={isMobile} isTablet={isTablet}/>
+                            <JupyterLabSessions
+                              isMobile={isMobile}
+                              isTablet={isTablet}
+                            />
                           </ProtectedRoute>
                         }
                       />
@@ -819,7 +925,10 @@ export function Layout() {
                         path="/fine-tuning"
                         element={
                           <ProtectedRoute>
-                            <TrainPage isMobile={isMobile} isTablet={isTablet}/>
+                            <TrainPage
+                              isMobile={isMobile}
+                              isTablet={isTablet}
+                            />
                           </ProtectedRoute>
                         }
                       />
@@ -843,7 +952,10 @@ export function Layout() {
                         path="/models"
                         element={
                           <ProtectedRoute>
-                            <ModelsPage isMobile={isMobile} isTablet={isTablet}/>
+                            <ModelsPage
+                              isMobile={isMobile}
+                              isTablet={isTablet}
+                            />
                           </ProtectedRoute>
                         }
                       />

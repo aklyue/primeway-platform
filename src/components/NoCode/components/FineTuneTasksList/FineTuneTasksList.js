@@ -36,7 +36,7 @@ import TaskIcon from "@mui/icons-material/Task";
  * • onRetrain(row):              – Called with the clicked row when mode is
  *                                 "train". Useful for re‑training workflows.
  */
-export default function FineTuneTasksList({ isMobile }) {
+export default function FineTuneTasksList({ isMobile, isTablet }) {
   const navigate = useNavigate();
 
   const handleRowClick = (row) => {
@@ -71,11 +71,11 @@ export default function FineTuneTasksList({ isMobile }) {
           mb: 2,
           display: "flex",
           justifyContent: "space-between",
-          flexDirection: isMobile ? "column" : "row",
-          alignItems: isMobile ? "start" : "center"
+          flexDirection: (isMobile || isTablet) ? "column" : "row",
+          alignItems: (isMobile || isTablet) ? "start" : "center"
         }}
       >
-        <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
+        <Box sx={{ width: (isMobile) ? "200px" : "auto", textAlign: "start" }}>
           <Box
             sx={{
               display: "flex",
@@ -109,7 +109,8 @@ export default function FineTuneTasksList({ isMobile }) {
 
         <Box sx={{
           display: "flex",
-          alignItems: "center"
+          alignItems: "center",
+          mt: isTablet && 2
         }}>
           <TextField
             size="small"
@@ -154,7 +155,7 @@ export default function FineTuneTasksList({ isMobile }) {
                 "&:hover": { bgcolor: "#7c97de" },
               }}
             >
-              {isMobile ? (
+              {(isMobile) ? (
                 "Новая задача"
               ) : (
                 <>
@@ -180,11 +181,11 @@ export default function FineTuneTasksList({ isMobile }) {
           <TableHead sx={{ backgroundColor: "rgba(102,179,238,0.1)" }}>
             <TableRow>
               <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
-              {!isMobile && <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>}
+              {(!isMobile) && <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>}
               <TableCell>АДАПТЕР</TableCell>
               <TableCell>СТАТУС</TableCell>
-              {!isMobile && <TableCell>ВРЕМЯ РАБОТЫ</TableCell>}
-              {!isMobile && <TableCell sortDirection="desc">СОЗДАНО</TableCell>}
+              {(!isMobile && !isTablet) && <TableCell>ВРЕМЯ РАБОТЫ</TableCell>}
+              {(!isMobile && !isTablet) && <TableCell sortDirection="desc">СОЗДАНО</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -246,7 +247,7 @@ export default function FineTuneTasksList({ isMobile }) {
                       </IconButton>
                     </Tooltip>
                   </TableCell>
-                  {!isMobile && <TableCell>{j.baseModel}</TableCell>}
+                  {(!isMobile) && <TableCell>{j.baseModel}</TableCell>}
                   <TableCell
                     sx={{
                       maxWidth: isMobile ? 120 : "auto",
@@ -267,7 +268,7 @@ export default function FineTuneTasksList({ isMobile }) {
                       >
                         <Tooltip title={j.suffix}>{j.suffix}</Tooltip>
                       </Box>
-                      {isMobile && (
+                      {(isMobile || isTablet) && (
                         <Tooltip title="Скопировать адаптер">
                           <IconButton
                             size="small"
@@ -282,8 +283,8 @@ export default function FineTuneTasksList({ isMobile }) {
                   </TableCell>
 
                   <TableCell>{j.lastExecutionStatus}</TableCell>
-                  {!isMobile && <TableCell>{j.runTime}</TableCell>}
-                  {!isMobile && <TableCell>{j.createdAt}</TableCell>}
+                  {(!isMobile && !isTablet) && <TableCell>{j.runTime}</TableCell>}
+                  {(!isMobile && !isTablet) && <TableCell>{j.createdAt}</TableCell>}
                 </TableRow>
               ))
             )}

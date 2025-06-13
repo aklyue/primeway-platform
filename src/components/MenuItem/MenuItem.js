@@ -69,7 +69,7 @@ const MenuItem = ({
               position: "absolute",
               top: "50%",
               transform:
-                isDrawerHovered && !isMobile
+                isDrawerHovered && (!isMobile && !isTablet)
                   ? "translateY(-50%) translateX(0)"
                   : anchor === "right"
                   ? "translateY(-50%) translateX(-20px)"

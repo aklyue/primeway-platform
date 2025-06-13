@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export const useModelActions = ({
   isBasic,
+  isFineTuned,
   jobId,
   authToken,
   model,
@@ -18,7 +19,7 @@ export const useModelActions = ({
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
-    if (isBasic) return;
+    if (isBasic || isFineTuned) return;
     setLoading(true);
 
     try {
@@ -31,7 +32,7 @@ export const useModelActions = ({
         params: { job_id: jobId },
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      console.log(setModelStatus)
+      console.log("launched")
       setModelStatus("running");
       alert("Модель успешно запущена.");
     } catch (error) {
@@ -57,6 +58,7 @@ export const useModelActions = ({
       });
 
       setModelStatus("stopped");
+      console.log("launched")
       alert("Модель успешно остановлена.");
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
@@ -120,6 +122,7 @@ export const useModelActions = ({
       alert(
         'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
       );
+      console.log("not launched")
       navigate("/models")
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);

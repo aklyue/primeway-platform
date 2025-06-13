@@ -24,6 +24,7 @@ export const useModelButtonLogic = ({
     loading: actionLoading,
   } = useModelActions({
     isBasic,
+    isFineTuned,
     model,
     jobId,
     setModelStatus,

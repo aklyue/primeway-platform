@@ -460,7 +460,7 @@ export function Layout() {
   };
 
   return (
-    <>
+    <Box>
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
@@ -475,6 +475,7 @@ export function Layout() {
             transition={{ duration: 0.22 }}
             style={{
               width: "100%",
+              height: "100%",
               display: shouldRenderContent ? "block" : "none",
             }}
           >
@@ -482,6 +483,7 @@ export function Layout() {
               sx={{
                 display: "flex",
                 width: "100%",
+                height: "100%", 
                 backgroundColor: "#FFFFFF",
               }}
             >
@@ -491,20 +493,20 @@ export function Layout() {
                   <header
                     style={{
                       position: "fixed",
-                      marginTop: !isDocsPage && !isMobile ? "1%" : "",
+                      marginTop: !isDocsPage && !isMobile && !isTablet ? "1%" : "",
                       width:
-                        isDocsPage || isMainPage || isMobile
+                        isDocsPage || isMainPage || isMobile || isTablet
                           ? "100%"
                           : `calc(100% - (2 * ${drawerWidth}))`,
                       zIndex: 1201,
-                      padding: isMobile ? "0 0" : !isDocsPage && "0 1%",
+                      padding: (isMobile || isTablet) ? "0 0" : !isDocsPage && "0 1%",
                       marginLeft:
-                        !isDocsPage && !isMainPage && !isMobile
+                        !isDocsPage && !isMainPage && !isMobile && !isTablet
                           ? drawerWidth
                           : "",
                       marginRight:
                         !isDocsPage && !isMainPage ? drawerWidth : "",
-                      borderRadius: isMobile ? "0" : !isDocsPage ? "50px" : "0",
+                      borderRadius: (isMobile || isTablet) ? "0" : !isDocsPage ? "50px" : "0",
                     }}
                   >
                     <Toolbar
@@ -514,7 +516,7 @@ export function Layout() {
                           : "rgb(236, 247, 255)",
                         width: "100%",
                         borderBottom: isDocsPage && "1px solid lightgray",
-                        borderRadius: isMobile
+                        borderRadius: (isMobile || isTablet)
                           ? "0"
                           : !isDocsPage
                           ? "50px"
@@ -809,7 +811,7 @@ export function Layout() {
                         path="/jupyter"
                         element={
                           <ProtectedRoute>
-                            <JupyterLabSessions isMobile={isMobile} />
+                            <JupyterLabSessions isMobile={isMobile} isTablet={isTablet}/>
                           </ProtectedRoute>
                         }
                       />
@@ -817,7 +819,7 @@ export function Layout() {
                         path="/fine-tuning"
                         element={
                           <ProtectedRoute>
-                            <TrainPage isMobile={isMobile} />
+                            <TrainPage isMobile={isMobile} isTablet={isTablet}/>
                           </ProtectedRoute>
                         }
                       />
@@ -841,7 +843,7 @@ export function Layout() {
                         path="/models"
                         element={
                           <ProtectedRoute>
-                            <ModelsPage isMobile={isMobile} />
+                            <ModelsPage isMobile={isMobile} isTablet={isTablet}/>
                           </ProtectedRoute>
                         }
                       />
@@ -1042,7 +1044,7 @@ export function Layout() {
           </Box>
         )}
       </Popover>
-    </>
+    </Box>
   );
 }
 

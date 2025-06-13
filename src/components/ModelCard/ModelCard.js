@@ -34,7 +34,7 @@ import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import { format, parseISO } from "date-fns";
 
-function ModelCard({ model, isLast, isBasic, isMobile }) {
+function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
   const navigate = useNavigate();
@@ -197,6 +197,7 @@ function ModelCard({ model, isLast, isBasic, isMobile }) {
             {
               state: {
                 isMobile,
+                isTablet,
                 model,
                 isBasic,
                 actionButtonText,

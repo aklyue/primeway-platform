@@ -35,6 +35,7 @@ const OrganizationSwitcher = ({ isMainPage }) => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -104,7 +105,7 @@ const OrganizationSwitcher = ({ isMainPage }) => {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   display: "inline-block",
-                  width: isMobile && !isMainPage ? "130px" : "auto",
+                  width: (isMobile || isTablet) && !isMainPage ? "130px" : "auto",
                 }}
               >
                 {currentOrganization

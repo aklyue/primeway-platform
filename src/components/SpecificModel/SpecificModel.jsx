@@ -69,6 +69,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setLaunchedModels(data);
+      console.log(data)
     } catch (err) {
       console.error("Ошибка при получении запущенных моделей:", err);
     }
@@ -106,6 +107,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
     );
     if (foundModel) {
       setLaunchedModel(foundModel);
+      console.log(foundModel)
       setModelStatus(foundModel.last_execution_status);
       onLaunchedModelChange?.(true);
     } else {
@@ -137,6 +139,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
         defaultConfig: buildDefaultConfig(foundModel),
       };
       setFineTunedModel(mergedModel);
+      console.log(mergedModel)
       setModelStatus(foundModel.last_execution_status);
     }
   }, [fineTunedModels]);
@@ -286,7 +289,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
           </Button>
         )}
         <ModelActions
-          actionButtonHandler={actionButtonText === "Остановить" ? actionButtonHandler : handleLaunchButtonClick}
+          actionButtonHandler={((actionButtonText === ("Остановить")) || isLaunchedModel) ? actionButtonHandler : handleLaunchButtonClick}
           actionButtonText={actionButtonText}
           isActionButtonDisabled={isActionButtonDisabled}
         />

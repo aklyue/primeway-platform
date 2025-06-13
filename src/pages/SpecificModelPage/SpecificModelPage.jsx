@@ -29,7 +29,7 @@ function SpecificModelPage() {
   const [copied, setCopied] = useState(false);
 
   const location = useLocation();
-  const { model, initialConfig, isBasic, isMobile } = location.state || {};
+  const { model, initialConfig, isBasic, isMobile, isTablet } = location.state || {};
   const { modelId: jobId } = useParams();
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentLogs, setCurrentLogs] = useState("");
@@ -181,7 +181,7 @@ function SpecificModelPage() {
       />
       {!isBasic && !isLaunchedModel && (
         <Box>
-          <JobTable job={job} isMobile={isMobile} />
+          <JobTable job={job} isMobile={isMobile} isTablet={isTablet}/>
         </Box>
       )}
       {isLaunchedModel && (

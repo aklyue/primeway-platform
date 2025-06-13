@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 //   subscribeFineTuned, // (you can delete these two lines if local storage is no longer needed)
 // } from "../../components/NoCode/api/fineTuneStorage";
 
-function ModelsPage({ isMobile }) {
+function ModelsPage({ isMobile, isTablet }) {
   const navigate = useNavigate();
   const [isCreate, setIsCreate] = useState(true);
   /* ---------------- state ------------------------------------------------ */
@@ -342,6 +342,7 @@ function ModelsPage({ isMobile }) {
                     fineTunedModels.map((ft, idx) => (
                       <FineTunedModelCard
                         isMobile={isMobile}
+                        isTablet={isTablet}
                         key={ft.job_id}
                         ft={ft}
                         isLast={idx === fineTunedModels.length - 1}
@@ -352,6 +353,7 @@ function ModelsPage({ isMobile }) {
                     launchedModels.map((model, idx) => (
                       <ModelCard
                         isMobile={isMobile}
+                        isTablet={isTablet}
                         key={model.job_id || idx}
                         model={model}
                         isLast={idx === launchedModels.length - 1}
@@ -362,7 +364,7 @@ function ModelsPage({ isMobile }) {
                     !fineTunedModels.length &&
                     !launchedLoading &&
                     !fineTunedLoading && (
-                      <Typography p={2} fontSize={"12px"}>
+                      <Typography p={2} fontSize={"12px"} textAlign={"center"}>
                         Нет моделей
                       </Typography>
                     )}

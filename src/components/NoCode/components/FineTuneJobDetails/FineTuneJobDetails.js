@@ -223,7 +223,7 @@ export default function FineTuneJobDetails({ isMobile }) {
       </Box>
 
       {/* ─── NEW: modal with logs ──────────────────────────── */}
-      <Box sx={{ mx: isMobile ? 0 : 2 }}>
+      <Box sx={{ mt: 2}}>
         <Accordion
           onClick={handleLogsClick}
           onChange={(_, expanded) => {

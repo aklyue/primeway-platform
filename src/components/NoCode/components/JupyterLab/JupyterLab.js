@@ -30,7 +30,7 @@ import { selectCurrentOrganization } from "../../../../store/selectors/organizat
 import { Link } from "react-router-dom";
 import { Code } from "@mui/icons-material";
 
-export default function JupyterLabSessions({ isMobile }) {
+export default function JupyterLabSessions({ isMobile, isTablet }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
   const authToken = useSelector((state) => state.auth.authToken);
 
@@ -82,7 +82,7 @@ export default function JupyterLabSessions({ isMobile }) {
       </Box>
 
       <Paper elevation={0} sx={{ p: isMobile ? 0 : 2 }}>
-        {isMobile ? (
+        {(isMobile || isTablet) ? (
           <Box>
             {sessions.map((session) => {
               const startDisabled =

@@ -13,7 +13,7 @@ import yaml from "js-yaml";
 import { ContentCopy as ContentCopyIcon } from "@mui/icons-material";
 import { format, parseISO } from "date-fns";
 
-function JobTable({ job, isMobile }) {
+function JobTable({ job, isMobile, isTablet }) {
   const [executions, setExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(true);
   const [executionsError, setExecutionsError] = useState(null);
@@ -128,7 +128,7 @@ function JobTable({ job, isMobile }) {
 
   return (
     <div>
-      {!isMobile ? (
+      {(!isMobile && !isTablet) ? (
         <Box
           sx={{
             border: "1px solid rgba(0,0,0,.12)",

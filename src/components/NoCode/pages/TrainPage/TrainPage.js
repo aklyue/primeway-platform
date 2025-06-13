@@ -16,7 +16,7 @@ import FineTuneFormModal from "../../components/FineTuneFormModal";
 import { modelsData } from "../../../../data/modelsData";
 import BackArrow from "../../../../UI/BackArrow";
 
-export default function TrainPage({ isMobile }) {
+export default function TrainPage({ isMobile, isTablet }) {
   const [datasets, setDatasets] = useState([]);
   const [customTasks, setCustomTasks] = useState([]);
 
@@ -155,7 +155,7 @@ export default function TrainPage({ isMobile }) {
       </Modal>
 
       {/* Добавьте список задач ниже */}
-      <FineTuneTasksList isMobile={isMobile} />
+      <FineTuneTasksList isMobile={isMobile} isTablet={isTablet}/>
     </Box>
   );
 }

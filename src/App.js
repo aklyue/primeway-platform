@@ -74,6 +74,7 @@ import PsychologyIcon from "@mui/icons-material/Psychology";
 import JupyterLabSessions from "./components/NoCode/components/JupyterLab";
 import ResponsiveDrawer from "./UI/ResponsiveDrawer";
 import SpecificModelPage from "./pages/SpecificModelPage/SpecificModelPage";
+import ChangeProjectsPage from "./pages/ChangeProjectsPage";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -229,12 +230,12 @@ export function Layout() {
 
   const dashboardMenuItems = [
     {
-      name: "JupyterLab",
-      to: "/jupyter",
+      name: "AI Marketplace",
+      to: "/marketplace",
       icon: (
         <CodeIcon fontSize="medium" sx={{ color: isMainPage && "white" }} />
       ),
-      description: "Интерактивная среда разработки JupyterLab",
+      description: "Интерактивная среда разработки",
     },
     {
       name: "Задачи",
@@ -911,10 +912,10 @@ export function Layout() {
                         }
                       />
                       <Route
-                        path="/jupyter"
+                        path="/marketplace"
                         element={
                           <ProtectedRoute>
-                            <JupyterLabSessions
+                            <ChangeProjectsPage
                               isMobile={isMobile}
                               isTablet={isTablet}
                             />

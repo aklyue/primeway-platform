@@ -315,10 +315,7 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
                   fontSize: isMobile ? "9px !important" : "12px",
                 }}
               >
-                {model.last_execution_status === "creating" ||
-                model.last_execution_status === "running"
-                  ? "Запущенная"
-                  : "Остановленная"}
+                Базовая
               </Typography>
             </Box>
 

@@ -42,7 +42,9 @@ function ConfigureModelForm({
   onFlagsChange,
   onModelConfigChange,
   onArgsChange,
-  isCreate
+  isCreate,
+  isInference,
+  isEmbedding,
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -105,6 +107,7 @@ function ConfigureModelForm({
     onArgsChange,
     onModelConfigChange,
     isFineTuned,
+    isEmbedding,
   });
 
   useEffect(() => {
@@ -145,7 +148,8 @@ function ConfigureModelForm({
             isFineTuned
               ? "Имя базовой модели (Hugging Face)"
               : "Имя модели (Hugging Face)"
-          }z
+          }
+          z
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
@@ -164,75 +168,89 @@ function ConfigureModelForm({
         <Typography variant="h6" sx={{ mt: 2 }}>
           Аргументы
         </Typography>
-        {args?.map((arg, index) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              mt: 1,
-            }}
-            key={index}
-          >
-            <Autocomplete
-              freeSolo
-              options={VLLM_ARGS}
-              getOptionLabel={(option) =>
-                typeof option === "string" ? option : option.key
-              }
-              onInputChange={(event, newInputValue) => {
-                handleArgChange(index, "key", newInputValue);
-              }}
-              value={isFineTuned ? null : arg.key}
-              sx={{ flex: 1 }}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div>
-                    <strong>{option.key}</strong>
-                    <Typography
-                      variant="caption"
-                      color="textSecondary"
-                      display="block"
-                    >
-                      {option.description}
-                    </Typography>
-                  </div>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Ключ"
-                  disabled={loading}
-                  helperText="Ключ аргумента"
-                  FormHelperTextProps={{
-                    sx: {
-                      maxHeight: isMobile && "20px",
-                      mb: isMobile && "15px",
-                    },
-                  }}
-                />
-              )}
-            />
-            <TextField
-              label="Значение"
-              value={isFineTuned ? null : arg.value}
-              onChange={(e) => handleArgChange(index, "value", e.target.value)}
-              disabled={loading}
-              helperText="Значение аргумента"
-              FormHelperTextProps={{
-                sx: { maxHeight: isMobile && "20px", mb: isMobile && "15px" },
-              }}
-              sx={{ flex: 1 }}
-            />
-            <IconButton
-              onClick={() => handleRemoveArg(index)}
-              disabled={args.length === 1 || loading}
+        {args?.map((arg, index) => {
+          const isEmbedTaskArg =
+            arg.key === "task" && arg.value === "embed" && isEmbedding;
+          return (
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}
+              key={index}
             >
-              <RemoveCircle />
-            </IconButton>
-          </Box>
-        ))}
+              <Autocomplete
+                freeSolo
+                disableClearable={isEmbedTaskArg}
+                disabled={isEmbedTaskArg}
+                options={VLLM_ARGS}
+                getOptionLabel={(option) =>
+                  typeof option === "string" ? option : option.key
+                }
+                onInputChange={(event, newInputValue) => {
+                  if (!isEmbedTaskArg) {
+                    handleArgChange(index, "key", newInputValue);
+                  }
+                }}
+                value={isFineTuned ? null : arg.key}
+                sx={{ flex: 1 }}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div>
+                      <strong>{option.key}</strong>
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        display="block"
+                      >
+                        {option.description}
+                      </Typography>
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Ключ"
+                    disabled={loading || isEmbedTaskArg}
+                    helperText="Ключ аргумента"
+                    FormHelperTextProps={{
+                      sx: {
+                        maxHeight: isMobile && "20px",
+                        mb: isMobile && "15px",
+                      },
+                    }}
+                    inputProps={{
+                      ...params.inputProps,
+                      readOnly: isEmbedTaskArg,
+                    }}
+                  />
+                )}
+              />
+
+              <TextField
+                label="Значение"
+                value={isFineTuned ? null : arg.value}
+                onChange={(e) => {
+                  if (!isEmbedTaskArg) {
+                    handleArgChange(index, "value", e.target.value);
+                  }
+                }}
+                disabled={loading || isEmbedTaskArg}
+                helperText="Значение аргумента"
+                FormHelperTextProps={{
+                  sx: { maxHeight: isMobile && "20px", mb: isMobile && "15px" },
+                }}
+                sx={{ flex: 1 }}
+              />
+
+              <IconButton
+                onClick={() => handleRemoveArg(index)}
+                disabled={args.length === 1 || loading || isEmbedTaskArg}
+              >
+                <RemoveCircle />
+              </IconButton>
+            </Box>
+          );
+        })}
+
         <Button
           variant="text"
           startIcon={<AddCircle />}

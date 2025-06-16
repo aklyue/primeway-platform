@@ -13,9 +13,10 @@ export const useConfigureModelForm = ({
   onArgsChange,
   onModelConfigChange,
   isFineTuned,
+  isEmbedding = false,
 }) => {
   const [modelName, setModelName] = useState(initialConfig?.modelName || "");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [args, setArgs] = useState(
     isFineTuned
@@ -29,26 +30,39 @@ export const useConfigureModelForm = ({
       : initialConfig?.flags || [{ key: "", value: "True" }]
   );
 
+  useEffect(() => {
+    if (isEmbedding) {
+      setArgs((prevArgs) => {
+        const alreadyHasTask = prevArgs.some(
+          (arg) => arg.key === "task" && arg.value === "embed"
+        );
+        return alreadyHasTask
+          ? prevArgs
+          : [{ key: "task", value: "embed" }, ...prevArgs];
+      });
+    }
+  }, [isEmbedding]);
+
   const [modelConfig, setModelConfig] = useState(
     initialConfig?.modelConfig || {
-      job_name: "",
-      gpu_types: [{ type: "A40", count: 1 }],
-      health_check_timeout: 3500,
-      disk_space: 80,
-      port: 8000,
-      autoscaler_timeout: 600,
-      env: [
-        {
-          name: "HUGGING_FACE_HUB_TOKEN",
-          value: "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",
+        job_name: "",
+        gpu_types: [{ type: "A40", count: 1 }],
+        health_check_timeout: 3500,
+        disk_space: 80,
+        port: 8000,
+        autoscaler_timeout: 600,
+        env: [
+          {
+            name: "HUGGING_FACE_HUB_TOKEN",
+            value: "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",
+          },
+        ],
+        schedule: {
+          workdays: [],
+          weekends: [],
+          specific_days: [],
         },
-      ],
-      schedule: {
-        workdays: [],
-        weekends: [],
-        specific_days: [],
-      },
-    }
+      }
   );
 
   const [loading, setLoading] = useState(false);
@@ -420,8 +434,7 @@ export const useConfigureModelForm = ({
       setAlertMessage(message);
       setAlertSeverity("success");
       setAlertOpen(true);
-      navigate("/models")
-      
+      navigate("/models");
     } catch (error) {
       // Обработка ошибки
       console.error(error);

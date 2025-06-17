@@ -11,29 +11,24 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ConfigureModelForm from "../../components/ConfigureModelForm/ConfigureModelForm";
 
 function CreateTabbyForm({
-  openCreateModal,
-  setOpenCreateModal,
   jobName,
   setJobName,
-  selectedGpu,
-  setSelectedGpu,
   isCreating,
-  availableGpus,
-  diskSpace,
-  setDiskSpace,
-  gpuQuantity,
-  setGpuQuantity,
   inferenceModel,
   setInferenceModel,
   embeddingModel,
   setEmbeddingModel,
   handleCreateSession,
+  snackbar,
+  handleSnackbarClose,
   // Аргументы и флаги
   inferenceArgs,
   setInferenceArgs,
@@ -49,9 +44,26 @@ function CreateTabbyForm({
   embeddingModelName,
   setEmbeddingModelName,
 }) {
-  console.log(inferenceModel);
   const [tempInference, setTempInference] = useState(inferenceModel);
   const [tempEmbedding, setTempEmbedding] = useState(embeddingModel);
+
+  useEffect(() => {
+    setInferenceModel({
+      modelName: inferenceModelName,
+      args: inferenceArgs,
+      flags: inferenceFlags,
+      modelConfig: tempInference,
+    });
+  }, [tempInference, inferenceArgs, inferenceFlags, inferenceModelName]);
+
+  useEffect(() => {
+    setEmbeddingModel({
+      modelName: embeddingModelName,
+      args: embeddingArgs,
+      flags: embeddingFlags,
+      modelConfig: tempEmbedding,
+    });
+  }, [tempEmbedding, embeddingArgs, embeddingFlags, embeddingModelName]);
 
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
@@ -83,7 +95,7 @@ function CreateTabbyForm({
       </Typography>
 
       {/* Прокручиваемая часть */}
-      <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+      <Box sx={{ flex: 1 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -95,19 +107,27 @@ function CreateTabbyForm({
           </Grid>
 
           <Grid item xs={12}>
-            <Accordion>
+            <Accordion
+              sx={{
+                boxShadow: "none",
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: 2,
+                "&:hover": {
+                  bgcolor: "rgba(185, 218, 243, 0.2)",
+                },
+              }}
+            >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>Настройка инференс модели</Typography>
               </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  maxHeight: 300,
-                  overflowY: "auto",
-                  pr: 1,
-                }}
-              >
+              <AccordionDetails>
                 <ConfigureModelForm
-                  initialConfig={inferenceModel}
+                  initialConfig={{
+                    modelName: inferenceModelName,
+                    args: inferenceArgs,
+                    flags: inferenceFlags,
+                    modelConfig: inferenceModel || {},
+                  }}
                   isFineTuned={false}
                   isCreate={false}
                   onClose={() => {}}
@@ -117,34 +137,32 @@ function CreateTabbyForm({
                   onModelNameChange={(name) => setInferenceModelName(name)}
                   isInference={true}
                 />
-                <Box display="flex" justifyContent="flex-end" mt={2} gap={2}>
-                  <Button onClick={() => setTempInference(inferenceModel)}>
-                    Отмена
-                  </Button>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      bgcolor: "#597ad3",
-                      color: "white",
-                      "&:hover": { bgcolor: "#7c97de" },
-                    }}
-                    onClick={() => setInferenceModel(tempInference)}
-                  >
-                    Сохранить
-                  </Button>
-                </Box>
               </AccordionDetails>
             </Accordion>
           </Grid>
 
           <Grid item xs={12}>
-            <Accordion>
+            <Accordion
+              sx={{
+                boxShadow: "none",
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: 2,
+                "&:hover": {
+                  bgcolor: "rgba(185, 218, 243, 0.2)",
+                },
+              }}
+            >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography>Настройка эмбеддинг модели</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <ConfigureModelForm
-                  initialConfig={embeddingModel}
+                  initialConfig={{
+                    modelName: embeddingModelName,
+                    args: embeddingArgs,
+                    flags: embeddingFlags,
+                    modelConfig: embeddingModel || {},
+                  }}
                   isFineTuned={false}
                   isCreate={false}
                   onClose={() => {}}
@@ -154,22 +172,6 @@ function CreateTabbyForm({
                   onModelNameChange={(name) => setEmbeddingModelName(name)}
                   isEmbedding={true}
                 />
-                <Box display="flex" justifyContent="flex-end" mt={2} gap={2}>
-                  <Button onClick={() => setTempEmbedding(embeddingModel)}>
-                    Отмена
-                  </Button>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      bgcolor: "#597ad3",
-                      color: "white",
-                      "&:hover": { bgcolor: "#7c97de" },
-                    }}
-                    onClick={() => setEmbeddingModel(tempEmbedding)}
-                  >
-                    Сохранить
-                  </Button>
-                </Box>
               </AccordionDetails>
             </Accordion>
           </Grid>
@@ -178,13 +180,6 @@ function CreateTabbyForm({
 
       {/* Кнопки снизу */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <Button
-          onClick={() => setOpenCreateModal(false)}
-          sx={{ mr: 2 }}
-          disabled={isCreating}
-        >
-          Отмена
-        </Button>
         <Button
           variant="contained"
           disabled={
@@ -378,6 +373,15 @@ function CreateTabbyForm({
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert severity={snackbar.severity} onClose={handleSnackbarClose}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

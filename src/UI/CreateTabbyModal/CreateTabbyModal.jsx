@@ -55,8 +55,6 @@ const CreateTabbyModal = ({
 
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-  console.log(inferenceModel, embeddingModel);
-
   const hasRequiredFields = (config) => {
     const requiredFields = [
       "autoscaler_timeout",

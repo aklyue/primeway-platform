@@ -69,9 +69,9 @@ function Tabby({ isMobile, isTablet }) {
     setEmbeddingModelName,
   } = useTabby({ currentOrganization, authToken });
 
-  // useEffect(() => {
-  //   if (!sessions.length) navigate("/tabby-create");
-  // }, [sessions, navigate]);
+  useEffect(() => {
+    if (!sessions?.length) navigate("/tabby-create");
+  }, [sessions, navigate]);
 
   return (
     <Box>

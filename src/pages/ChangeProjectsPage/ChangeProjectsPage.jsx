@@ -97,31 +97,6 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
           </Typography>
         </Box>
       </Box>
-      <TextField
-        size="small"
-        label="Search"
-        placeholder="Поиск инструмента..."
-        variant="outlined"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{
-          width: isMobile ? "100%" : 280,
-          mr: 2,
-          "& .MuiOutlinedInput-root": {
-            pl: 1,
-          },
-          "& .MuiOutlinedInput-input": {
-            p: isMobile ? "8px 0" : "8px 8px 8px 0",
-          },
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          ),
-        }}
-      />
 
       {!cardsInfo.length ? (
         <Box display="flex" justifyContent="center" mt={4}>
@@ -159,7 +134,15 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
                     <Avatar
                       src={card.icon}
                       alt={card.title}
-                      sx={{ width: 32, height: 32 }}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor:
+                          card.repo === "TabbyML/tabby"
+                            ? "#597ad3"
+                            : "transparent", // Синий фон
+                        p: card.repo === "TabbyML/tabby" ? 0.5 : 0,
+                      }}
                       variant="rounded"
                     />
                     <Typography variant="h6">{card.title}</Typography>

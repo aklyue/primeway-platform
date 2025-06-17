@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Typography } from "@mui/material";
 
-function BackArrow({ path, name, model, config }) {
+function BackArrow({ path, name, model, config, postText }) {
   const modelName =
     model?.name ||
     config?.modelConfig?.job_name ||
@@ -27,10 +27,10 @@ function BackArrow({ path, name, model, config }) {
           <ArrowBackIcon sx={{ mr: 1 }} />
           <Typography variant="body1" fontSize={"1.25rem"} fontWeight={500}>
             {name}
-            {modelName && (
+            {(modelName || postText) && (
               <>
                 {" "}
-                / <span style={{ color: "black" }}>{modelName}</span>
+                / <span style={{ color: "black" }}>{modelName || postText}</span>
               </>
             )}
           </Typography>

@@ -14,20 +14,22 @@ import {
   TableBody,
   useTheme,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Code } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
 import useTabby from "../../../../hooks/NoCode/useTabby";
 import CreateTabbyModal from "../../../../UI/CreateTabbyModal";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import StopIcon from "@mui/icons-material/Stop";
+import BackArrow from "../../../../UI/BackArrow";
 
 function Tabby({ isMobile, isTablet }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
   const authToken = useSelector((state) => state.auth.authToken);
+  const navigate = useNavigate();
 
   const {
     setOpenCreateModal,
@@ -61,17 +63,27 @@ function Tabby({ isMobile, isTablet }) {
     setInferenceArgs,
     inferenceFlags,
     setInferenceFlags,
+    inferenceModelName,
+    setInferenceModelName,
+    embeddingModelName,
+    setEmbeddingModelName,
   } = useTabby({ currentOrganization, authToken });
 
+  // useEffect(() => {
+  //   if (!sessions.length) navigate("/tabby-create");
+  // }, [sessions, navigate]);
 
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Code />
-          <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
-            Проекты TabbyML
-          </Typography>
+          <Box>
+            <BackArrow
+              path={"/marketplace"}
+              name={"AI Маркетплейс"}
+              postText={"Copilot Альтернатива"}
+            />
+          </Box>
         </Box>
         <Button
           variant="contained"
@@ -260,13 +272,17 @@ function Tabby({ isMobile, isTablet }) {
         setDiskSpace={setDiskSpace}
         gpuQuantity={gpuQuantity}
         setGpuQuantity={setGpuQuantity}
+        setInferenceModelName={setInferenceModelName}
         inferenceModel={{
+          modelName: inferenceModelName,
           args: inferenceArgs,
           flags: inferenceFlags,
           modelConfig: inferenceModel || {},
         }}
         setInferenceModel={setInferenceModel}
+        setEmbeddingModelName={setEmbeddingModelName}
         embeddingModel={{
+          modelName: embeddingModelName,
           args: embeddingArgs,
           flags: embeddingFlags,
           modelConfig: embeddingModel || {},

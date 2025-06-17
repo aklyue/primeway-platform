@@ -12,6 +12,9 @@ export const useTabby = ({ currentOrganization, authToken }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
 
+  const [inferenceModelName, setInferenceModelName] = useState("");
+  const [embeddingModelName, setEmbeddingModelName] = useState("");
+
   const [inferenceModel, setInferenceModel] = useState({});
   const [embeddingModel, setEmbeddingModel] = useState({});
 
@@ -204,5 +207,10 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     setInferenceArgs,
     inferenceFlags,
     setInferenceFlags,
+    //modelName
+    inferenceModelName,
+    setInferenceModelName,
+    embeddingModelName,
+    setEmbeddingModelName,
   };
 };

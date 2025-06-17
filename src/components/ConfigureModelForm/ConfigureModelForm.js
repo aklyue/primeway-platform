@@ -41,6 +41,7 @@ function ConfigureModelForm({
   isFineTuned,
   onFlagsChange,
   onModelConfigChange,
+  onModelNameChange,
   onArgsChange,
   isCreate,
   isInference,
@@ -106,6 +107,7 @@ function ConfigureModelForm({
     onFlagsChange,
     onArgsChange,
     onModelConfigChange,
+    onModelNameChange,
     isFineTuned,
     isEmbedding,
   });

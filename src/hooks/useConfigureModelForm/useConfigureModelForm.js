@@ -12,6 +12,7 @@ export const useConfigureModelForm = ({
   onFlagsChange,
   onArgsChange,
   onModelConfigChange,
+  onModelNameChange,
   isFineTuned,
   isEmbedding = false,
 }) => {
@@ -336,6 +337,12 @@ export const useConfigureModelForm = ({
       onModelConfigChange(modelConfig);
     }
   }, [modelConfig, onModelConfigChange]);
+
+  useEffect(() => {
+    if(onModelNameChange) {
+      onModelNameChange(modelName)
+    }
+  }, [modelName, onModelNameChange])
 
   const handleSubmit = async (event) => {
     event.preventDefault();

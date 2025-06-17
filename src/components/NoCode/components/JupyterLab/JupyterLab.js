@@ -29,6 +29,7 @@ import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 import { Link } from "react-router-dom";
 import { Code } from "@mui/icons-material";
+import BackArrow from "../../../../UI/BackArrow";
 
 export default function JupyterLabSessions({ isMobile, isTablet }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -59,12 +60,14 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Code />
-          <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
-            Проекты JupyterLab
-          </Typography>
+        <Box>
+          <BackArrow
+            path={"/marketplace"}
+            name={"AI Маркетплейс"}
+            postText={"JupyterLab"}
+          />
         </Box>
+
         <Button
           variant="contained"
           color="primary"

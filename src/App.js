@@ -86,6 +86,8 @@ import { fetchUserData } from "./store/slices/authSlice";
 import { setOrganizations } from "./store/slices/organizationSlice";
 import { fetchWalletBalance } from "./store/slices/organizationSlice";
 import { DeveloperBoard } from "@mui/icons-material";
+import Tabby from "./components/NoCode/components/Tabby";
+import CreateTabbyPage from "./pages/CreateTabbyPage";
 
 export function Layout() {
   const dispatch = useDispatch();
@@ -230,7 +232,7 @@ export function Layout() {
 
   const dashboardMenuItems = [
     {
-      name: "AI Marketplace",
+      name: "AI Маркетплейс",
       to: "/marketplace",
       icon: (
         <CodeIcon fontSize="medium" sx={{ color: isMainPage && "white" }} />
@@ -919,6 +921,33 @@ export function Layout() {
                               isMobile={isMobile}
                               isTablet={isTablet}
                             />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/jupyter"
+                        element={
+                          <ProtectedRoute>
+                            <JupyterLabSessions
+                              isMobile={isMobile}
+                              isTablet={isTablet}
+                            />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/tabby"
+                        element={
+                          <ProtectedRoute>
+                            <Tabby isMobile={isMobile} isTablet={isTablet} />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/tabby-create"
+                        element={
+                          <ProtectedRoute>
+                            <CreateTabbyPage isMobile={isMobile} isTablet={isTablet} />
                           </ProtectedRoute>
                         }
                       />

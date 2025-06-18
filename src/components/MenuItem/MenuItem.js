@@ -47,7 +47,7 @@ const MenuItem = ({
             primaryTypographyProps={{
               fontSize: 12,
             }}
-            sx={{ mr: 1 }}
+            sx={{ mr: 1, textWrap: (!isMobile && !isTablet) && "nowrap" }}
           />
         ) : (
           <ListItemIcon

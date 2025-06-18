@@ -71,11 +71,11 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
           mb: 2,
           display: "flex",
           justifyContent: "space-between",
-          flexDirection: (isMobile || isTablet) ? "column" : "row",
-          alignItems: (isMobile || isTablet) ? "start" : "center"
+          flexDirection: isMobile || isTablet ? "column" : "row",
+          alignItems: isMobile || isTablet ? "start" : "center",
         }}
       >
-        <Box sx={{ width: (isMobile) ? "200px" : "auto", textAlign: "start" }}>
+        <Box sx={{ width: isMobile ? "200px" : "auto", textAlign: "start" }}>
           <Box
             sx={{
               display: "flex",
@@ -107,11 +107,13 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
           </Typography>
         </Box>
 
-        <Box sx={{
-          display: "flex",
-          alignItems: "center",
-          mt: isTablet && 2
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            mt: isTablet && 2,
+          }}
+        >
           <TextField
             size="small"
             placeholder="Search job"
@@ -155,7 +157,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
                 "&:hover": { bgcolor: "#7c97de" },
               }}
             >
-              {(isMobile) ? (
+              {isMobile ? (
                 "Новая задача"
               ) : (
                 <>
@@ -181,11 +183,13 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
           <TableHead sx={{ backgroundColor: "rgba(102,179,238,0.1)" }}>
             <TableRow>
               <TableCell sx={{ width: 120 }}>JOB ID</TableCell>
-              {(!isMobile) && <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>}
+              {!isMobile && <TableCell>БАЗОВАЯ МОДЕЛЬ</TableCell>}
               <TableCell>АДАПТЕР</TableCell>
               <TableCell>СТАТУС</TableCell>
-              {(!isMobile && !isTablet) && <TableCell>ВРЕМЯ РАБОТЫ</TableCell>}
-              {(!isMobile && !isTablet) && <TableCell sortDirection="desc">СОЗДАНО</TableCell>}
+              {!isMobile && !isTablet && <TableCell>ВРЕМЯ РАБОТЫ</TableCell>}
+              {!isMobile && !isTablet && (
+                <TableCell sortDirection="desc">СОЗДАНО</TableCell>
+              )}
             </TableRow>
           </TableHead>
 
@@ -208,9 +212,13 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
               filteredJobs.map((j) => (
                 <TableRow
                   key={j.id}
-                  hover
                   onClick={() => handleRowClick(j)}
-                  sx={{ cursor: "pointer" }}
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      background: "rgba(102, 179, 238, 0.2)",
+                    },
+                  }}
                 >
                   <TableCell
                     sx={{
@@ -237,7 +245,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
                         {j.id}
                       </span>
                     </Tooltip>
-                    <Tooltip title="Скопировать JOB ID">
+                    <Tooltip title="Скопировать JOB ID" arrow>
                       <IconButton
                         size="small"
                         sx={{ ml: 0.5 }}
@@ -247,7 +255,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
                       </IconButton>
                     </Tooltip>
                   </TableCell>
-                  {(!isMobile) && <TableCell>{j.baseModel}</TableCell>}
+                  {!isMobile && <TableCell>{j.baseModel}</TableCell>}
                   <TableCell
                     sx={{
                       maxWidth: isMobile ? 120 : "auto",
@@ -283,8 +291,10 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
                   </TableCell>
 
                   <TableCell>{j.lastExecutionStatus}</TableCell>
-                  {(!isMobile && !isTablet) && <TableCell>{j.runTime}</TableCell>}
-                  {(!isMobile && !isTablet) && <TableCell>{j.createdAt}</TableCell>}
+                  {!isMobile && !isTablet && <TableCell>{j.runTime}</TableCell>}
+                  {!isMobile && !isTablet && (
+                    <TableCell>{j.createdAt}</TableCell>
+                  )}
                 </TableRow>
               ))
             )}

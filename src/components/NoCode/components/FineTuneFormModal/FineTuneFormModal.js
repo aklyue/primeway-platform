@@ -16,7 +16,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useFineTuneFormModal from "../../../../hooks/NoCode/useFineTuneFormModal";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
-import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { AVAILABLE_GPUS } from "../../../../constants";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 

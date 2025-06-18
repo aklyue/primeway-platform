@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../api";
-import { AVAILABLE_GPUS } from "../../../AVAILABLE_GPUS";
+import { AVAILABLE_GPUS } from "../../../constants";
 
 export const useTabby = ({ currentOrganization, authToken }) => {
   const [sessions, setSessions] = useState([]);

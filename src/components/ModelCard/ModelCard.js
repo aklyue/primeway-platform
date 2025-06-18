@@ -2,11 +2,8 @@ import React, { useState, useContext, useEffect } from "react";
 import {
   Typography,
   Button,
-  Modal,
   Box,
   Grid,
-  IconButton,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -14,12 +11,8 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import ConfigureModelForm from "../ConfigureModelForm";
 import axiosInstance from "../../api";
-import CloseIcon from "@mui/icons-material/Close";
-import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ModelsDialog from "../ModelsDialog";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 // Импорт SVG как React-компонентов
 import { ReactComponent as DeepSeek } from "../../assets/deepseek-color.svg";
@@ -482,7 +475,7 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
               } else {
                 const textarea = document.createElement("textarea");
                 textarea.value = currentLogs;
-                textarea.style.position = "fixed"; // Предотвращаем прокрутку страницы
+                textarea.style.position = "fixed";
                 document.body.appendChild(textarea);
                 textarea.focus();
                 textarea.select();

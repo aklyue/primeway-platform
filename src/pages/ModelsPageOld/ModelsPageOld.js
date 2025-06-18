@@ -31,22 +31,7 @@ import { VLLM_ARGS, VLLM_FLAGS } from "../../data/VllmArgs";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
-const AVAILABLE_GPUS = {
-  "A100 PCIe": { memoryInGb: 80, costPerHour: 260 },
-  "A100 SXM": { memoryInGb: 80, costPerHour: 299 },
-  A40: { memoryInGb: 48, costPerHour: 90 },
-  "RTX 4090": { memoryInGb: 24, costPerHour: 130 },
-  "H100 SXM": { memoryInGb: 80, costPerHour: 399 },
-  "H100 NVL": { memoryInGb: 94, costPerHour: 355 },
-  "H100 PCIe": { memoryInGb: 80, costPerHour: 335 },
-  "H200 SXM": { memoryInGb: 143, costPerHour: 460 },
-  L4: { memoryInGb: 24, costPerHour: 90 },
-  L40: { memoryInGb: 48, costPerHour: 170 },
-  L40S: { memoryInGb: 48, costPerHour: 175 },
-  "RTX 2000 Ada": { memoryInGb: 16, costPerHour: 55 },
-  "RTX 6000 Ada": { memoryInGb: 48, costPerHour: 140 },
-  "RTX A6000": { memoryInGb: 48, costPerHour: 130 },
-};
+import { AVAILABLE_GPUS } from "../../constants";
 
 function ModelsPage() {
   const authToken = useSelector((state) => state.auth.authToken);

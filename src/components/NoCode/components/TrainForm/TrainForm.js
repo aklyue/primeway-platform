@@ -12,7 +12,7 @@ import {
 
 import useTrainForm from "../../../../hooks/NoCode/useTrainForm";
 
-import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { AVAILABLE_GPUS } from "../../../../constants";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 

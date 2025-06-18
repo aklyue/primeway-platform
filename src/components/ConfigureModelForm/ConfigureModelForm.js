@@ -32,7 +32,7 @@ import useConfigureModelForm from "../../hooks/useConfigureModelForm";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 
-import { AVAILABLE_GPUS } from "../../AVAILABLE_GPUS";
+import { AVAILABLE_GPUS } from "../../constants";
 
 function ConfigureModelForm({
   initialConfig,

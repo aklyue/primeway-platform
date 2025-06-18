@@ -9,40 +9,9 @@ import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import "./docs.css";
+import CodeBlock from "../UI/CodeBlock";
 
 const Jobs = () => {
-  // Компонент для отображения блока кода с подсветкой синтаксиса и кнопкой копирования
-  const CodeBlock = ({ code, language }) => {
-    const handleCopy = () => {
-      navigator.clipboard.writeText(code);
-    };
-
-    return (
-      <div
-        className="code-block-container"
-        style={{ position: "relative", marginBottom: "20px" }}
-      >
-        <SyntaxHighlighter
-          language={language}
-          style={coldarkCold}
-          customStyle={{ margin: 0, padding: "8px", borderRadius: "7px" }}
-          showLineNumbers
-        >
-          {code}
-        </SyntaxHighlighter>
-        <Tooltip title="Копировать">
-          <IconButton
-            size="small"
-            onClick={handleCopy}
-            className="copy-button"
-            style={{ position: "absolute", top: "5px", right: "5px" }}
-          >
-            <ContentCopyIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </div>
-    );
-  };
 
   // Определение секций для навигации
   const sections = [

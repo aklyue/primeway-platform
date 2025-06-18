@@ -25,7 +25,7 @@ import useFineTuningJobCreatePage from "../../../../hooks/NoCode/useFineTuningJo
 import BackArrow from "../../../../UI/BackArrow";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
-import { AVAILABLE_GPUS } from "../../../../AVAILABLE_GPUS";
+import { AVAILABLE_GPUS } from "../../../../constants";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 

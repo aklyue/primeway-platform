@@ -310,6 +310,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
             onFlagsChange={handleFlagsChange}
             onArgsChange={handleArgsChange}
             onModelConfigChange={handleModelConfigChange}
+            isSmall={true}
           />
         </Box>
       </Collapse>

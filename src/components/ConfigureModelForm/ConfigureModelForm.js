@@ -46,6 +46,7 @@ function ConfigureModelForm({
   isCreate,
   isInference,
   isEmbedding,
+  isSmall,
 }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -134,13 +135,16 @@ function ConfigureModelForm({
     <Paper
       elevation={0}
       sx={{
-        p: isMobile ? 1 : 4,
-        maxHeight: "95vh",
+        p: isMobile ? 1 : isSmall ? 2 : isCreate ? 3 : 4,
+        maxHeight: isSmall ? "50vh" : isCreate ? "68vh" : "95vh",
         overflowY: "auto",
-        margin: "auto",
+        margin: isSmall ? 0 : "auto",
       }}
     >
-      <form onSubmit={handleSubmit} style={{ paddingBottom: "16px" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ paddingBottom: isSmall ? 0 : "16px" }}
+      >
         {/* VLLM Configuration */}
         <Typography variant="h6">VLLM конфигурация</Typography>
 
@@ -155,6 +159,7 @@ function ConfigureModelForm({
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
+          size={isSmall ? "small" : "medium"}
           required
           margin="normal"
           disabled={loading || readOnlyModelName || isFineTuned}
@@ -167,7 +172,7 @@ function ConfigureModelForm({
         />
 
         {/* Args */}
-        <Typography variant="h6" sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ mt: isSmall ? 0 : 2 }}>
           Аргументы
         </Typography>
         {args?.map((arg, index) => {
@@ -175,7 +180,12 @@ function ConfigureModelForm({
             arg.key === "task" && arg.value === "embed" && isEmbedding;
           return (
             <Box
-              sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: isSmall ? 1 : 2,
+                mt: 1,
+              }}
               key={index}
             >
               <Autocomplete
@@ -213,6 +223,7 @@ function ConfigureModelForm({
                     label="Ключ"
                     disabled={loading || isEmbedTaskArg}
                     helperText="Ключ аргумента"
+                    size={isSmall ? "small" : "medium"}
                     FormHelperTextProps={{
                       sx: {
                         maxHeight: isMobile && "20px",
@@ -236,6 +247,7 @@ function ConfigureModelForm({
                   }
                 }}
                 disabled={loading || isEmbedTaskArg}
+                size={isSmall ? "small" : "medium"}
                 helperText="Значение аргумента"
                 FormHelperTextProps={{
                   sx: { maxHeight: isMobile && "20px", mb: isMobile && "15px" },
@@ -257,14 +269,14 @@ function ConfigureModelForm({
           variant="text"
           startIcon={<AddCircle />}
           onClick={handleAddArg}
-          sx={{ mt: 1 }}
+          sx={{ mt: isSmall ? 0 : 1 }}
           disabled={loading}
         >
           Добавить аргумент
         </Button>
 
         {/* Flags */}
-        <Typography variant="h6" sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ mt: isSmall ? 0 : 2 }}>
           Флаги
         </Typography>
         {flags?.map((flag, index) => (
@@ -308,10 +320,11 @@ function ConfigureModelForm({
                   label="Ключ"
                   disabled={loading}
                   helperText="Ключ флага"
+                  size={isSmall ? "small" : "medium"}
                   FormHelperTextProps={{
                     sx: {
                       maxHeight: isMobile && "20px",
-                      mb: isMobile && "17px",
+                      mb: isMobile && "21px",
                     },
                   }}
                 />
@@ -324,6 +337,7 @@ function ConfigureModelForm({
               <Select
                 labelId={`flag-value-label-${index}`}
                 value={flag.value}
+                size={isSmall ? "small" : "medium"}
                 onChange={(e) =>
                   handleFlagChange(index, "value", e.target.value)
                 }
@@ -333,8 +347,8 @@ function ConfigureModelForm({
                 <MenuItem value="True">True</MenuItem>
                 <MenuItem value="False">False</MenuItem>
               </Select>
-              <Typography variant="caption" color="textSecondary">
-                Значение флага (True/False)
+              <Typography variant="caption" color="textSecondary" mt={"4px"}>
+                {isSmall ? "Значение флага" : "Значение флага (True/False)"}
               </Typography>
             </FormControl>
             <IconButton
@@ -349,13 +363,13 @@ function ConfigureModelForm({
           variant="text"
           startIcon={<AddCircle />}
           onClick={handleAddFlag}
-          sx={{ mt: 1 }}
+          sx={{ mt: isSmall ? 0 : 1 }}
           disabled={loading}
         >
           Добавить флаг
         </Button>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: isSmall ? 1 : 3 }} />
 
         {/* Deployment Configuration */}
         <Typography variant="h6">Конфигурация развертывания</Typography>
@@ -369,6 +383,7 @@ function ConfigureModelForm({
           required
           margin="normal"
           disabled={loading}
+          size={isSmall ? "small" : "medium"}
           helperText={
             deploymentNameErrorText ||
             "Укажите уникальное имя для этого развертывания"
@@ -377,7 +392,7 @@ function ConfigureModelForm({
         />
 
         {/* GPU Types */}
-        <Typography variant="h6" sx={{ mt: 2 }}>
+        <Typography variant="h6" sx={{ mt: isSmall ? 0 : 2 }}>
           Тип GPU
         </Typography>
         {modelConfig?.gpu_types?.map((gpuType, index) => (
@@ -385,7 +400,7 @@ function ConfigureModelForm({
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 2,
+              gap: isSmall ? 1 : 2,
               mt: 1,
             }}
             key={index}
@@ -394,6 +409,7 @@ function ConfigureModelForm({
               sx={{ flex: 1 }}
               error={gpuTypesError && !gpuType.type}
               required
+              size={isSmall ? "small" : "medium"}
             >
               <InputLabel id={`gpu-select-label-${index}`}>Имя GPU</InputLabel>
               <Select
@@ -411,19 +427,26 @@ function ConfigureModelForm({
                   </MenuItem>
                 ))}
               </Select>
-              <Typography variant="caption" color="textSecondary">
-                {gpuTypesErrorText || "Выберите GPU из списка"}
-              </Typography>
+              {isSmall ? (
+                <Typography variant="caption" color="textSecondary" mt={"4px"}>
+                  {gpuTypesErrorText || "Выберите GPU"}
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="textSecondary">
+                  {gpuTypesErrorText || "Выберите GPU из списка"}
+                </Typography>
+              )}
             </FormControl>
             <TextField
               label="Count"
               type="number"
+              size={isSmall ? "small" : "medium"}
               value={gpuType.count}
               onChange={(e) =>
                 handleGpuTypeChange(index, "count", e.target.value)
               }
               disabled={loading}
-              helperText="Количество GPU этого типа"
+              helperText={isSmall ? "Количество" : "Количество GPU этого типа"}
               sx={{ flex: 1 }}
             />
 
@@ -439,7 +462,7 @@ function ConfigureModelForm({
           variant="text"
           startIcon={<AddCircle />}
           onClick={handleAddGpuType}
-          sx={{ mt: 1 }}
+          sx={{ mt: isSmall ? 0 : 1 }}
           disabled={loading}
         >
           Добавить тип GPU
@@ -452,7 +475,12 @@ function ConfigureModelForm({
             return (
               <Box
                 key={`gpu-details-${index}`}
-                sx={{ mt: 1, mb: 2, pl: 2, borderLeft: "4px solid #ccc" }}
+                sx={{
+                  mt: isSmall ? 0 : 1,
+                  mb: 2,
+                  pl: 2,
+                  borderLeft: "4px solid #ccc",
+                }}
               >
                 <Typography variant="body2">
                   Память GPU: {gpuDetails.memoryInGb} GB
@@ -478,6 +506,7 @@ function ConfigureModelForm({
             })
           }
           fullWidth
+          size={isSmall ? "small" : "medium"}
           margin="normal"
           disabled={loading}
           helperText="Время ожидания ответа модели в миллисекундах"
@@ -493,6 +522,7 @@ function ConfigureModelForm({
           }
           fullWidth
           margin="normal"
+          size={isSmall ? "small" : "medium"}
           disabled={loading}
           helperText="Порт, на котором работает модель"
         />
@@ -501,6 +531,7 @@ function ConfigureModelForm({
         <TextField
           label="Свободное место на диске (GB)"
           type="number"
+          size={isSmall ? "small" : "medium"}
           value={modelConfig.disk_space}
           onChange={handleDiskSpaceChange}
           fullWidth
@@ -526,6 +557,7 @@ function ConfigureModelForm({
           }
           fullWidth
           margin="normal"
+          size={isSmall ? "small" : "medium"}
           disabled={loading}
           helperText="Время простоя перед уменьшением масштаба"
         />
@@ -711,7 +743,7 @@ function ConfigureModelForm({
             <Typography variant="subtitle1">Конкретные даты</Typography>
           </Box>
           {scheduleOpen.specific_days &&
-            (modelConfig.schedule.specific_days || []).map(
+            (modelConfig?.schedule?.specific_days || []).map(
               (specificDay, dayIndex) => (
                 <Box
                   key={`specific-day-${dayIndex}`}
@@ -887,8 +919,8 @@ function ConfigureModelForm({
         >
           Добавить переменную окружения
         </Button>
-
         <Divider sx={{ my: 2 }} />
+
         {isCreate && (
           <Button
             type="submit"

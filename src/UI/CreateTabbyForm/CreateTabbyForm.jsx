@@ -13,10 +13,14 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  useMediaQuery,
+  useTheme,
+  Collapse,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, { useEffect, useState } from "react";
 import ConfigureModelForm from "../../components/ConfigureModelForm/ConfigureModelForm";
+import ModelCheckInfo from "../ModelCheckInfo";
 
 function CreateTabbyForm({
   jobName,
@@ -46,6 +50,11 @@ function CreateTabbyForm({
 }) {
   const [tempInference, setTempInference] = useState(inferenceModel);
   const [tempEmbedding, setTempEmbedding] = useState(embeddingModel);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const [openCodeGen, setOpenCodeGen] = useState(false);
+  const [openEmbedding, setOpenEmbedding] = useState(false);
 
   useEffect(() => {
     setInferenceModel({
@@ -81,128 +90,450 @@ function CreateTabbyForm({
     );
   };
 
+  const getMissingFields = (config) => {
+    const requiredFields = [
+      "autoscaler_timeout",
+      "disk_space",
+      "health_check_timeout",
+      "job_name",
+      "port",
+      "gpu_types",
+    ];
+    if (!config) return requiredFields;
+    return requiredFields.filter(
+      (field) => config[field] === undefined || config[field] === ""
+    );
+  };
+
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         bgcolor: "background.paper",
-        borderRadius: 2,
+        border: "1px solid lightgray",
+        borderRadius: 3,
       }}
     >
-      <Typography variant="h6" mt={1} gutterBottom>
-        Создание нового TabbyML Проекта
-      </Typography>
-
-      {/* Прокручиваемая часть */}
-      <Box sx={{ flex: 1 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Название задачи"
-              value={jobName}
-              onChange={(e) => setJobName(e.target.value)}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Accordion
-              sx={{
-                boxShadow: "none",
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: 2,
-                "&:hover": {
-                  bgcolor: "rgba(185, 218, 243, 0.2)",
-                },
-              }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Настройка инференс модели</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <ConfigureModelForm
-                  initialConfig={{
-                    modelName: inferenceModelName,
-                    args: inferenceArgs,
-                    flags: inferenceFlags,
-                    modelConfig: inferenceModel || {},
-                  }}
-                  isFineTuned={false}
-                  isCreate={false}
-                  onClose={() => {}}
-                  onModelConfigChange={(config) => setTempInference(config)}
-                  onArgsChange={(args) => setInferenceArgs(args)}
-                  onFlagsChange={(flags) => setInferenceFlags(flags)}
-                  onModelNameChange={(name) => setInferenceModelName(name)}
-                  isInference={true}
-                />
-              </AccordionDetails>
-            </Accordion>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Accordion
-              sx={{
-                boxShadow: "none",
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: 2,
-                "&:hover": {
-                  bgcolor: "rgba(185, 218, 243, 0.2)",
-                },
-              }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Настройка эмбеддинг модели</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <ConfigureModelForm
-                  initialConfig={{
-                    modelName: embeddingModelName,
-                    args: embeddingArgs,
-                    flags: embeddingFlags,
-                    modelConfig: embeddingModel || {},
-                  }}
-                  isFineTuned={false}
-                  isCreate={false}
-                  onClose={() => {}}
-                  onModelConfigChange={(config) => setTempEmbedding(config)}
-                  onArgsChange={(args) => setEmbeddingArgs(args)}
-                  onFlagsChange={(flags) => setEmbeddingFlags(flags)}
-                  onModelNameChange={(name) => setEmbeddingModelName(name)}
-                  isEmbedding={true}
-                />
-              </AccordionDetails>
-            </Accordion>
-          </Grid>
-        </Grid>
+      <Box
+        sx={{
+          p: isMobile ? 1 : 2,
+          borderBottom: "1px solid lightgray",
+          backgroundColor: "rgba(102, 179, 238, 0.1)",
+        }}
+      >
+        <Typography variant="h7" gutterBottom>
+          СОЗДАНИЕ TABBYML ПРОЕКТА
+        </Typography>
       </Box>
 
-      {/* Кнопки снизу */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <Button
-          variant="contained"
-          disabled={
-            !jobName ||
-            !inferenceModel ||
-            !inferenceModel.modelConfig ||
-            !embeddingModel ||
-            !embeddingModel.modelConfig ||
-            !hasRequiredFields(inferenceModel.modelConfig) ||
-            !hasRequiredFields(embeddingModel.modelConfig) ||
-            !inferenceModel.modelName ||
-            !embeddingModel.modelName ||
-            isCreating
-          }
-          onClick={() => setConfirmDialogOpen(true)}
-          sx={{
-            bgcolor: "#597ad3",
-            color: "white",
-            "&:hover": { bgcolor: "#7c97de" },
-          }}
-        >
-          Создать
-        </Button>
+      {/* Прокручиваемая часть */}
+      <Box sx={{ flex: 1 }} padding={isMobile ? 1 : 2}>
+        <Grid container spacing={isMobile ? 1 : 2}>
+          {!isMobile && !isTablet ? (
+            <Grid
+              item
+              container
+              spacing={isMobile ? 1 : 2}
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Grid item xs={10.4}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Название задачи"
+                  value={jobName}
+                  onChange={(e) => setJobName(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={1.6} sx={{ pl: 0 }}>
+                {" "}
+                {/* убираем левый отступ */}
+                <Button
+                  fullWidth
+                  variant="contained"
+                  disabled={
+                    !jobName ||
+                    !inferenceModel ||
+                    !inferenceModel.modelConfig ||
+                    !embeddingModel ||
+                    !embeddingModel.modelConfig ||
+                    !hasRequiredFields(inferenceModel.modelConfig) ||
+                    !hasRequiredFields(embeddingModel.modelConfig) ||
+                    !inferenceModel.modelName ||
+                    !embeddingModel.modelName ||
+                    isCreating
+                  }
+                  onClick={() => setConfirmDialogOpen(true)}
+                  sx={{
+                    bgcolor: "#597ad3",
+                    padding: 1,
+                    fontSize: "12px",
+                    color: "white",
+                    "&:hover": { bgcolor: "#7c97de" },
+                  }}
+                >
+                  Создать
+                </Button>
+              </Grid>
+            </Grid>
+          ) : (
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Название задачи"
+                value={jobName}
+                onChange={(e) => setJobName(e.target.value)}
+              />
+            </Grid>
+          )}
+
+          {!isMobile && !isTablet ? (
+            <>
+              <Grid item xs={5}>
+                <Typography variant="h6" mb={1}>
+                  Code Generation Модель
+                </Typography>
+                <Box
+                  sx={{
+                    boxShadow: "none",
+                    border: "1px solid rgb(235, 235, 235)",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      maxHeight: "55dvh",
+                      overflowY: "hidden",
+                      borderRadius: 2,
+                    }}
+                  >
+                    <ConfigureModelForm
+                      initialConfig={{
+                        modelName: inferenceModelName,
+                        args: inferenceArgs,
+                        flags: inferenceFlags,
+                        modelConfig: inferenceModel || {},
+                      }}
+                      isFineTuned={false}
+                      isCreate={false}
+                      onClose={() => {}}
+                      onModelConfigChange={(config) => setTempInference(config)}
+                      onArgsChange={(args) => setInferenceArgs(args)}
+                      onFlagsChange={(flags) => setInferenceFlags(flags)}
+                      onModelNameChange={(name) => setInferenceModelName(name)}
+                      isInference={true}
+                      isSmall={true}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+
+              <Grid item xs={5}>
+                <Typography variant="h6" mb={1}>
+                  Embedding Модель
+                </Typography>
+                <Box
+                  sx={{
+                    boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.1)",
+                    border: "1px solid rgb(235, 235, 235)",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      maxHeight: "55dvh",
+                      overflow: "hidden",
+                      borderRadius: 2,
+                    }}
+                  >
+                    <ConfigureModelForm
+                      initialConfig={{
+                        modelName: embeddingModelName,
+                        args: embeddingArgs,
+                        flags: embeddingFlags,
+                        modelConfig: embeddingModel || {},
+                      }}
+                      isFineTuned={false}
+                      isCreate={false}
+                      onClose={() => {}}
+                      onModelConfigChange={(config) => setTempEmbedding(config)}
+                      onArgsChange={(args) => setEmbeddingArgs(args)}
+                      onFlagsChange={(flags) => setEmbeddingFlags(flags)}
+                      onModelNameChange={(name) => setEmbeddingModelName(name)}
+                      isEmbedding={true}
+                      isSmall={true}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+
+              <Grid item xs={2}>
+                <Typography variant="h6" mb={1} height={"24px"}></Typography>
+                <Box>
+                  {!inferenceModel?.modelName || !embeddingModel?.modelName ? (
+                    <ModelCheckInfo
+                      label="VLLM"
+                      missingFields={["Имя моделей"]}
+                    />
+                  ) : (
+                    <ModelCheckInfo
+                      label="Название задачи"
+                      missingFields={[]}
+                    />
+                  )}
+                  <ModelCheckInfo
+                    label="Code Gen модель"
+                    missingFields={getMissingFields(
+                      inferenceModel?.modelConfig
+                    )}
+                  />
+                  <ModelCheckInfo
+                    label="Embedding модель"
+                    missingFields={getMissingFields(
+                      embeddingModel?.modelConfig
+                    )}
+                  />
+                </Box>
+              </Grid>
+            </>
+          ) : (
+            <>
+              <Grid item xs={12}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  onClick={() => setOpenCodeGen((prev) => !prev)}
+                >
+                  <Typography fontSize="9px" mr={1}>
+                    {openCodeGen ? "▼" : "▶"}
+                  </Typography>
+                  <Typography variant="h6">Code Generation Модель</Typography>
+                </Box>
+                <Collapse in={openCodeGen}>
+                  <Box
+                    sx={{
+                      boxShadow: "none",
+                      borderRadius: 2,
+                      border: "1px solid lightgray",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        maxHeight: "55dvh",
+                        overflowY: "hidden",
+                        borderRadius: 2,
+                      }}
+                    >
+                      <ConfigureModelForm
+                        initialConfig={{
+                          modelName: inferenceModelName,
+                          args: inferenceArgs,
+                          flags: inferenceFlags,
+                          modelConfig: inferenceModel || {},
+                        }}
+                        isFineTuned={false}
+                        isCreate={false}
+                        onClose={() => {}}
+                        onModelConfigChange={(config) =>
+                          setTempInference(config)
+                        }
+                        onArgsChange={(args) => setInferenceArgs(args)}
+                        onFlagsChange={(flags) => setInferenceFlags(flags)}
+                        onModelNameChange={(name) =>
+                          setInferenceModelName(name)
+                        }
+                        isInference={true}
+                        isSmall={true}
+                      />
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent={"flex-start"}
+                  onClick={() => setOpenEmbedding((prev) => !prev)}
+                >
+                  <Typography fontSize="9px" mr={1}>
+                    {openEmbedding ? "▼" : "▶"}
+                  </Typography>
+                  <Typography variant="h6">Embedding Модель</Typography>
+                </Box>
+                <Collapse in={openEmbedding}>
+                  <Box
+                    sx={{
+                      boxShadow: "none",
+                      borderRadius: 2,
+                      border: "1px solid lightgray",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        maxHeight: "55dvh",
+                        overflowY: "hidden",
+                        borderRadius: 2,
+                      }}
+                    >
+                      <ConfigureModelForm
+                        initialConfig={{
+                          modelName: inferenceModelName,
+                          args: inferenceArgs,
+                          flags: inferenceFlags,
+                          modelConfig: inferenceModel || {},
+                        }}
+                        isFineTuned={false}
+                        isCreate={false}
+                        onClose={() => {}}
+                        onModelConfigChange={(config) =>
+                          setTempInference(config)
+                        }
+                        onArgsChange={(args) => setInferenceArgs(args)}
+                        onFlagsChange={(flags) => setInferenceFlags(flags)}
+                        onModelNameChange={(name) =>
+                          setInferenceModelName(name)
+                        }
+                        isInference={true}
+                        isSmall={true}
+                      />
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Grid>
+
+              {isTablet ? (
+                <Grid item container xs={12} spacing={2}>
+                  <Grid item xs={3} sx={{ pl: 0 }}>
+                    {" "}
+                    {/* убираем левый отступ */}
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      disabled={
+                        !jobName ||
+                        !inferenceModel ||
+                        !inferenceModel.modelConfig ||
+                        !embeddingModel ||
+                        !embeddingModel.modelConfig ||
+                        !hasRequiredFields(inferenceModel.modelConfig) ||
+                        !hasRequiredFields(embeddingModel.modelConfig) ||
+                        !inferenceModel.modelName ||
+                        !embeddingModel.modelName ||
+                        isCreating
+                      }
+                      onClick={() => setConfirmDialogOpen(true)}
+                      sx={{
+                        bgcolor: "#597ad3",
+                        padding: 1,
+                        fontSize: isMobile ? "10px !important" : "12px",
+                        color: "white",
+                        "&:hover": { bgcolor: "#7c97de" },
+                      }}
+                    >
+                      Создать
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={9}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      {!inferenceModel?.modelName ||
+                      !embeddingModel?.modelName ? (
+                        <ModelCheckInfo
+                          label="VLLM"
+                          missingFields={["Имя моделей"]}
+                        />
+                      ) : (
+                        <ModelCheckInfo
+                          label="Название задачи"
+                          missingFields={[]}
+                        />
+                      )}
+                      <ModelCheckInfo
+                        label="Code Gen модель"
+                        missingFields={getMissingFields(
+                          inferenceModel?.modelConfig
+                        )}
+                      />
+                      <ModelCheckInfo
+                        label="Embedding модель"
+                        missingFields={getMissingFields(
+                          embeddingModel?.modelConfig
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              ) : (
+                <Grid item container spacing={2}>
+                  <Grid item xs={3} sx={{ pl: 0 }}>
+                    {" "}
+                    {/* убираем левый отступ */}
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      disabled={
+                        !jobName ||
+                        !inferenceModel ||
+                        !inferenceModel.modelConfig ||
+                        !embeddingModel ||
+                        !embeddingModel.modelConfig ||
+                        !hasRequiredFields(inferenceModel.modelConfig) ||
+                        !hasRequiredFields(embeddingModel.modelConfig) ||
+                        !inferenceModel.modelName ||
+                        !embeddingModel.modelName ||
+                        isCreating
+                      }
+                      onClick={() => setConfirmDialogOpen(true)}
+                      sx={{
+                        bgcolor: "#597ad3",
+                        padding: 1,
+                        fontSize: isMobile ? "10px !important" : "12px",
+                        color: "white",
+                        "&:hover": { bgcolor: "#7c97de" },
+                      }}
+                    >
+                      Создать
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      {!inferenceModel?.modelName ||
+                      !embeddingModel?.modelName ? (
+                        <ModelCheckInfo
+                          label="VLLM"
+                          missingFields={["Имя моделей"]}
+                        />
+                      ) : (
+                        <ModelCheckInfo
+                          label="Название задачи"
+                          missingFields={[]}
+                        />
+                      )}
+                      <ModelCheckInfo
+                        label="Code Gen модель"
+                        missingFields={getMissingFields(
+                          inferenceModel?.modelConfig
+                        )}
+                      />
+                      <ModelCheckInfo
+                        label="Embedding модель"
+                        missingFields={getMissingFields(
+                          embeddingModel?.modelConfig
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                </Grid>
+              )}
+            </>
+          )}
+        </Grid>
       </Box>
       <Dialog
         open={confirmDialogOpen}

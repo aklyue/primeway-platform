@@ -271,7 +271,9 @@ function CreateTabbyForm({
               </Grid>
 
               <Grid item xs={2}>
-                <Typography variant="h6" mb={1} height={"24px"}></Typography>
+                <Typography variant="h6" mb={1} height={"24px"}>
+                  Требуемые поля
+                </Typography>
                 <Box>
                   {!inferenceModel?.modelName || !embeddingModel?.modelName ? (
                     <ModelCheckInfo
@@ -353,7 +355,7 @@ function CreateTabbyForm({
                 </Collapse>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item xs={12} mb={2}>
                 <Box
                   display="flex"
                   alignItems="center"
@@ -440,7 +442,9 @@ function CreateTabbyForm({
                   </Grid>
 
                   <Grid item xs={9}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
                       {!inferenceModel?.modelName ||
                       !embeddingModel?.modelName ? (
                         <ModelCheckInfo
@@ -502,7 +506,9 @@ function CreateTabbyForm({
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
                       {!inferenceModel?.modelName ||
                       !embeddingModel?.modelName ? (
                         <ModelCheckInfo

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../api";
 import { AVAILABLE_GPUS } from "../../../constants";
+import { useNavigate } from "react-router-dom";
 
 export const useTabby = ({ currentOrganization, authToken }) => {
+  const navigate = useNavigate();
+
   const [sessions, setSessions] = useState([]);
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [selectedGpu, setSelectedGpu] = useState("");
@@ -67,30 +70,26 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     setIsCreating(true);
 
     const payload = {
-      job_type: "tabby_run",
-      job_name: jobName,
-      gpu_types: [
-        {
-          type: selectedGpu,
-          count: parseInt(gpuQuantity),
-        },
-      ],
-      disk_space: parseInt(diskSpace),
-      inference_model: inferenceModel,
-      embedding_model: embeddingModel,
+      tabby_job_name: jobName,
+      job_id: "",
+      inferenceModel,
+      embeddingModel,
+      organization_id: currentOrganization?.id,
     };
+
+    console.log(payload);
 
     const formData = new FormData();
     formData.append("config_str", JSON.stringify(payload));
     formData.append("organization_id", String(currentOrganization.id));
 
     try {
-      await axiosInstance.post("/tabby/run", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await axiosInstance.post("/tabby/start", payload, {
+        headers: { "Content-Type": "application/json" },
       });
 
-      refreshSessions();
-      setOpenCreateModal(false);
+      // refreshSessions();
+      navigate("/tabby");
       setSnackbar({
         open: true,
         message: "Tabby-проект создан",

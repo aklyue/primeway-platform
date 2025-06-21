@@ -562,6 +562,26 @@ function ConfigureModelForm({
           helperText="Время простоя перед уменьшением масштаба"
         />
 
+        {/* Max requests */}
+        {isCreate && (
+          <TextField
+            label="Максимальное количество запросов на один GPU"
+            type="number"
+            value={modelConfig?.max_requests}
+            onChange={(e) =>
+              setModelConfig({
+                ...modelConfig,
+                max_requests: e.target.value,
+              })
+            }
+            fullWidth
+            margin="normal"
+            size={isSmall ? "small" : "medium"}
+            disabled={loading}
+            helperText="Количество запросов"
+          />
+        )}
+
         {/* Schedule */}
         <Typography variant="h6" sx={{ mt: 3 }}>
           График

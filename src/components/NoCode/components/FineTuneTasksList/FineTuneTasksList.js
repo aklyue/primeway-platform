@@ -111,7 +111,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
           sx={{
             display: "flex",
             alignItems: "center",
-            mt: isTablet && 2,
+            mt: isTablet ? 2 : undefined,
           }}
         >
           <TextField
@@ -274,7 +274,9 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        <Tooltip title={j.suffix}>{j.suffix}</Tooltip>
+                        <Tooltip title={j.suffix}>
+                          <span>{j.suffix}</span>
+                        </Tooltip>
                       </Box>
                       {(isMobile || isTablet) && (
                         <Tooltip title="Скопировать адаптер">

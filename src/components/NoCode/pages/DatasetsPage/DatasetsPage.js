@@ -27,11 +27,12 @@ export default function DatasetsPage({ isMobile }) {
     handleDelete,
     snackbar,
     setSnackbar,
+    loading
   } = useDatasetsPage({ currentOrganization });
 
   return (
     <Box>
-      <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
         <Folder />
         <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
           Наборы Данных
@@ -65,13 +66,16 @@ export default function DatasetsPage({ isMobile }) {
         </Button>
       </label>
 
-      {isMobile ? (
+      {loading ? (
+        <Box sx={{ textAlign: "center", py: 4, height: "100%" }}>
+          <CircularProgress />
+        </Box>
+      ) : data.length === 0 ? (
+        <Typography sx={{ mt: 3, fontSize: "13px", color: "#999" }}>
+          Нет наборов данных
+        </Typography>
+      ) : isMobile ? (
         <Box sx={{ mt: 2 }}>
-          {data.length === 0 && (
-            <Typography sx={{ fontSize: "12px", color: "#aaa" }}>
-              Нет наборов данных
-            </Typography>
-          )}
           {data.map((ds) => (
             <Box
               key={ds.dataset_id}

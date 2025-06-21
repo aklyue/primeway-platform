@@ -14,7 +14,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate, useParams } from "react-router-dom";
 import BackArrow from "../../../../UI/BackArrow";
-import { Check, ContentCopy, Description, ExpandMore } from "@mui/icons-material";
+import {
+  Check,
+  ContentCopy,
+  Description,
+  ExpandMore,
+} from "@mui/icons-material";
 import useFineTuneJobDetails from "../../../../hooks/NoCode/useFineTuneJobDetails";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
@@ -223,7 +228,7 @@ export default function FineTuneJobDetails({ isMobile }) {
       </Box>
 
       {/* ─── NEW: modal with logs ──────────────────────────── */}
-      <Box sx={{ mt: 2}}>
+      <Box sx={{ mt: 2 }}>
         <Accordion
           onClick={handleLogsClick}
           onChange={(_, expanded) => {
@@ -252,29 +257,31 @@ export default function FineTuneJobDetails({ isMobile }) {
               placement="top"
               title={copied ? "Скопировано" : "Скопировать"}
             >
-              <IconButton
-                sx={{ ml: 1 }}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(String(currentLogs ?? ""));
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-              >
-                {copied ? (
-                  <Check
-                    sx={{
-                      fontSize: isMobile ? "15px" : "inherit",
-                      color: "success.main",
-                    }}
-                  />
-                ) : (
-                  <ContentCopy
-                    sx={{ fontSize: isMobile ? "15px" : "inherit" }}
-                  />
-                )}
-              </IconButton>
+              <span>
+                <IconButton
+                  sx={{ ml: 1 }}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(String(currentLogs ?? ""));
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? (
+                    <Check
+                      sx={{
+                        fontSize: isMobile ? "15px" : "inherit",
+                        color: "success.main",
+                      }}
+                    />
+                  ) : (
+                    <ContentCopy
+                      sx={{ fontSize: isMobile ? "15px" : "inherit" }}
+                    />
+                  )}
+                </IconButton>
+              </span>
             </Tooltip>
           </AccordionSummary>
           <AccordionDetails>

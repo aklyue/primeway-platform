@@ -81,6 +81,8 @@ export const useTasks = ({ authToken, currentOrganization }) => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [jobToStop, setJobToStop] = useState(null);
 
+  const [loadingFinished, setLoadingFinished] = useState(false);
+
   const dispatch = useDispatch();
 
   const selectedStatus = useSelector(

@@ -59,7 +59,6 @@ function ModelsPage({ isMobile, isTablet }) {
         }
       );
       setLaunchedModels(data);
-      console.log(data);
     } catch (err) {
       console.error("Ошибка при получении запущенных моделей:", err);
     } finally {
@@ -279,7 +278,7 @@ function ModelsPage({ isMobile, isTablet }) {
                 borderTopLeftRadius: "16px",
                 borderTopRightRadius: "16px",
                 justifyContent: "space-between",
-                gap: isMobile && "5px",
+                gap: isMobile ? "5px" : undefined,
               }}
             >
               <Typography

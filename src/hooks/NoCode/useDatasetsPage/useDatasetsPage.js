@@ -8,6 +8,7 @@ import {
 export const useDatasetsPage = ({ currentOrganization }) => {
   const [data, setData] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -19,6 +20,7 @@ export const useDatasetsPage = ({ currentOrganization }) => {
 
   const refresh = () => {
     if (!organizationId) return Promise.resolve();
+    setLoading(true);
     return getDatasets(organizationId)
       .then(setData)
       .catch((err) => {
@@ -28,7 +30,8 @@ export const useDatasetsPage = ({ currentOrganization }) => {
           message: "Failed to load datasets.",
           severity: "error",
         });
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -78,6 +81,7 @@ export const useDatasetsPage = ({ currentOrganization }) => {
     handleUpload,
     fileInputRef,
     uploading,
+    loading,
     data,
     handleDelete,
     snackbar,

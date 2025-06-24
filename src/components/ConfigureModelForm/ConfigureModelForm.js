@@ -136,7 +136,7 @@ function ConfigureModelForm({
       elevation={0}
       sx={{
         p: isMobile ? 1 : isSmall ? 2 : isCreate ? 3 : 4,
-        maxHeight: isSmall ? "50vh" : isCreate ? "68vh" : "95vh",
+        maxHeight: isSmall ? "55vh" : isCreate ? "68vh" : "95vh",
         overflowY: "auto",
         margin: isSmall ? 0 : "auto",
       }}

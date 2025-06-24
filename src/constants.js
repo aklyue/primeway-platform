@@ -119,6 +119,18 @@ export const getDocsMenuItems = (isDocsPage = false) => [
     to: "/docs/cli",
     icon: <CodeIcon fontSize="medium" sx={{ color: isDocsPage && "white" }} />,
   },
+  {
+    name: "Модели",
+    to: "/docs/models",
+  },
+  {
+    name: "Дообучение",
+    to: "/docs/finetuning",
+  },
+  {
+    name: "AI Маркетплейс",
+    to: "/docs/marketplace",
+  },
 ];
 
 export const AVAILABLE_GPUS = {
@@ -136,4 +148,31 @@ export const AVAILABLE_GPUS = {
   "RTX 2000 Ada": { name: "RTX 2000 Ada", memoryInGb: 16, costPerHour: 55 },
   "RTX 6000 Ada": { name: "RTX 6000 Ada", memoryInGb: 48, costPerHour: 140 },
   "RTX A6000": { name: "RTX A6000", memoryInGb: 48, costPerHour: 130 },
+};
+
+export const statusOptions = [
+  "running",
+  "stopped",
+  "terminated",
+  "completed",
+  "failed",
+  "creating",
+  "provisioning",
+  "pending",
+];
+export const statusColors = {
+  running: "#28a745", // зеленый
+  stopped: "#dc3545", // красный
+  terminated: "#6c757d", // серый
+  completed: "#007bff", // синий
+  failed: "#dc3545",
+  creating: "#fd7e14", // оранжевый
+  provisioning: "#ffc107", // желтый
+  pending: "#17a2b8", // голубой
+};
+
+export const buildStatusColors = {
+  success: "#28a745", // зеленый
+  failed: "#dc3545", // красный
+  building: "#007bff", // синий
 };

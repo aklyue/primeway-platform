@@ -87,7 +87,7 @@ function Tabby({ isMobile, isTablet }) {
         </Box>
         <Button
           variant="contained"
-          onClick={() => setOpenCreateModal(true)}
+          onClick={() => navigate("/tabby-create")}
           sx={{
             bgcolor: "#597ad3",
             color: "white",

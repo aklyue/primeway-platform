@@ -46,10 +46,10 @@ export const useTabby = ({ currentOrganization, authToken }) => {
 
   const refreshSessions = async () => {
     try {
-      const response = await axiosInstance.get("/tabby/get-projects", {
-        params: { organization_id: currentOrganization.id },
-      });
-      setSessions(response.data);
+      // const response = await axiosInstance.get("/tabby/get-projects", {
+      //   params: { organization_id: currentOrganization.id },
+      // });
+      // setSessions(response.data);
     } catch (error) {
       console.error("Ошибка при получении проектов Tabby:", error);
     }
@@ -79,9 +79,9 @@ export const useTabby = ({ currentOrganization, authToken }) => {
 
     console.log(payload);
 
-    const formData = new FormData();
-    formData.append("config_str", JSON.stringify(payload));
-    formData.append("organization_id", String(currentOrganization.id));
+    // const formData = new FormData();
+    // formData.append("config_str", JSON.stringify(payload));
+    // formData.append("organization_id", String(currentOrganization.id));
 
     try {
       await axiosInstance.post("/tabby/start", payload, {

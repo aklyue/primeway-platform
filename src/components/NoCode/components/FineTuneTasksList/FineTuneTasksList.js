@@ -91,7 +91,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
               sx={{ textAlign: "start", ml: 1 }}
             >
               {" "}
-              Дообучение{" "}
+              Задачи Дообучения{" "}
             </Typography>
           </Box>
           <Typography

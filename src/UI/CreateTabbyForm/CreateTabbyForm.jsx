@@ -113,6 +113,8 @@ function CreateTabbyForm({
         bgcolor: "background.paper",
         border: "1px solid lightgray",
         borderRadius: 3,
+        height: isMobile || isTablet ? "auto" : "97%",
+        overflow: "hidden"
       }}
     >
       <Box
@@ -129,7 +131,7 @@ function CreateTabbyForm({
 
       {/* Прокручиваемая часть */}
       <Box sx={{ flex: 1 }} padding={isMobile ? 1 : 2}>
-        <Grid container spacing={isMobile ? 1 : 2}>
+        <Grid container spacing={isMobile ? 1 : 2} sx={{height: "100%"}}>
           {!isMobile && !isTablet ? (
             <Grid
               item
@@ -205,7 +207,7 @@ function CreateTabbyForm({
                 >
                   <Box
                     sx={{
-                      maxHeight: "55dvh",
+                      height: "100%",
                       overflowY: "hidden",
                       borderRadius: 2,
                     }}
@@ -237,14 +239,13 @@ function CreateTabbyForm({
                 </Typography>
                 <Box
                   sx={{
-                    boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.1)",
                     border: "1px solid rgb(235, 235, 235)",
                     borderRadius: 2,
                   }}
                 >
                   <Box
                     sx={{
-                      maxHeight: "55dvh",
+                      height: "100%",
                       overflow: "hidden",
                       borderRadius: 2,
                     }}

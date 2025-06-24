@@ -92,18 +92,9 @@ export default function FineTuningJobCreatePage({ isMobile }) {
   /* ───── UI ───── */
   return (
     <Box>
-      <Toolbar
-        disableGutters
-        sx={{
-          mb: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <Box mb={2}>
         <BackArrow path={"/fine-tuning"} name={"Задачи Дообучения"} />
-      </Toolbar>
-
+      </Box>
       <Paper
         elevation={0}
         sx={{ p: 3, borderRadius: 2, border: "1px solid rgba(0,0,0,0.12)" }}
@@ -360,7 +351,6 @@ export default function FineTuningJobCreatePage({ isMobile }) {
           </Button>
         </Box>
       </Paper>
-
       {/* ───── CONFIRMATION DIALOG ───── */}
       <Dialog
         open={confirmOpen}

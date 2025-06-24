@@ -7,9 +7,12 @@ import { useTheme } from "@mui/material/styles";
 const docsStructure = [
   { path: "welcome", title: "Добро Пожаловать" },
   { path: "quickstart", title: "Начало Работы" },
-  { path: "jobs", title: "Jobs" },
-  { path: "configuration", title: "Configuration" },
+  { path: "jobs", title: "Задачи" },
+  { path: "configuration", title: "Конфигурация" },
   { path: "cli", title: "CLI" },
+  { path: "models", title: "Модели" },
+  { path: "finetuning", title: "Дообучение" },
+  { path: "marketplace", title: "AI Маркетплейс" },
   // Добавьте другие разделы по мере необходимости
 ];
 

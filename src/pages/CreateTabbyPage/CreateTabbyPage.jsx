@@ -3,6 +3,8 @@ import CreateTabbyForm from "../../UI/CreateTabbyForm";
 import useTabby from "../../hooks/NoCode/useTabby";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
+import { Box } from "@mui/material";
+import BackArrow from "../../UI/BackArrow"
 
 function CreateTabbyPage() {
   const currentOrganization = useSelector(selectCurrentOrganization);
@@ -10,9 +12,12 @@ function CreateTabbyPage() {
 
   const tabbyProps = useTabby({ currentOrganization, authToken });
   return (
-    <div>
+    <Box sx={{height: "100%"}}>
+      <Box>
+        <BackArrow path={"/marketplace"} name={"AI Маркетплейс"}/>
+      </Box>
       <CreateTabbyForm {...tabbyProps} />
-    </div>
+    </Box>
   );
 }
 

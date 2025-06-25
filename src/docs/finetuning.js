@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import Scrollspy from "react-scrollspy";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import CodeBlock from "../UI/CodeBlock";
 import "./docs.css";
 import FinetuneFormOne from "./images/finetune-form1.png";
 import FinetuneFormTwo from "./images/finetune-form2.png";

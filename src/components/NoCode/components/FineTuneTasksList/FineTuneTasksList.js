@@ -144,6 +144,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
 
           <Tooltip title="New fine‑tuning job">
             <Button
+              data-tour-id="create-job"
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate("/fine-tuning/new")}
@@ -172,6 +173,7 @@ export default function FineTuneTasksList({ isMobile, isTablet }) {
 
       {/* ───────────────────────────── Table */}
       <Paper
+        data-tour-id="jobs-list"
         elevation={0}
         sx={{
           border: "1px solid rgba(0,0,0,0.12)",

@@ -27,7 +27,7 @@ export default function DatasetsPage({ isMobile }) {
     handleDelete,
     snackbar,
     setSnackbar,
-    loading
+    loading,
   } = useDatasetsPage({ currentOrganization });
 
   return (
@@ -46,7 +46,7 @@ export default function DatasetsPage({ isMobile }) {
         onChange={handleUpload}
         ref={fileInputRef}
       />
-      <label htmlFor="ds-upload">
+      <label htmlFor="ds-upload" data-tour-id="load-dataset">
         <Button
           variant="contained"
           component="span"
@@ -126,7 +126,7 @@ export default function DatasetsPage({ isMobile }) {
           ))}
         </Box>
       ) : (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 2 }} data-tour-id="datasets-list">
           <Table size="small">
             <TableHead>
               <TableRow>

@@ -5,10 +5,6 @@ import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-// Импортируем компоненты для подсветки синтаксиса
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
-
 // Импортируем Scrollspy
 import Scrollspy from "react-scrollspy";
 import "./docs.css";

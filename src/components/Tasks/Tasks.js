@@ -113,13 +113,16 @@ function Tasks() {
           mb: 1,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center" }}
+          data-tour-id="tasks-header"
+        >
           <Assignment />
           <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
             Задачи
           </Typography>
         </Box>
-        <Box>
+        <Box data-tour-id="buttons-header">
           <Button
             variant={"outlined"}
             onClick={() => handleJobTypeChange("deploy")}
@@ -152,7 +155,10 @@ function Tasks() {
         </Box>
       </Box>
       {/* Кнопки фильтров статусов */}
-      <Box sx={{ mb: 1, display: "flex", flexWrap: "wrap" }}>
+      <Box
+        sx={{ mb: 1, display: "flex", flexWrap: "wrap" }}
+        data-tour-id="buttons-list"
+      >
         <Button
           key="all"
           variant={selectedStatus === "" ? "contained" : "outlined"}
@@ -202,7 +208,7 @@ function Tasks() {
       </Box>
 
       {/* Основное содержимое */}
-      <Box sx={{ mt: 2, wordWrap: "break-word" }}>
+      <Box sx={{ mt: 2, wordWrap: "break-word" }} data-tour-id="tasks-list">
         {jobTypeLoading ? (
           // Если идет загрузка при переключении типов задач, показываем спиннер на всю таблицу
           <Box

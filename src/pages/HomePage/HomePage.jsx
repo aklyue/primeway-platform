@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -8,14 +9,136 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
+import IntroSlider from "../../components/IntroSlider";
+import useIntroSlider from "../../hooks/useIntroSlider";
+import Marketplace from "../../images/marketplace.png";
+import Primeway from "../../images/primeway.png";
+import Navigation from "../../images/navigation.png";
+import { useDispatch, useSelector } from "react-redux";
+import { hideIntroSlider } from "../../store/slices/introSliderSlice";
 
 const HomePage = ({
   dashboardMenuItems,
   itemsInRow,
   itemsInLastRow,
   setShowMenu,
-  total
+  total,
 }) => {
+  const { show, close, initialize, slideNext, slidePrev } =
+    useIntroSlider("intro_home");
+
+  const { visible } = useSelector((state) => state.introSlider);
+  const dispatch = useDispatch();
+
+  const slides = [
+    <Grid container spacing={4} alignItems="center">
+      <Grid item xs={12} md={6}>
+        <Typography variant="h5" gutterBottom>
+          Добро пожаловать в PrimeWay!
+        </Typography>
+        <Typography>
+          PrimeWay — это облачная платформа, разработанная для упрощения ваших
+          вычислительных рабочих процессов. Независимо от того, обучаете ли вы
+          модели глубокого обучения, обрабатываете большие наборы данных или
+          запускаете сложные симуляции, PrimeWay предоставляет масштабируемые и
+          эффективные GPU-ресурсы в ваше распоряжение в бессерверном режиме.
+        </Typography>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Box>
+          <img
+            src={Primeway}
+            alt="PrimeWay"
+            style={{
+              width: "100%",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      </Grid>
+    </Grid>,
+
+    <Grid container spacing={4} alignItems="center">
+      <Grid item xs={12} md={6}>
+        <Typography variant="h5" gutterBottom>
+          Возможности PrimeWay
+        </Typography>
+        <Typography>
+          Платформа предлагает удобный маркетплейс AI-задач, поддержку
+          JupyterLab и TabbyML, управление датасетами и настройку дообучения
+          моделей. Благодаря бессерверной архитектуре, вы запускаете вычисления
+          по требованию — без забот о кластерах и инфраструктуре.
+        </Typography>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Box>
+          <img
+            src={Marketplace}
+            alt="Маркетплейс PrimeWay"
+            style={{
+              width: "100%",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      </Grid>
+    </Grid>,
+
+    <Grid container spacing={4} alignItems="center">
+      <Grid item xs={12} md={6}>
+        <Typography variant="h5" gutterBottom>
+          Навигация
+        </Typography>
+        <Typography>
+          Используйте меню для перехода по разделам: AI Маркетплейс, Задачи,
+          Модели, Наборы Данных, Обучение, Биллинг, API Ключи, Настройки,
+          Организации, GPU. Каждый из них предоставляет специализированный
+          функционал.
+        </Typography>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Box>
+          <img
+            src={Navigation}
+            alt="Навигация"
+            style={{
+              width: "100%",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      </Grid>
+    </Grid>,
+
+    <Box textAlign="center">
+      <Typography variant="h5" gutterBottom>
+        Готовы начать?
+      </Typography>
+      <Typography>
+        Начните с создания проекта или запустите базовую модель — всё готово к
+        работе! (Вы всегда можете заново посмотреть подсказки нажав по иконке вопроса в верхнем меню)
+      </Typography>
+      <Button
+        variant="contained"
+        sx={{
+          mt: 3,
+          color: "white",
+          padding: "8px 16px",
+          bgcolor: "#597ad3",
+          "&:hover": {
+            bgcolor: "#7c97de",
+          },
+        }}
+        onClick={() => dispatch(hideIntroSlider())}
+      >
+        Поехали
+      </Button>
+    </Box>,
+  ];
+
   return (
     <Box
       sx={{
@@ -26,6 +149,15 @@ const HomePage = ({
         height: "100%",
       }}
     >
+      {visible && (
+        <IntroSlider
+          slides={slides}
+          onClose={() => dispatch(hideIntroSlider())}
+          onInit={initialize}
+          onNext={slideNext}
+          onPrev={slidePrev}
+        />
+      )}
       <Typography variant="h3" gutterBottom sx={{ mb: 5, mt: 2 }}>
         Добро пожаловать в PrimeWay
       </Typography>

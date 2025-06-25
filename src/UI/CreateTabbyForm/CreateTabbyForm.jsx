@@ -107,6 +107,7 @@ function CreateTabbyForm({
 
   return (
     <Box
+      data-tour-id="tabby-form"
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -114,7 +115,7 @@ function CreateTabbyForm({
         border: "1px solid lightgray",
         borderRadius: 3,
         height: isMobile || isTablet ? "auto" : "97%",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       <Box
@@ -131,7 +132,7 @@ function CreateTabbyForm({
 
       {/* Прокручиваемая часть */}
       <Box sx={{ flex: 1 }} padding={isMobile ? 1 : 2}>
-        <Grid container spacing={isMobile ? 1 : 2} sx={{height: "100%"}}>
+        <Grid container spacing={isMobile ? 1 : 2} sx={{ height: "100%" }}>
           {!isMobile && !isTablet ? (
             <Grid
               item
@@ -140,7 +141,7 @@ function CreateTabbyForm({
               alignItems="center"
               justifyContent="space-between"
             >
-              <Grid item xs={10.4}>
+              <Grid item xs={10.4} data-tour-id="tabby-name">
                 <TextField
                   fullWidth
                   size="small"
@@ -194,7 +195,7 @@ function CreateTabbyForm({
 
           {!isMobile && !isTablet ? (
             <>
-              <Grid item xs={5}>
+              <Grid item xs={5} data-tour-id="inference-model">
                 <Typography variant="h6" mb={1}>
                   Code Generation Модель
                 </Typography>
@@ -233,7 +234,7 @@ function CreateTabbyForm({
                 </Box>
               </Grid>
 
-              <Grid item xs={5}>
+              <Grid item xs={5} data-tour-id="embedding-model">
                 <Typography variant="h6" mb={1}>
                   Embedding Модель
                 </Typography>
@@ -271,7 +272,7 @@ function CreateTabbyForm({
                 </Box>
               </Grid>
 
-              <Grid item xs={2}>
+              <Grid item xs={2} data-tour-id="required-fields">
                 <Typography variant="h6" mb={1} height={"24px"}>
                   Требуемые поля
                 </Typography>

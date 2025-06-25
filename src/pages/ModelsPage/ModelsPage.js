@@ -198,7 +198,7 @@ function ModelsPage({ isMobile, isTablet }) {
               Models
             </Typography>
           </Box>
-          <Box>
+          <Box data-tour-id="model-create">
             <Button
               onClick={() =>
                 navigate("/model-create", {
@@ -258,6 +258,7 @@ function ModelsPage({ isMobile, isTablet }) {
           </Box>
 
           <Box
+            data-tour-id="my-models"
             sx={{
               border: "1px solid rgba(0,0,0,.12)",
               borderRadius: "16px",
@@ -375,6 +376,7 @@ function ModelsPage({ isMobile, isTablet }) {
 
         {/* ============ Базовые модели ===================================== */}
         <Box
+          data-tour-id="basic-models"
           sx={{
             maxHeight: "40vh",
             display: "flex",

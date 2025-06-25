@@ -30,6 +30,7 @@ import { keyframes, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { AnimatePresence, motion } from "framer-motion";
 import OrganizationEvents from "../Organization/OrganizationEvents";
 import { ReactComponent as Logo } from "../../assets/favicon2.svg";
@@ -45,8 +46,10 @@ import { selectCurrentOrganization } from "../../store/selectors/organizationsSe
 import { fetchUserData } from "../../store/slices/authSlice";
 import { setOrganizations } from "../../store/slices/organizationSlice";
 import { fetchWalletBalance } from "../../store/slices/organizationSlice";
+import { restartHints } from "../../store/slices/hintsSlice";
 import { getDashboardMenuItems, getDocsMenuItems } from "../../constants";
 import Router from "../../Router";
+import { showIntroSlider } from "../../store/slices/introSliderSlice";
 
 export function Layout() {
   const dispatch = useDispatch();
@@ -218,6 +221,14 @@ export function Layout() {
 
   const shouldRenderContent =
     openCaptchaModal === false && openRegistrationModal === false && isLoggedIn;
+
+  const handleClick = () => {
+    if (location.pathname === "/") {
+      dispatch(showIntroSlider());
+    } else {
+      dispatch(restartHints());
+    }
+  };
 
   if (loading) {
     return (
@@ -457,23 +468,42 @@ export function Layout() {
                               Доки
                             </Button>
 
-                            <IconButton
-                              aria-label="Открыть события"
-                              onClick={handleEventsClick}
+                            <Box
                               sx={{
-                                color: isEventsOpen ? "#7097ff" : "#5282ff",
-                                backgroundColor: "rgba(0, 0, 255, 0.04);",
+                                display: "flex",
+                                alignItems: "center",
+                                marginRight: 2,
                               }}
                             >
-                              <NotificationsNoneIcon
+                              <IconButton
+                                aria-label="Открыть события"
+                                onClick={handleEventsClick}
+                                sx={{
+                                  color: isEventsOpen ? "#7097ff" : "#5282ff",
+                                  backgroundColor: "rgba(0, 0, 255, 0.04);",
+                                }}
+                              >
+                                <NotificationsNoneIcon
+                                  sx={{
+                                    color: "#5282ff",
+                                    animation: isEventsOpen
+                                      ? ""
+                                      : `${pulse} 1.2s infinite ease-in-out`,
+                                  }}
+                                />
+                              </IconButton>
+                              <IconButton
+                                aria-label="Показать подсказки"
+                                onClick={handleClick}
                                 sx={{
                                   color: "#5282ff",
-                                  animation: isEventsOpen
-                                    ? ""
-                                    : `${pulse} 1.2s infinite ease-in-out`,
+                                  backgroundColor: "rgba(0, 0, 255, 0.04)",
+                                  ml: 1,
                                 }}
-                              />
-                            </IconButton>
+                              >
+                                <HelpOutlineIcon />
+                              </IconButton>
+                            </Box>
                           </Box>
                         )}
 
@@ -575,7 +605,12 @@ export function Layout() {
               )}
 
               <motion.main
-                style={{ flexGrow: 1, height: "100dvh", overflow: "hidden" }}
+                style={{
+                  flexGrow: 1,
+                  height: "100dvh",
+                  overflowX: "hidden",
+                  overflowY: "auto",
+                }}
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
@@ -595,7 +630,7 @@ export function Layout() {
                     padding: { lg: "25px", xl: "35px", xs: "20px" },
                     marginTop: { xs: "56px", sm: "64px" },
                     borderRadius: { xs: "0px", sm: "20px" },
-                    overflowY: "auto",
+                    overflowY: "auto !important",
                     overflowX: "hidden",
                   }}
                 >

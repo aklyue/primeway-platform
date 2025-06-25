@@ -1,6 +1,6 @@
 // src/docs/quickstart.js
-import React, { useEffect } from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import React from "react";
+import { Box } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CodeBlock from "../UI/CodeBlock";
 

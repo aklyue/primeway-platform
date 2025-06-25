@@ -14,6 +14,7 @@ import MarketplaceToggle from "../../UI/MarketplaceToggle";
 import { useNavigate } from "react-router-dom";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { Code, Search as SearchIcon } from "@mui/icons-material";
+import Joyride from "react-joyride";
 
 const cardsInfo = [
   {
@@ -44,43 +45,6 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
 
-  // useEffect(() => {
-  //   cardsInfo.forEach(({ repo }) => {
-  //     const fetchRepoData = async () => {
-  //       try {
-  //         const [repoRes, releaseRes] = await Promise.all([
-  //           fetch(`https://api.github.com/repos/${repo}`),
-  //           fetch(`https://api.github.com/repos/${repo}/releases/latest`),
-  //         ]);
-
-  //         if (!repoRes.ok || !releaseRes.ok) {
-  //           throw new Error("GitHub API error");
-  //         }
-
-  //         const repoJson = await repoRes.json();
-  //         const releaseJson = await releaseRes.json();
-
-  //         setMetadata((prev) => ({
-  //           ...prev,
-  //           [repo]: {
-  //             stars: repoJson.stargazers_count || 0,
-  //             version: releaseJson.tag_name || "N/A",
-  //           },
-  //         }));
-  //       } catch (err) {
-  //         console.warn(`Ошибка при загрузке данных GitHub для ${repo}:`, err);
-  //         setMetadata((prev) => ({
-  //           ...prev,
-  //           [repo]: { stars: 0, version: "N/A" },
-  //         }));
-  //         setError(err.message);
-  //       }
-  //     };
-
-  //     fetchRepoData();
-  //   });
-  // }, []);
-
   const filteredCards = cardsInfo.filter(
     (card) =>
       card.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -92,7 +56,12 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
       <Box sx={{ my: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Code />
-          <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
+          <Typography
+            ml={1}
+            fontSize={"1.25rem"}
+            fontWeight={500}
+            data-tour-id="marketplace-header"
+          >
             AI Маркетплейс
           </Typography>
         </Box>
@@ -109,13 +78,14 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
           gridTemplateColumns={isMobile || isTablet ? "1fr" : "repeat(3, 1fr)"}
           gap={2}
         >
-          {filteredCards.map((card) => {
+          {filteredCards.map((card, idx) => {
             const repoMeta = metadata[card.repo] || {};
             return (
               <Card
                 key={card.to}
                 variant="outlined"
                 onClick={() => navigate(card.to)}
+                data-tour-id={idx === 1 ? "project-card" : undefined}
                 sx={{
                   cursor: "pointer",
                   transition: "box-shadow 0.2s",

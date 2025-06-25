@@ -1,11 +1,8 @@
 // src/docs/Configuration.js
 
 import React from "react";
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { Box } from "@mui/material";
 import Scrollspy from "react-scrollspy";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { coldarkCold } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import "./docs.css";

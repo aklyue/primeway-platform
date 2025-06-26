@@ -50,6 +50,8 @@ import { restartHints } from "../../store/slices/hintsSlice";
 import { getDashboardMenuItems, getDocsMenuItems } from "../../constants";
 import Router from "../../Router";
 import { showIntroSlider } from "../../store/slices/introSliderSlice";
+import { stepsMap } from "../../constants";
+import { useTour } from "@reactour/tour";
 
 export function Layout() {
   const dispatch = useDispatch();
@@ -97,6 +99,7 @@ export function Layout() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const { setIsOpen, setSteps, setCurrentStep } = useTour();
 
   const pulse = keyframes`
     0% { transform: scale(1); }
@@ -226,7 +229,12 @@ export function Layout() {
     if (location.pathname === "/") {
       dispatch(showIntroSlider());
     } else {
-      dispatch(restartHints());
+      const steps = stepsMap[location.pathname];
+      if (steps?.length) {
+        setSteps(steps);
+        setCurrentStep(0);
+        setIsOpen(true);
+      }
     }
   };
 

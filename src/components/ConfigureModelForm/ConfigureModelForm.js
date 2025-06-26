@@ -150,6 +150,7 @@ function ConfigureModelForm({
 
         {/* Model Name */}
         <TextField
+          data-tour-id="model-name"
           label={
             isFineTuned
               ? "Имя базовой модели (Hugging Face)"
@@ -180,6 +181,7 @@ function ConfigureModelForm({
             arg.key === "task" && arg.value === "embed" && isEmbedding;
           return (
             <Box
+              data-tour-id="args"
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -281,6 +283,7 @@ function ConfigureModelForm({
         </Typography>
         {flags?.map((flag, index) => (
           <Box
+            data-tour-id="flags"
             sx={{
               display: "flex",
               alignItems: "center",
@@ -376,6 +379,7 @@ function ConfigureModelForm({
 
         {/* Job Name */}
         <TextField
+          data-tour-id="unique-name"
           label="Уникальное имя развертывания"
           value={modelConfig.job_name}
           onChange={handleDeploymentNameChange}
@@ -397,6 +401,7 @@ function ConfigureModelForm({
         </Typography>
         {modelConfig?.gpu_types?.map((gpuType, index) => (
           <Box
+            data-tour-id="gpu-type"
             sx={{
               display: "flex",
               alignItems: "center",
@@ -496,6 +501,7 @@ function ConfigureModelForm({
 
         {/* Health Check Timeout */}
         <TextField
+          data-tour-id="health-check"
           label="Health Check Timeout"
           type="number"
           value={modelConfig.health_check_timeout}
@@ -514,6 +520,7 @@ function ConfigureModelForm({
 
         {/* Port */}
         <TextField
+          data-tour-id="port"
           label="Порт"
           type="number"
           value={modelConfig.port}
@@ -529,6 +536,7 @@ function ConfigureModelForm({
 
         {/* Disk Space */}
         <TextField
+          data-tour-id="free-space"
           label="Свободное место на диске (GB)"
           type="number"
           size={isSmall ? "small" : "medium"}
@@ -546,6 +554,7 @@ function ConfigureModelForm({
 
         {/* Autoscaler Timeout */}
         <TextField
+          data-tour-id="pending-time"
           label="Время ожидания автоматического масштабирования (сек)"
           type="number"
           value={modelConfig.autoscaler_timeout}
@@ -565,6 +574,7 @@ function ConfigureModelForm({
         {/* Max requests */}
         {isCreate && (
           <TextField
+            data-tour-id="max-reqs"
             label="Максимальное количество запросов на один GPU"
             type="number"
             value={modelConfig?.max_requests}
@@ -587,302 +597,308 @@ function ConfigureModelForm({
           График
         </Typography>
 
-        {/* Workdays */}
-        <Box sx={{ mt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-            }}
-            onClick={() => toggleScheduleSection("workdays")}
-          >
-            {scheduleOpen.workdays ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Будни</Typography>
-          </Box>
-          {scheduleOpen?.workdays &&
-            (modelConfig?.schedule?.workdays || []).map((timeWindow, index) => (
-              <Box
-                key={`workdays-${index}`}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  mt: 1,
-                }}
-              >
-                <TextField
-                  label="Начало"
-                  type="time"
-                  value={timeWindow.start}
-                  onChange={(e) =>
-                    handleTimeWindowChange(
-                      "workdays",
-                      index,
-                      "start",
-                      e.target.value
-                    )
-                  }
-                  disabled={loading}
-                  sx={{ flex: 1 }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-                <TextField
-                  label="Конец (необязательно)"
-                  type="time"
-                  value={timeWindow.end}
-                  onChange={(e) =>
-                    handleTimeWindowChange(
-                      "workdays",
-                      index,
-                      "end",
-                      e.target.value
-                    )
-                  }
-                  disabled={loading}
-                  sx={{ flex: 1 }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-                <IconButton
-                  onClick={() => handleRemoveTimeWindow("workdays", index)}
-                  disabled={loading}
-                >
-                  <RemoveCircle />
-                </IconButton>
-              </Box>
-            ))}
-          {scheduleOpen.workdays && (
-            <Button
-              variant="text"
-              startIcon={<AddCircle />}
-              onClick={() => handleAddTimeWindow("workdays")}
-              sx={{ mt: 1 }}
-              disabled={loading}
+        <Box data-tour-id="schedule">
+          {/* Workdays */}
+          <Box sx={{ mt: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => toggleScheduleSection("workdays")}
             >
-              Добавить временное окно
-            </Button>
-          )}
-        </Box>
-
-        {/* Weekends */}
-        <Box sx={{ mt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-            }}
-            onClick={() => toggleScheduleSection("weekends")}
-          >
-            {scheduleOpen.weekends ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Выходные</Typography>
-          </Box>
-          {scheduleOpen.weekends &&
-            (modelConfig?.schedule?.weekends || []).map((timeWindow, index) => (
-              <Box
-                key={`weekends-${index}`}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  mt: 1,
-                }}
-              >
-                <TextField
-                  label="Начало"
-                  type="time"
-                  value={timeWindow.start}
-                  onChange={(e) =>
-                    handleTimeWindowChange(
-                      "weekends",
-                      index,
-                      "start",
-                      e.target.value
-                    )
-                  }
-                  disabled={loading}
-                  sx={{ flex: 1 }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-                <TextField
-                  label="Конец (необязательно)"
-                  type="time"
-                  value={timeWindow.end}
-                  onChange={(e) =>
-                    handleTimeWindowChange(
-                      "weekends",
-                      index,
-                      "end",
-                      e.target.value
-                    )
-                  }
-                  disabled={loading}
-                  sx={{ flex: 1 }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-                <IconButton
-                  onClick={() => handleRemoveTimeWindow("weekends", index)}
-                  disabled={loading}
-                >
-                  <RemoveCircle />
-                </IconButton>
-              </Box>
-            ))}
-          {scheduleOpen.weekends && (
-            <Button
-              variant="text"
-              startIcon={<AddCircle />}
-              onClick={() => handleAddTimeWindow("weekends")}
-              sx={{ mt: 1 }}
-              disabled={loading}
-            >
-              Добавить временное окно
-            </Button>
-          )}
-        </Box>
-
-        {/* Specific Days */}
-        <Box sx={{ mt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-            }}
-            onClick={() => toggleScheduleSection("specific_days")}
-          >
-            {scheduleOpen.specific_days ? <ArrowDropUp /> : <ArrowDropDown />}
-            <Typography variant="subtitle1">Конкретные даты</Typography>
-          </Box>
-          {scheduleOpen.specific_days &&
-            (modelConfig?.schedule?.specific_days || []).map(
-              (specificDay, dayIndex) => (
-                <Box
-                  key={`specific-day-${dayIndex}`}
-                  sx={{
-                    mt: 1,
-                    p: 2,
-                    border: "1px solid #ccc",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {scheduleOpen.workdays ? <ArrowDropUp /> : <ArrowDropDown />}
+              <Typography variant="subtitle1">Будни</Typography>
+            </Box>
+            {scheduleOpen?.workdays &&
+              (modelConfig?.schedule?.workdays || []).map(
+                (timeWindow, index) => (
+                  <Box
+                    key={`workdays-${index}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mt: 1,
+                    }}
+                  >
                     <TextField
-                      label="Дата"
-                      type="date"
-                      value={specificDay.date}
+                      label="Начало"
+                      type="time"
+                      value={timeWindow.start}
                       onChange={(e) =>
-                        handleSpecificDayChange(
-                          dayIndex,
-                          "date",
+                        handleTimeWindowChange(
+                          "workdays",
+                          index,
+                          "start",
                           e.target.value
                         )
                       }
                       disabled={loading}
+                      sx={{ flex: 1 }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    <TextField
+                      label="Конец (необязательно)"
+                      type="time"
+                      value={timeWindow.end}
+                      onChange={(e) =>
+                        handleTimeWindowChange(
+                          "workdays",
+                          index,
+                          "end",
+                          e.target.value
+                        )
+                      }
+                      disabled={loading}
+                      sx={{ flex: 1 }}
                       InputLabelProps={{
                         shrink: true,
                       }}
                     />
                     <IconButton
-                      onClick={() => handleRemoveSpecificDay(dayIndex)}
+                      onClick={() => handleRemoveTimeWindow("workdays", index)}
                       disabled={loading}
                     >
                       <RemoveCircle />
                     </IconButton>
                   </Box>
-                  {/* Time Windows for Specific Day */}
-                  {(specificDay.time_windows || []).map(
-                    (timeWindow, windowIndex) => (
-                      <Box
-                        key={`specific-day-${dayIndex}-window-${windowIndex}`}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          mt: 1,
-                        }}
-                      >
-                        <TextField
-                          label="Начало"
-                          type="time"
-                          value={timeWindow.start}
-                          onChange={(e) =>
-                            handleSpecificDayTimeWindowChange(
-                              dayIndex,
-                              windowIndex,
-                              "start",
-                              e.target.value
-                            )
-                          }
-                          disabled={loading}
-                          sx={{ flex: 1 }}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                        />
-                        <TextField
-                          label="Коннец (необязательно)"
-                          type="time"
-                          value={timeWindow.end}
-                          onChange={(e) =>
-                            handleSpecificDayTimeWindowChange(
-                              dayIndex,
-                              windowIndex,
-                              "end",
-                              e.target.value
-                            )
-                          }
-                          disabled={loading}
-                          sx={{ flex: 1 }}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                        />
-                        <IconButton
-                          onClick={() =>
-                            handleRemoveSpecificDayTimeWindow(
-                              dayIndex,
-                              windowIndex
-                            )
-                          }
-                          disabled={loading}
-                        >
-                          <RemoveCircle />
-                        </IconButton>
-                      </Box>
-                    )
-                  )}
-                  <Button
-                    variant="text"
-                    startIcon={<AddCircle />}
-                    onClick={() => handleAddSpecificDayTimeWindow(dayIndex)}
-                    sx={{ mt: 1 }}
-                    disabled={loading}
-                  >
-                    Добавить временное окно
-                  </Button>
-                </Box>
-              )
+                )
+              )}
+            {scheduleOpen.workdays && (
+              <Button
+                variant="text"
+                startIcon={<AddCircle />}
+                onClick={() => handleAddTimeWindow("workdays")}
+                sx={{ mt: 1 }}
+                disabled={loading}
+              >
+                Добавить временное окно
+              </Button>
             )}
-          {scheduleOpen.specific_days && (
-            <Button
-              variant="text"
-              startIcon={<AddCircle />}
-              onClick={handleAddSpecificDay}
-              sx={{ mt: 1 }}
-              disabled={loading}
+          </Box>
+
+          {/* Weekends */}
+          <Box sx={{ mt: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => toggleScheduleSection("weekends")}
             >
-              Добавить дату
-            </Button>
-          )}
+              {scheduleOpen.weekends ? <ArrowDropUp /> : <ArrowDropDown />}
+              <Typography variant="subtitle1">Выходные</Typography>
+            </Box>
+            {scheduleOpen.weekends &&
+              (modelConfig?.schedule?.weekends || []).map(
+                (timeWindow, index) => (
+                  <Box
+                    key={`weekends-${index}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mt: 1,
+                    }}
+                  >
+                    <TextField
+                      label="Начало"
+                      type="time"
+                      value={timeWindow.start}
+                      onChange={(e) =>
+                        handleTimeWindowChange(
+                          "weekends",
+                          index,
+                          "start",
+                          e.target.value
+                        )
+                      }
+                      disabled={loading}
+                      sx={{ flex: 1 }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    <TextField
+                      label="Конец (необязательно)"
+                      type="time"
+                      value={timeWindow.end}
+                      onChange={(e) =>
+                        handleTimeWindowChange(
+                          "weekends",
+                          index,
+                          "end",
+                          e.target.value
+                        )
+                      }
+                      disabled={loading}
+                      sx={{ flex: 1 }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    <IconButton
+                      onClick={() => handleRemoveTimeWindow("weekends", index)}
+                      disabled={loading}
+                    >
+                      <RemoveCircle />
+                    </IconButton>
+                  </Box>
+                )
+              )}
+            {scheduleOpen.weekends && (
+              <Button
+                variant="text"
+                startIcon={<AddCircle />}
+                onClick={() => handleAddTimeWindow("weekends")}
+                sx={{ mt: 1 }}
+                disabled={loading}
+              >
+                Добавить временное окно
+              </Button>
+            )}
+          </Box>
+
+          {/* Specific Days */}
+          <Box sx={{ mt: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => toggleScheduleSection("specific_days")}
+            >
+              {scheduleOpen.specific_days ? <ArrowDropUp /> : <ArrowDropDown />}
+              <Typography variant="subtitle1">Конкретные даты</Typography>
+            </Box>
+            {scheduleOpen.specific_days &&
+              (modelConfig?.schedule?.specific_days || []).map(
+                (specificDay, dayIndex) => (
+                  <Box
+                    key={`specific-day-${dayIndex}`}
+                    sx={{
+                      mt: 1,
+                      p: 2,
+                      border: "1px solid #ccc",
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <TextField
+                        label="Дата"
+                        type="date"
+                        value={specificDay.date}
+                        onChange={(e) =>
+                          handleSpecificDayChange(
+                            dayIndex,
+                            "date",
+                            e.target.value
+                          )
+                        }
+                        disabled={loading}
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                      <IconButton
+                        onClick={() => handleRemoveSpecificDay(dayIndex)}
+                        disabled={loading}
+                      >
+                        <RemoveCircle />
+                      </IconButton>
+                    </Box>
+                    {/* Time Windows for Specific Day */}
+                    {(specificDay.time_windows || []).map(
+                      (timeWindow, windowIndex) => (
+                        <Box
+                          key={`specific-day-${dayIndex}-window-${windowIndex}`}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            mt: 1,
+                          }}
+                        >
+                          <TextField
+                            label="Начало"
+                            type="time"
+                            value={timeWindow.start}
+                            onChange={(e) =>
+                              handleSpecificDayTimeWindowChange(
+                                dayIndex,
+                                windowIndex,
+                                "start",
+                                e.target.value
+                              )
+                            }
+                            disabled={loading}
+                            sx={{ flex: 1 }}
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                          />
+                          <TextField
+                            label="Коннец (необязательно)"
+                            type="time"
+                            value={timeWindow.end}
+                            onChange={(e) =>
+                              handleSpecificDayTimeWindowChange(
+                                dayIndex,
+                                windowIndex,
+                                "end",
+                                e.target.value
+                              )
+                            }
+                            disabled={loading}
+                            sx={{ flex: 1 }}
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                          />
+                          <IconButton
+                            onClick={() =>
+                              handleRemoveSpecificDayTimeWindow(
+                                dayIndex,
+                                windowIndex
+                              )
+                            }
+                            disabled={loading}
+                          >
+                            <RemoveCircle />
+                          </IconButton>
+                        </Box>
+                      )
+                    )}
+                    <Button
+                      variant="text"
+                      startIcon={<AddCircle />}
+                      onClick={() => handleAddSpecificDayTimeWindow(dayIndex)}
+                      sx={{ mt: 1 }}
+                      disabled={loading}
+                    >
+                      Добавить временное окно
+                    </Button>
+                  </Box>
+                )
+              )}
+            {scheduleOpen.specific_days && (
+              <Button
+                variant="text"
+                startIcon={<AddCircle />}
+                onClick={handleAddSpecificDay}
+                sx={{ mt: 1 }}
+                disabled={loading}
+              >
+                Добавить дату
+              </Button>
+            )}
+          </Box>
         </Box>
 
         <Divider sx={{ my: 3 }} />
@@ -893,6 +909,7 @@ function ConfigureModelForm({
         </Typography>
         {modelConfig?.env?.map((envVar, index) => (
           <Box
+            data-tour-id="env-vars"
             sx={{
               display: "flex",
               alignItems: "center",

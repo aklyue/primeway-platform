@@ -15,8 +15,11 @@ import Marketplace from "../../images/marketplace.png";
 import Primeway from "../../images/primeway.png";
 import Navigation from "../../images/navigation.png";
 import Hints from "../../images/hints.png";
+import FineTuning from "../../images/finetuning.png";
+import Models from "../../images/models.png";
 import { useDispatch, useSelector } from "react-redux";
 import { hideIntroSlider } from "../../store/slices/introSliderSlice";
+import { getIntroSlides } from "../../constants";
 
 const HomePage = ({
   dashboardMenuItems,
@@ -31,140 +34,7 @@ const HomePage = ({
   const { visible } = useSelector((state) => state.introSlider);
   const dispatch = useDispatch();
 
-  const slides = [
-    <Grid container spacing={4}>
-      <Grid item xs={12} md={6}>
-        <Typography variant="h5" gutterBottom>
-          Добро пожаловать в PrimeWay!
-        </Typography>
-        <Typography>
-          PrimeWay — это облачная платформа, разработанная для упрощения ваших
-          вычислительных рабочих процессов. Независимо от того, обучаете ли вы
-          модели глубокого обучения, обрабатываете большие наборы данных или
-          запускаете сложные симуляции, PrimeWay предоставляет масштабируемые и
-          эффективные GPU-ресурсы в ваше распоряжение в бессерверном режиме.
-        </Typography>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Box>
-          <img
-            src={Primeway}
-            alt="PrimeWay"
-            style={{
-              width: "100%",
-              borderRadius: 12,
-              objectFit: "contain",
-            }}
-          />
-        </Box>
-      </Grid>
-    </Grid>,
-
-    <Grid container spacing={4}>
-      <Grid item xs={12} md={6}>
-        <Typography variant="h5" gutterBottom>
-          Возможности PrimeWay
-        </Typography>
-        <Typography>
-          Платформа предлагает удобный маркетплейс AI-задач, поддержку
-          JupyterLab и TabbyML, управление датасетами и настройку дообучения
-          моделей. Благодаря бессерверной архитектуре, вы запускаете вычисления
-          по требованию — без забот о кластерах и инфраструктуре.
-        </Typography>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Box>
-          <img
-            src={Marketplace}
-            alt="Маркетплейс PrimeWay"
-            style={{
-              width: "100%",
-              borderRadius: 12,
-              objectFit: "contain",
-            }}
-          />
-        </Box>
-      </Grid>
-    </Grid>,
-
-    <Grid container spacing={4}>
-      <Grid item xs={12} md={6}>
-        <Typography variant="h5" gutterBottom>
-          Навигация
-        </Typography>
-        <Typography>
-          Используйте меню для перехода по разделам: AI Маркетплейс, Задачи,
-          Модели, Наборы Данных, Обучение, Биллинг, API Ключи, Настройки,
-          Организации, GPU. Каждый из них предоставляет специализированный
-          функционал.
-        </Typography>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Box>
-          <img
-            src={Navigation}
-            alt="Навигация"
-            style={{
-              width: "100%",
-              borderRadius: 12,
-              objectFit: "contain",
-            }}
-          />
-        </Box>
-      </Grid>
-    </Grid>,
-    <Grid container spacing={4}>
-      <Grid item xs={12} md={6}>
-        <Typography variant="h5" gutterBottom>
-          Подсказки
-        </Typography>
-        <Typography>
-          На некоторых страницах при первом посещении будут показаны подсказки
-          для лучшего освоения платформы.
-        </Typography>
-        <Typography>
-          Вы всегда можете заново посмотреть подсказки нажав по иконке вопроса.
-        </Typography>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Box>
-          <img
-            src={Hints}
-            alt="Подсказки"
-            style={{
-              width: "100%",
-              borderRadius: 12,
-              objectFit: "contain",
-            }}
-          />
-        </Box>
-      </Grid>
-    </Grid>,
-    <Box textAlign="center">
-      <Typography variant="h5" gutterBottom>
-        Готовы начать?
-      </Typography>
-      <Typography>
-        Начните с создания проекта или запустите базовую модель — всё готово к
-        работе!
-      </Typography>
-      <Button
-        variant="contained"
-        sx={{
-          mt: 3,
-          color: "white",
-          padding: "8px 16px",
-          bgcolor: "#597ad3",
-          "&:hover": {
-            bgcolor: "#7c97de",
-          },
-        }}
-        onClick={close}
-      >
-        Поехали
-      </Button>
-    </Box>,
-  ];
+  const slides = getIntroSlides(close)
 
   return (
     <Box

@@ -66,6 +66,12 @@ export default function DatasetsPage({ isMobile }) {
           {uploading ? "Загрузка..." : "Загрузить Набор Данных"}
         </Button>
       </label>
+      <Box>
+        <Typography variant="caption" sx={{ mt: 1, color: "gray" }}>
+          Поддерживаемые форматы: <strong>JSONL</strong>, <strong>CSV</strong>,{" "}
+          <strong>HuggingFace</strong>
+        </Typography>
+      </Box>
 
       {loading ? (
         <Box sx={{ textAlign: "center", py: 4, height: "100%" }}>

@@ -7,13 +7,19 @@ import theme from "./theme.js";
 import { ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
 import store from "./store";
+import { TourProvider } from "@reactour/tour";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
-      <App />
+      <TourProvider
+        steps={[]}
+        disableInteraction={false}
+      >
+        <App />
+      </TourProvider>
     </ThemeProvider>
   </Provider>
 );

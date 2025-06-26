@@ -8,6 +8,7 @@
     "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "@mui/x-date-pickers": "^7.24.0",
+    "@reactour/tour": "^3.8.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@yandex/smart-captcha": "2.6.2",
     "axios": "^1.7.9",

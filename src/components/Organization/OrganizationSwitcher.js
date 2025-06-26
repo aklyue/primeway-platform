@@ -105,7 +105,7 @@ const OrganizationSwitcher = ({ isMainPage }) => {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   display: "inline-block",
-                  width: (isMobile || isTablet) && !isMainPage ? "130px" : "auto",
+                  width: (isMobile || isTablet) ? "130px" : "auto",
                 }}
               >
                 {currentOrganization

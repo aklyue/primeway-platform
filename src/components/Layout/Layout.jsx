@@ -259,11 +259,30 @@ export function Layout() {
     <Box
       sx={{
         overflowX: "hidden",
-        overflowY: "hidden", // если вертикальный скролл не нужен
+        overflowY: "hidden",
         width: "100vw",
         height: "100vh",
       }}
     >
+      {isMobile && (
+        <>
+          <IconButton
+            aria-label="Показать подсказки"
+            onClick={handleClick}
+            sx={{
+              color: "#5282ff",
+              backgroundColor: "rgba(0, 0, 255, 0.04)",
+              ml: 1,
+              position: "absolute",
+              right: "7%",
+              bottom: "3%",
+              zIndex: 1000,
+            }}
+          >
+            <HelpOutlineIcon />
+          </IconButton>
+        </>
+      )}
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
@@ -609,7 +628,7 @@ export function Layout() {
                   flexGrow: 1,
                   height: "100dvh",
                   overflowX: "hidden",
-                  overflowY: "auto",
+                  overflowY: "hidden",
                 }}
                 initial={{ opacity: 0 }}
                 animate={{

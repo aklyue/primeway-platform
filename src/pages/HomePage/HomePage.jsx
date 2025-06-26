@@ -14,6 +14,7 @@ import useIntroSlider from "../../hooks/useIntroSlider";
 import Marketplace from "../../images/marketplace.png";
 import Primeway from "../../images/primeway.png";
 import Navigation from "../../images/navigation.png";
+import Hints from "../../images/hints.png"
 import { useDispatch, useSelector } from "react-redux";
 import { hideIntroSlider } from "../../store/slices/introSliderSlice";
 
@@ -24,14 +25,14 @@ const HomePage = ({
   setShowMenu,
   total,
 }) => {
-  const { show, close, initialize, slideNext, slidePrev } =
+  const { initialize, slideNext, slidePrev } =
     useIntroSlider("intro_home");
 
   const { visible } = useSelector((state) => state.introSlider);
   const dispatch = useDispatch();
 
   const slides = [
-    <Grid container spacing={4} alignItems="center">
+    <Grid container spacing={4}>
       <Grid item xs={12} md={6}>
         <Typography variant="h5" gutterBottom>
           Добро пожаловать в PrimeWay!
@@ -59,7 +60,7 @@ const HomePage = ({
       </Grid>
     </Grid>,
 
-    <Grid container spacing={4} alignItems="center">
+    <Grid container spacing={4}>
       <Grid item xs={12} md={6}>
         <Typography variant="h5" gutterBottom>
           Возможности PrimeWay
@@ -86,7 +87,7 @@ const HomePage = ({
       </Grid>
     </Grid>,
 
-    <Grid container spacing={4} alignItems="center">
+    <Grid container spacing={4}>
       <Grid item xs={12} md={6}>
         <Typography variant="h5" gutterBottom>
           Навигация
@@ -112,14 +113,40 @@ const HomePage = ({
         </Box>
       </Grid>
     </Grid>,
-
+    <Grid container spacing={4}>
+      <Grid item xs={12} md={6}>
+        <Typography variant="h5" gutterBottom>
+          Подсказки
+        </Typography>
+        <Typography>
+          На некоторых страницах при первом посещении будут показаны подсказки
+          для лучшего освоения платформы.
+        </Typography>
+        <Typography>
+          Вы всегда можете заново посмотреть подсказки нажав по иконке вопроса.
+        </Typography>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Box>
+          <img
+            src={Hints}
+            alt="Подсказки"
+            style={{
+              width: "100%",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      </Grid>
+    </Grid>,
     <Box textAlign="center">
       <Typography variant="h5" gutterBottom>
         Готовы начать?
       </Typography>
       <Typography>
         Начните с создания проекта или запустите базовую модель — всё готово к
-        работе! (Вы всегда можете заново посмотреть подсказки нажав по иконке вопроса в верхнем меню)
+        работе!
       </Typography>
       <Button
         variant="contained"

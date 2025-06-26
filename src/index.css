@@ -34,15 +34,16 @@ a {
 }
 
 .react-joyride__tooltip button[data-action="primary"] {
-  transition: all 0.1s;
   font-size: 14px !important;
 }
 
 .react-joyride__tooltip button[data-action="close"] {
   border-radius: 50% !important;
+  width: 30px;
+  padding: 3px !important;
+  height: 30px;
   margin-top: 4px;
   margin-right: 4px;
-  transition: all 0.1s;
 }
 
 .react-joyride__tooltip button[data-action="primary"]:hover {
@@ -56,7 +57,6 @@ a {
 
 .react-joyride__tooltip button[data-action="skip"] {
   color: #888 !important;
-  transition: all 0.1s;
   font-size: 14px !important;
 }
 
@@ -67,7 +67,6 @@ a {
 
 .react-joyride__tooltip button[data-action="back"] {
   font-size: 14px !important;
-  transition: all 0.1s;
 }
 
 .react-joyride__tooltip button[data-action="back"]:hover {

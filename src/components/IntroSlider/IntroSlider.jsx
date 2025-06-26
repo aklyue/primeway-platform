@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
+import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import CloseIcon from "@mui/icons-material/Close";
@@ -51,10 +51,12 @@ export default function IntroSlider({
           right: 4,
           zIndex: 2,
           backgroundColor: "white",
-          border: "1px solid lightgray",
+          // border: "1px solid lightgray",
           "&:hover": {
             backgroundColor: "#f5f5f5",
           },
+          width: "30px",
+          height: "30px",
         }}
       >
         <CloseIcon />
@@ -62,7 +64,7 @@ export default function IntroSlider({
       <DialogContent
         sx={{
           backgroundColor: "white",
-          borderRadius: 3,
+          borderRadius: 1,
           px: { xs: 2, sm: 4 },
           py: { xs: 3, sm: 5 },
           display: "flex",
@@ -80,7 +82,9 @@ export default function IntroSlider({
           <Swiper
             onSwiper={onInit}
             spaceBetween={32}
-            modules={[Pagination]}
+            modules={[Pagination, Autoplay]}
+            loop={true}
+            autoplay={{ delay: 10000, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             style={{ flexGrow: 1 }}
           >
@@ -93,7 +97,7 @@ export default function IntroSlider({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor: "grab"
+                    cursor: "grab",
                   }}
                 >
                   {slide}

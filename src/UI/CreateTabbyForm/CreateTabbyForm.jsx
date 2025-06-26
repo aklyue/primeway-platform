@@ -182,7 +182,7 @@ function CreateTabbyForm({
               </Grid>
             </Grid>
           ) : (
-            <Grid item xs={12}>
+            <Grid item xs={12} data-tour-id="tabby-name">
               <TextField
                 fullWidth
                 size="small"
@@ -305,7 +305,7 @@ function CreateTabbyForm({
             </>
           ) : (
             <>
-              <Grid item xs={12}>
+              <Grid item xs={12} data-tour-id="inference-model">
                 <Box
                   display="flex"
                   alignItems="center"
@@ -357,7 +357,7 @@ function CreateTabbyForm({
                 </Collapse>
               </Grid>
 
-              <Grid item xs={12} mb={2}>
+              <Grid item xs={12} mb={2} data-tour-id="embedding-model">
                 <Box
                   display="flex"
                   alignItems="center"
@@ -443,7 +443,7 @@ function CreateTabbyForm({
                     </Button>
                   </Grid>
 
-                  <Grid item xs={9}>
+                  <Grid item xs={9} data-tour-id="required-fields">
                     <Box
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >
@@ -507,7 +507,7 @@ function CreateTabbyForm({
                     </Button>
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid item xs={12} data-tour-id="required-fields">
                     <Box
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >

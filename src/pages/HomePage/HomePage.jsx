@@ -14,7 +14,7 @@ import useIntroSlider from "../../hooks/useIntroSlider";
 import Marketplace from "../../images/marketplace.png";
 import Primeway from "../../images/primeway.png";
 import Navigation from "../../images/navigation.png";
-import Hints from "../../images/hints.png"
+import Hints from "../../images/hints.png";
 import { useDispatch, useSelector } from "react-redux";
 import { hideIntroSlider } from "../../store/slices/introSliderSlice";
 
@@ -25,8 +25,8 @@ const HomePage = ({
   setShowMenu,
   total,
 }) => {
-  const { initialize, slideNext, slidePrev } =
-    useIntroSlider("intro_home");
+  const { initialize, slideNext, slidePrev, close } =
+    useIntroSlider("intro_shown");
 
   const { visible } = useSelector((state) => state.introSlider);
   const dispatch = useDispatch();
@@ -159,7 +159,7 @@ const HomePage = ({
             bgcolor: "#7c97de",
           },
         }}
-        onClick={() => dispatch(hideIntroSlider())}
+        onClick={close}
       >
         Поехали
       </Button>
@@ -179,7 +179,7 @@ const HomePage = ({
       {visible && (
         <IntroSlider
           slides={slides}
-          onClose={() => dispatch(hideIntroSlider())}
+          onClose={close}
           onInit={initialize}
           onNext={slideNext}
           onPrev={slidePrev}

@@ -1,13 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
+import {
+  showIntroSlider,
+  hideIntroSlider,
+} from "../../store/slices/introSliderSlice";
 
 export default function useIntroSlider(key = "intro_shown") {
-  const [show, setShow] = useState(false);
   const [swiper, setSwiper] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const seen = localStorage.getItem(key);
-    if (!seen) setShow(true);
-  }, [key]);
+    if (seen !== "true") {
+      dispatch(showIntroSlider());
+      localStorage.setItem(key, "true");
+    }
+  }, [dispatch, key]);
 
   const initialize = useCallback((swiperInstance) => {
     setSwiper(swiperInstance);
@@ -22,12 +30,10 @@ export default function useIntroSlider(key = "intro_shown") {
   }, [swiper]);
 
   const close = useCallback(() => {
-    localStorage.setItem(key, "true");
-    setShow(false);
-  }, [key]);
+    dispatch(hideIntroSlider());
+  }, [dispatch]);
 
   return {
-    show,
     close,
     initialize,
     slideNext,

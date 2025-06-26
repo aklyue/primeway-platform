@@ -228,7 +228,7 @@ export default function PageHints() {
       locale={{
         back: "Назад",
         close: "Закрыть",
-        last: "Готово",
+        last: "Понятно",
         next: "Далее",
         skip: "Пропустить",
       }}

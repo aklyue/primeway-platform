@@ -46,8 +46,9 @@ export default function DatasetsPage({ isMobile }) {
         onChange={handleUpload}
         ref={fileInputRef}
       />
-      <label htmlFor="ds-upload" data-tour-id="load-dataset">
+      <label htmlFor="ds-upload">
         <Button
+          data-tour-id="load-dataset"
           variant="contained"
           component="span"
           sx={{
@@ -71,11 +72,14 @@ export default function DatasetsPage({ isMobile }) {
           <CircularProgress />
         </Box>
       ) : data.length === 0 ? (
-        <Typography sx={{ mt: 3, fontSize: "13px", color: "#999" }}>
+        <Typography
+          sx={{ mt: 3, fontSize: "13px", color: "#999" }}
+          data-tour-id="datasets-list"
+        >
           Нет наборов данных
         </Typography>
       ) : isMobile ? (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 2 }} data-tour-id="datasets-list">
           {data.map((ds) => (
             <Box
               key={ds.dataset_id}

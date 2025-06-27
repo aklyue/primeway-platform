@@ -19,7 +19,7 @@ import FineTuning from "../../images/finetuning.png";
 import Models from "../../images/models.png";
 import { useDispatch, useSelector } from "react-redux";
 import { hideIntroSlider } from "../../store/slices/introSliderSlice";
-import { getIntroSlides } from "../../constants";
+import { getIntroSlides } from "../../constants/getIntroSlides";
 
 const HomePage = ({
   dashboardMenuItems,

@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
@@ -22,50 +21,18 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import moment from "moment";
-import axiosInstance from "../../api";
 import useApiKeysActions from "../../hooks/useApiKeysActions";
 import { useSelector } from "react-redux";
 import { Key } from "@mui/icons-material";
-
-// Функции для работы с API (generateToken, listTokens, deleteToken)
-export const generateToken = async (organizationId, name) => {
-  try {
-    const response = await axiosInstance.post("/generate-token", {
-      organization_id: organizationId,
-      name,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error generating token:", error);
-    throw error;
-  }
-};
-
-export const listTokens = async (organizationId) => {
-  try {
-    const response = await axiosInstance.get("/list-tokens", {
-      params: { organization_id: organizationId },
-    });
-    return response.data.tokens;
-  } catch (error) {
-    console.error("Error fetching tokens:", error);
-    throw error;
-  }
-};
-
-export const deleteToken = async (tokenId) => {
-  try {
-    await axiosInstance.delete(`/tokens/${tokenId}`);
-  } catch (error) {
-    console.error("Error deleting token:", error);
-    throw error;
-  }
-};
+import useTokenActions from "../../hooks/useTokenActions";
 
 function ApiKeys() {
   const currentOrganization = useSelector(
     (state) => state.organization.currentOrganization
   );
+
+  const { generateToken, listTokens, deleteToken } = useTokenActions();
+
   const {
     handleOpen,
     handleClose,

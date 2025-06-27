@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Box, Button, CircularProgress, useMediaQuery } from "@mui/material"; // Добавлен импорт useMediaQuery
 import { useTheme } from "@mui/material/styles";
@@ -18,8 +18,8 @@ const docsStructure = [
 
 function Docs() {
   const { docName } = useParams();
-  const [ContentComponent, setContentComponent] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [ContentComponent, setContentComponent] = useState(null);
+  const [loading, setLoading] = useState(true);
   const theme = useTheme();
 
   // Используем useMediaQuery для определения устройства
@@ -34,7 +34,7 @@ function Docs() {
   const prevDoc = docsStructure[currentDocIndex - 1];
   const nextDoc = docsStructure[currentDocIndex + 1];
 
-  React.useEffect(() => {
+  useEffect(() => {
     const name = docName || "welcome";
     setLoading(true); // Устанавливаем загрузку в true перед началом импорта
     setContentComponent(null); // Сбрасываем предыдущий компонент

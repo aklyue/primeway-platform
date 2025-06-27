@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useTour } from "@reactour/tour";
-import { stepsMap } from "../../constants";
+import { stepsMap } from "../../constants/stepsMap";
 
 export default function PageHints() {
   const location = useLocation();

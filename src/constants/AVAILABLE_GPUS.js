@@ -1,0 +1,16 @@
+export const AVAILABLE_GPUS = {
+  "A100 PCIe": { name: "A100 PCIe", memoryInGb: 80, costPerHour: 260 },
+  "A100 SXM": { name: "A100 SXM", memoryInGb: 80, costPerHour: 299 },
+  A40: { name: "A40", memoryInGb: 48, costPerHour: 90 },
+  "RTX 4090": { name: "RTX 4090", memoryInGb: 24, costPerHour: 130 },
+  "H100 SXM": { name: "H100 SXM", memoryInGb: 80, costPerHour: 399 },
+  "H100 NVL": { name: "H100 NVL", memoryInGb: 94, costPerHour: 355 },
+  "H100 PCIe": { name: "H100 PCIe", memoryInGb: 80, costPerHour: 335 },
+  "H200 SXM": { name: "H200 SXM", memoryInGb: 143, costPerHour: 460 },
+  L4: { name: "L4", memoryInGb: 24, costPerHour: 90 },
+  L40: { name: "L40", memoryInGb: 48, costPerHour: 170 },
+  L40S: { name: "L40S", memoryInGb: 48, costPerHour: 175 },
+  "RTX 2000 Ada": { name: "RTX 2000 Ada", memoryInGb: 16, costPerHour: 55 },
+  "RTX 6000 Ada": { name: "RTX 6000 Ada", memoryInGb: 48, costPerHour: 140 },
+  "RTX A6000": { name: "RTX A6000", memoryInGb: 48, costPerHour: 130 },
+};

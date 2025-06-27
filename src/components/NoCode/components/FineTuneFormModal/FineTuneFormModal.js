@@ -16,13 +16,13 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useFineTuneFormModal from "../../../../hooks/NoCode/useFineTuneFormModal";
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
-import { AVAILABLE_GPUS } from "../../../../constants";
+import { AVAILABLE_GPUS } from "../../../../constants/AVAILABLE_GPUS";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 
 /* ───────────────────────── COMPONENT ───────────────────────── */
 export default function FineTuningJobFormModal({ open, onClose }) {
-  const currentOrganization = useSelector(selectCurrentOrganization)
+  const currentOrganization = useSelector(selectCurrentOrganization);
 
   const {
     selectedGpu,

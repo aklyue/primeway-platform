@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../api";
-import { AVAILABLE_GPUS } from "../../../constants";
+import { AVAILABLE_GPUS } from "../../../constants/AVAILABLE_GPUS";
 
 export const useJupyterLab = ({ currentOrganization, authToken }) => {
   const [sessions, setSessions] = useState([]);

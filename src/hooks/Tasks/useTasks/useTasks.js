@@ -14,10 +14,13 @@ import {
   setSelectedJobType,
   setIsScheduledFilter,
 } from "../../../store/slices/tasksFilterSlice";
-import {statusOptions, statusColors, buildStatusColors} from "../../../constants"
+import {
+  statusOptions,
+  statusColors,
+  buildStatusColors,
+} from "../../../constants/statusProperties";
 
 export const useTasks = ({ authToken, currentOrganization }) => {
-
   const [allJobs, setAllJobs] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);

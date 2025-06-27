@@ -47,10 +47,11 @@ import { fetchUserData } from "../../store/slices/authSlice";
 import { setOrganizations } from "../../store/slices/organizationSlice";
 import { fetchWalletBalance } from "../../store/slices/organizationSlice";
 import { restartHints } from "../../store/slices/hintsSlice";
-import { getDashboardMenuItems, getDocsMenuItems } from "../../constants";
+import { getDashboardMenuItems } from "../../constants/getDashboardMenuItems";
+import { getDocsMenuItems } from "../../constants/getDocsMenuItems";
 import Router from "../../Router";
 import { showIntroSlider } from "../../store/slices/introSliderSlice";
-import { stepsMap } from "../../constants";
+import { stepsMap } from "../../constants/stepsMap";
 import { useTour } from "@reactour/tour";
 
 export function Layout() {

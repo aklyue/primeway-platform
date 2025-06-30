@@ -573,23 +573,62 @@ function ConfigureModelForm({
 
         {/* Max requests */}
         {isCreate && (
-          <TextField
-            data-tour-id="max-reqs"
-            label="Максимальное количество запросов на один GPU"
-            type="number"
-            value={modelConfig?.max_requests}
-            onChange={(e) =>
-              setModelConfig({
-                ...modelConfig,
-                max_requests: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-            size={isSmall ? "small" : "medium"}
-            disabled={loading}
-            helperText="Количество запросов"
-          />
+          <Box>
+            <TextField
+              data-tour-id="max-reqs"
+              label="Максимальное количество запросов на один GPU"
+              type="number"
+              value={modelConfig?.max_requests}
+              onChange={(e) =>
+                setModelConfig({
+                  ...modelConfig,
+                  max_requests: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              size={isSmall ? "small" : "medium"}
+              disabled={loading}
+              helperText="Количество запросов"
+            />
+            <Box
+              data-tour-id="max-min-gpu-count"
+              sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+            >
+              <TextField
+                label="Максимальное количество GPU"
+                type="number"
+                value={modelConfig?.max_gpu_count}
+                onChange={(e) =>
+                  setModelConfig({
+                    ...modelConfig,
+                    max_gpu_count: e.target.value,
+                  })
+                }
+                fullWidth
+                margin="normal"
+                size={isSmall ? "small" : "medium"}
+                disabled={loading}
+                helperText="Количество GPU"
+              />
+              <TextField
+                label="Минимальное количество GPU"
+                type="number"
+                value={modelConfig?.min_gpu_count}
+                onChange={(e) =>
+                  setModelConfig({
+                    ...modelConfig,
+                    min_gpu_count: e.target.value,
+                  })
+                }
+                fullWidth
+                margin="normal"
+                size={isSmall ? "small" : "medium"}
+                disabled={loading}
+                helperText="Количество GPU"
+              />
+            </Box>
+          </Box>
         )}
 
         {/* Schedule */}

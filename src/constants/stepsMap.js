@@ -145,6 +145,10 @@ export const stepsMap = {
       content: "Ограничьте максимальное число одновременных запросов к модели.",
     },
     {
+      selector: '[data-tour-id="max-min-gpu-count"]',
+      content: "Укажите максимальное и минимальное количество GPU.",
+    },
+    {
       selector: '[data-tour-id="schedule"]',
       content:
         "Настройте график запуска — например, только по будням или в определённые дни.",

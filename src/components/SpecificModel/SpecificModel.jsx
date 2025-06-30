@@ -1,8 +1,29 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
 import { fineTunedData } from "../../data/fineTunedData";
-import { Box, Typography, Button, Modal, Grid, Collapse, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Modal,
+  Grid,
+  Collapse,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
 import useModelActions from "../../hooks/useModelActions";
@@ -12,24 +33,25 @@ import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import axiosInstance from "../../api";
 import { Description, ExpandMore } from "@mui/icons-material";
+import useModels from "../../hooks/useModels";
 
-function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId, onLaunchedModelChange }) {
+function SpecificModel({
+  initialConfig,
+  isBasic: passedIsBasic,
+  isMobile,
+  jobId,
+  onLaunchedModelChange,
+}) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
   const { modelId } = useParams();
 
   const decodedModelId = modelId.replaceAll("__", "/");
-  const [launchedModels, setLaunchedModels] = useState([]);
-  const [fineTunedModels, setFineTunedModels] = useState([]);
-  const [model, setModel] = useState(null);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-  const [launchedModel, setLaunchedModel] = useState(null)
-  const [fineTunedModel, setFineTunedModel] = useState(null);
-  const [modelStatus, setModelStatus] = useState(null);
   const [confirmLaunchOpen, setConfirmLaunchOpen] = useState(false);
   const [flags, setFlags] = useState([]);
   const [args, setArgs] = useState([]);
-  const [modelConfig, setModelConfig] = useState({})
+  const [modelConfig, setModelConfig] = useState({});
 
   const handleFlagsChange = (newFlags) => {
     setFlags(newFlags);
@@ -41,8 +63,7 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
 
   const handleModelConfigChange = (newConfig) => {
     setModelConfig(newConfig);
-  }
-
+  };
 
   const handleConfirmLaunchOpen = () => {
     setConfirmLaunchOpen(true);
@@ -56,101 +77,27 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
     handleConfirmLaunchOpen();
   };
 
-
-
-
-
-
-  const fetchLaunchedModels = async () => {
-    if (!currentOrganization || !authToken) return;
-    try {
-      const { data = [] } = await axiosInstance.get("/jobs/get-vllm-deploy-jobs", {
-        params: { organization_id: currentOrganization.id },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setLaunchedModels(data);
-      console.log(data)
-    } catch (err) {
-      console.error("Ошибка при получении запущенных моделей:", err);
-    }
-  };
-
-  const fetchFineTunedModels = async () => {
-    if (!currentOrganization || !authToken) return;
-    try {
-      const { data = [] } = await axiosInstance.get("/models/finetuned", {
-        params: { organization_id: currentOrganization.id },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      setFineTunedModels(data);
-    } catch (err) {
-      console.error("Ошибка при получении fine-tune моделей:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchLaunchedModels();
-    fetchFineTunedModels();
-  }, [currentOrganization, authToken]);
-
-  useEffect(() => {
-    const foundModel = modelsData.find((m) => m.id === decodedModelId);
-    if (foundModel) {
-      setModel(foundModel);
-      setModelStatus(foundModel.last_execution_status);
-    }
-  }, [decodedModelId]);
-
-  useEffect(() => {
-    const foundModel = launchedModels.find(
-      (launched) => launched.job_id === decodedModelId
-    );
-    if (foundModel) {
-      setLaunchedModel(foundModel);
-      console.log(foundModel)
-      setModelStatus(foundModel.last_execution_status);
-      onLaunchedModelChange?.(true);
-    } else {
-      onLaunchedModelChange?.(false);
-    }
-  }, [launchedModels]);
-
-  useEffect(() => {
-    const foundModel = fineTunedModels.find(
-      (model) => model.job_id === decodedModelId
-    );
-    if (foundModel) {
-      const buildDefaultConfig = (ft) => {
-        const base = fineTunedData.find((m) => m.name === ft.base_model) || {};
-        const cfg = base.defaultConfig || {};
-        return {
-          ...cfg,
-          modelName: cfg.modelName ?? ft.base_model,
-          finetuned_job_id: ft.job_id,
-          modelConfig: {
-            ...(cfg.modelConfig || {}),
-            job_name: `${ft.artifact_name}-deploy`,
-          },
-        };
-      };
-
-      const mergedModel = {
-        ...foundModel,
-        defaultConfig: buildDefaultConfig(foundModel),
-      };
-      setFineTunedModel(mergedModel);
-      console.log(mergedModel)
-      setModelStatus(foundModel.last_execution_status);
-    }
-  }, [fineTunedModels]);
-
-  const isFineTuned = !!fineTunedModel;
-
+  const {
+    model,
+    launchedModel,
+    fineTunedModel,
+    modelStatus,
+    setModelStatus,
+    isLaunchedModel,
+    isFineTuned,
+    renderData,
+  } = useModels({
+    currentOrganization,
+    authToken,
+    decodedModelId,
+    modelsData,
+    fineTunedData,
+    onLaunchedModelChange,
+  });
 
   const toggleConfigure = () => setIsConfigureOpen((prev) => !prev);
 
   const isBasic = passedIsBasic ?? model?.isBasic;
-
 
   const { handleRun, handleStart, handleStop, loading } = useModelActions({
     model,
@@ -159,33 +106,31 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
     setModelStatus,
     args,
     flags,
-    modelConfig
+    modelConfig,
   });
 
-  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } = useModelButtonLogic({
-    model: model || fineTunedModel,
-    isBasic,
-    isFineTuned,
-    jobId: model?.job_id || launchedModel?.job_id || fineTunedModel?.defaultConfig.
-      finetuned_job_id,
-    setModelStatus,
-    modelStatus,
-    handleRun,
-    handleStart,
-    handleStop,
-    loading,
-    authToken,
-    currentOrganization,
-    handleConfirmLaunchClose,
-    args,
-    flags,
-    modelConfig
-  });
-
-  const isLaunchedModel = !!launchedModel;
-
-  const renderData = model || launchedModel || fineTunedModel;
-
+  const { actionButtonText, actionButtonHandler, isActionButtonDisabled } =
+    useModelButtonLogic({
+      model: model || fineTunedModel,
+      isBasic,
+      isFineTuned,
+      jobId:
+        model?.job_id ||
+        launchedModel?.job_id ||
+        fineTunedModel?.defaultConfig.finetuned_job_id,
+      setModelStatus,
+      modelStatus,
+      handleRun,
+      handleStart,
+      handleStop,
+      loading,
+      authToken,
+      currentOrganization,
+      handleConfirmLaunchClose,
+      args,
+      flags,
+      modelConfig,
+    });
 
   if (!renderData) {
     return (
@@ -194,7 +139,6 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
       </Box>
     );
   }
-
 
   return (
     <Box
@@ -227,35 +171,52 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
       </Grid>
 
       <Box sx={{ px: 2 }}>
-        {(model ? [
-          { label: "ID", value: renderData.id },
-          { label: "Тип", value: renderData.type },
-          { label: "Описание", value: renderData.description },
-          { label: "Модель (config)", value: renderData.defaultConfig?.modelName },
-          {
-            label: "Job name",
-            value: renderData.defaultConfig?.modelConfig?.job_name || renderData.artifact_name,
-          }
-        ] : [
-          ...(fineTunedModel ? [
-            { label: "Job ID", value: renderData.job_id },
-            { label: "Artifact Name", value: renderData.artifact_name },
-            { label: "Base Model", value: renderData.base_model },
-            { label: "Status", value: renderData.status },
-            { label: "Dataset ID", value: renderData.dataset_id },
-            { label: "Created At", value: renderData.created_at },
-          ] : [
-            { label: "Job ID", value: renderData.job_id },
-            {
-              label: "Job Name", value: renderData.job_name || renderData.artifact_name
-            },
-            { label: "Created At", value: renderData.created_at },
-            { label: "Last Execution Status", value: renderData.last_execution_status },
-            { label: "Job URL", value: renderData.job_url },
-            { label: "GPU Type", value: renderData.gpu_type?.type },
-            { label: "Health Status", value: renderData.health_status || renderData.status },
-          ]),
-        ]).map((row, index) => (
+        {(model
+          ? [
+              { label: "ID", value: renderData.id },
+              { label: "Тип", value: renderData.type },
+              { label: "Описание", value: renderData.description },
+              {
+                label: "Модель (config)",
+                value: renderData.defaultConfig?.modelName,
+              },
+              {
+                label: "Job name",
+                value:
+                  renderData.defaultConfig?.modelConfig?.job_name ||
+                  renderData.artifact_name,
+              },
+            ]
+          : [
+              ...(fineTunedModel
+                ? [
+                    { label: "Job ID", value: renderData.job_id },
+                    { label: "Artifact Name", value: renderData.artifact_name },
+                    { label: "Base Model", value: renderData.base_model },
+                    { label: "Status", value: renderData.status },
+                    { label: "Dataset ID", value: renderData.dataset_id },
+                    { label: "Created At", value: renderData.created_at },
+                  ]
+                : [
+                    { label: "Job ID", value: renderData.job_id },
+                    {
+                      label: "Job Name",
+                      value: renderData.job_name || renderData.artifact_name,
+                    },
+                    { label: "Created At", value: renderData.created_at },
+                    {
+                      label: "Last Execution Status",
+                      value: renderData.last_execution_status,
+                    },
+                    { label: "Job URL", value: renderData.job_url },
+                    { label: "GPU Type", value: renderData.gpu_type?.type },
+                    {
+                      label: "Health Status",
+                      value: renderData.health_status || renderData.status,
+                    },
+                  ]),
+            ]
+        ).map((row, index) => (
           <Grid
             container
             key={index}
@@ -272,7 +233,6 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
       </Box>
 
       <Box sx={{ p: 2, display: "flex", justifyContent: "space-between" }}>
-
         {!isLaunchedModel && (
           <Button
             onClick={toggleConfigure}
@@ -289,7 +249,11 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
           </Button>
         )}
         <ModelActions
-          actionButtonHandler={((actionButtonText === ("Остановить")) || isLaunchedModel) ? actionButtonHandler : handleLaunchButtonClick}
+          actionButtonHandler={
+            actionButtonText === "Остановить" || isLaunchedModel
+              ? actionButtonHandler
+              : handleLaunchButtonClick
+          }
           actionButtonText={actionButtonText}
           isActionButtonDisabled={isActionButtonDisabled}
         />
@@ -324,7 +288,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
         <DialogTitle>Подтвердите запуск модели</DialogTitle>
         <DialogContent dividers>
           <Typography>
-            Вы уверены, что хотите запустить модель <b>{renderData?.defaultConfig?.modelName || "—"}</b>?
+            Вы уверены, что хотите запустить модель{" "}
+            <b>{renderData?.defaultConfig?.modelName || "—"}</b>?
           </Typography>
           <Typography>
             Это действие инициирует выполнение модели с текущими настройками:
@@ -334,10 +299,12 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2">Параметры модели:</Typography>
             <Typography>
-              <b>GPU Type:</b> {modelConfig?.gpu_types?.map(gpu => gpu.type).join(", ") || "—"}
+              <b>GPU Type:</b>{" "}
+              {modelConfig?.gpu_types?.map((gpu) => gpu.type).join(", ") || "—"}
             </Typography>
             <Typography>
-              <b>Health Check Timeout:</b> {modelConfig?.health_check_timeout || "—"} ms
+              <b>Health Check Timeout:</b>{" "}
+              {modelConfig?.health_check_timeout || "—"} ms
             </Typography>
             <Typography>
               <b>Disk Space:</b> {modelConfig?.disk_space || "—"} GB
@@ -346,7 +313,8 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
               <b>Port:</b> {modelConfig?.port || "—"}
             </Typography>
             <Typography>
-              <b>Autoscaler Timeout:</b> {modelConfig?.autoscaler_timeout || "—"} sec
+              <b>Autoscaler Timeout:</b>{" "}
+              {modelConfig?.autoscaler_timeout || "—"} sec
             </Typography>
           </Box>
 
@@ -375,7 +343,6 @@ function SpecificModel({ initialConfig, isBasic: passedIsBasic, isMobile, jobId,
               <Typography>—</Typography>
             )}
           </Box>
-
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirmLaunchClose}>Отмена</Button>

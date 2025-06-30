@@ -33,6 +33,7 @@ import {
   selectWalletSilentLoading,
 } from "../../store/selectors/organizationsSelectors";
 import { useSelector } from "react-redux";
+import useBillingCharts from "../../hooks/useBillingCharts";
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(
@@ -73,6 +74,13 @@ function Billing() {
     walletError,
     user,
   });
+
+  const {
+    purchasesChartData,
+    purchasesChartOptions,
+    expensesChartData,
+    expensesChartOptions,
+  } = useBillingCharts(creditPurchasesData, creditUsagePerDay);
 
   // Если нет выбранной организации
   if (!currentOrganization) {
@@ -121,147 +129,10 @@ function Billing() {
     );
   }
 
-  // Формирование данных для графика покупок кредитов (Bar Chart)
-  const purchasesChartData = {
-    labels: creditPurchasesData.map((item) =>
-      new Date(item.date).toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "short",
-      })
-    ),
-    datasets: [
-      {
-        label: "Сумма покупки (₽)",
-        data: creditPurchasesData.map((item) => item.credits),
-        backgroundColor: "#82ca9d",
-        borderColor: "#82ca9d",
-        borderWidth: 1,
-        barThickness: 20, // Устанавливаем толщину столбцов
-      },
-    ],
-  };
-
-  // Опции для графика покупок кредитов
-  const purchasesChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 45,
-        },
-      },
-      y: {
-        beginAtZero: true,
-      },
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            return `Сумма покупки: ${context.parsed.y} ₽`;
-          },
-          title: function (context) {
-            return `Дата: ${creditPurchasesData[context[0].dataIndex].date}`;
-          },
-        },
-      },
-      legend: {
-        display: false,
-      },
-    },
-  };
-
-  // Формирование данных для графика расходов (Line Chart)
-  const expensesChartData = {
-    labels: creditUsagePerDay.map((item) => item.date),
-    datasets: [
-      {
-        label: "Расходы (₽)",
-        data: creditUsagePerDay.map((item) => item.credits),
-        backgroundColor: "rgba(136, 132, 216, 0.2)", // Полупрозрачный фон для градиента
-        borderColor: "#8884d8",
-        borderWidth: 2,
-        fill: true, // Включаем заливку под линией
-        tension: 0.4, // Более сглаженная линия
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        pointBackgroundColor: "#fff",
-        pointBorderColor: "#8884d8",
-        pointHoverBackgroundColor: "#8884d8",
-        pointHoverBorderColor: "#fff",
-      },
-    ],
-  };
-
-  // Опции для графика расходов
-  const expensesChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        type: "time", // Используем временную шкалу
-        time: {
-          unit: "day",
-          tooltipFormat: "dd MMMM yyyy",
-          displayFormats: {
-            day: "dd MMM",
-          },
-        },
-        adapters: {
-          date: {
-            locale: ru, // Устанавливаем локаль на русский
-          },
-        },
-        ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 45,
-        },
-        grid: {
-          display: false, // Отключаем сетку по оси X
-        },
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: "#e0e0e0", // Цвет горизонтальной сетки
-        },
-      },
-    },
-    plugins: {
-      tooltip: {
-        backgroundColor: "#fff",
-        titleColor: "#8884d8",
-        bodyColor: "#000",
-        borderColor: "#8884d8",
-        borderWidth: 1,
-        callbacks: {
-          label: function (context) {
-            return ` Расход: ${context.parsed.y} ₽`;
-          },
-          title: function (context) {
-            const date = new Date(context[0].parsed.x);
-            return `Дата: ${date.toLocaleDateString("ru-RU", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}`;
-          },
-        },
-      },
-      legend: {
-        display: false,
-      },
-    },
-  };
-
   // Основной контент после загрузки данных
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", }}>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
         <PriceChange />
         <Typography fontSize={"1.25rem"} fontWeight={500} sx={{ ml: 1 }}>
           Биллинг и Кошелек
@@ -274,8 +145,8 @@ function Billing() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: isTablet ? "start" : "center",
-          mt: (isMobile || isTablet) ? 2 : 0,
-          flexDirection: (isMobile || isTablet) ? "column" : "row",
+          mt: isMobile || isTablet ? 2 : 0,
+          flexDirection: isMobile || isTablet ? "column" : "row",
           marginBottom: "10px",
           whiteSpace: "nowrap",
           gap: "8px",

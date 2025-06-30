@@ -272,6 +272,10 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
                 sx={{
                   flexBasis: "40%",
                   fontSize: isMobile ? "9px !important" : "12px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "40%",
                 }}
               >
                 {modelName}

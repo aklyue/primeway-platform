@@ -15,17 +15,49 @@ export const useTabby = ({ currentOrganization, authToken }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
 
-  const [inferenceModelName, setInferenceModelName] = useState("");
-  const [embeddingModelName, setEmbeddingModelName] = useState("");
+  const DEFAULT_INFERENCE_MODEL_NAME = "Qwen/Qwen2.5-Coder-7B-Instruct";
+  const DEFAULT_EMBEDDING_MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B";
 
-  const [inferenceModel, setInferenceModel] = useState({});
-  const [embeddingModel, setEmbeddingModel] = useState({});
+  const DEFAULT_INFERENCE_MODEL = {
+    job_name: "Qwen/Qwen2.5-Coder-7B-Instruct-deploy",
+    port: 8000,
+    disk_space: 78,
+    health_check_timeout: 600,
+    autoscaler_timeout: 600,
+    gpu_types: [{ type: "A40", count: 1 }],
+  };
 
-  const [inferenceArgs, setInferenceArgs] = useState([]);
-  const [inferenceFlags, setInferenceFlags] = useState([]);
+  const DEFAULT_EMBEDDING_MODEL = {
+    job_name: "Qwen/Qwen3-Embedding-0.6B-deploy",
+    port: 80,
+    disk_space: 30,
+    health_check_timeout: 600,
+    autoscaler_timeout: 600,
+    gpu_types: [{ type: "RTX 2000 Ada", count: 1 }],
+  };
 
-  const [embeddingArgs, setEmbeddingArgs] = useState([]);
-  const [embeddingFlags, setEmbeddingFlags] = useState([]);
+  const DEFAULT_EMBEDDING_ARGS = [
+    { key: "task", value: "embed" },
+    { key: "dtype", value: "float16" },
+  ];
+  const DEFAULT_INFERENCE_ARGS = [];
+  const DEFAULT_FLAGS = [];
+
+  const [inferenceModelName, setInferenceModelName] = useState(
+    DEFAULT_INFERENCE_MODEL_NAME
+  );
+  const [embeddingModelName, setEmbeddingModelName] = useState(
+    DEFAULT_EMBEDDING_MODEL_NAME
+  );
+
+  const [inferenceModel, setInferenceModel] = useState(DEFAULT_INFERENCE_MODEL);
+  const [embeddingModel, setEmbeddingModel] = useState(DEFAULT_EMBEDDING_MODEL);
+
+  const [inferenceArgs, setInferenceArgs] = useState(DEFAULT_INFERENCE_ARGS);
+  const [inferenceFlags, setInferenceFlags] = useState(DEFAULT_FLAGS);
+
+  const [embeddingArgs, setEmbeddingArgs] = useState(DEFAULT_EMBEDDING_ARGS);
+  const [embeddingFlags, setEmbeddingFlags] = useState(DEFAULT_FLAGS);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -78,10 +110,6 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     };
 
     console.log(payload);
-
-    // const formData = new FormData();
-    // formData.append("config_str", JSON.stringify(payload));
-    // formData.append("organization_id", String(currentOrganization.id));
 
     try {
       await axiosInstance.post("/tabby/start", payload, {

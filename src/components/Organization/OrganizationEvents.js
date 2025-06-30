@@ -1,6 +1,12 @@
-// OrganizationEvents.jsx
 import React, { useState, useEffect } from "react";
-import { Box, CircularProgress, Typography, List, Paper } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  List,
+  Paper,
+  Button,
+} from "@mui/material";
 import { format, parseISO } from "date-fns";
 import axiosInstance from "../../api";
 import { ru } from "date-fns/locale";
@@ -31,19 +37,44 @@ function OrganizationEvents({ organizationId, amount }) {
     setEventsLoading(true);
     setEventsError(null);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+      setEventsLoading(false);
+      setEventsError("Сервер не отвечает более 10 секунд.");
+    }, 10000);
+
     try {
       const response = await axiosInstance.get(
         `/organizations/${organizationId}/events`,
         {
-          params: {
-            amount: amount,
-          },
+          params: { amount },
+          signal: controller.signal,
         }
       );
+      clearTimeout(timeout);
       setEvents(response.data || []);
     } catch (error) {
+      clearTimeout(timeout);
       console.error("Ошибка при получении событий организации:", error);
-      setEventsError("Ошибка при загрузке событий");
+
+      if (axiosInstance.isAxiosError?.(error) && error.response) {
+        const status = error.response.status;
+        if (status === 404) {
+          setEventsError("События не найдены (404).");
+        } else if (status === 500) {
+          setEventsError("Ошибка сервера (500).");
+        } else {
+          setEventsError(`Ошибка ${status}: ${error.response.statusText}`);
+        }
+      } else if (
+        error.name === "CanceledError" ||
+        error.name === "AbortError"
+      ) {
+        setEventsError("Ошибка при загрузке событий.");
+      } else {
+        setEventsError("Ошибка при загрузке событий.");
+      }
     } finally {
       setEventsLoading(false);
     }
@@ -53,15 +84,14 @@ function OrganizationEvents({ organizationId, amount }) {
     if (organizationId) {
       fetchEvents();
     } else {
-      setEventsLoading(false); // Добавляем эту строку
+      setEventsLoading(false);
     }
   }, [organizationId]);
 
   if (!organizationId) {
-    return null; // Добавлено раннее возвращение null
+    return null;
   }
 
-  // Функция для форматирования даты и времени
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "N/A";
     try {
@@ -76,27 +106,32 @@ function OrganizationEvents({ organizationId, amount }) {
   return (
     <Box sx={{ width: "100%", maxHeight: 390, overflowY: "auto" }}>
       {eventsLoading ? (
-        <Box
-          sx={{
-            p: 2,
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
+        <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
           <CircularProgress />
         </Box>
       ) : eventsError ? (
-        <Typography color="error" sx={{ p: 2 }}>
-          {eventsError}
-        </Typography>
+        <Box sx={{ p: 2, textAlign: "center" }}>
+          <Typography color="error" gutterBottom>
+            {eventsError}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={fetchEvents}
+            sx={{
+              bgcolor: "#597ad3",
+              color: "white",
+              "&:hover": { bgcolor: "#7c97de" },
+              textTransform: "none",
+            }}
+          >
+            Попробовать ещё раз
+          </Button>
+        </Box>
       ) : events.length > 0 ? (
         <List>
           {events.map((event, index) => {
-            // Приводим уровень события к нижнему регистру
             const level = event.level.toLowerCase();
-            // Проверяем, является ли уровень допустимым
             const isValidLevel = ALLOWED_EVENT_LEVELS.includes(level);
-            // Получаем стили для уровня события
             const eventStyles = isValidLevel ? eventLevelStyles[level] : {};
 
             return (
@@ -110,7 +145,7 @@ function OrganizationEvents({ organizationId, amount }) {
                   mb: 2,
                   ...eventStyles,
                 }}
-                key={index}
+                key={event.id || index}
               >
                 <Typography
                   variant="subtitle1"

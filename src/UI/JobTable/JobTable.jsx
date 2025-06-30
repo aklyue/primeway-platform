@@ -81,7 +81,6 @@ function JobTable({ job, isMobile, isTablet }) {
   useEffect(() => {
     fetchExecutions();
     fetchConfig();
-    console.log(executions);
   }, [job]);
 
   useEffect(() => {
@@ -128,7 +127,7 @@ function JobTable({ job, isMobile, isTablet }) {
 
   return (
     <div>
-      {(!isMobile && !isTablet) ? (
+      {!isMobile && !isTablet ? (
         <Box
           sx={{
             border: "1px solid rgba(0,0,0,.12)",
@@ -150,7 +149,7 @@ function JobTable({ job, isMobile, isTablet }) {
               borderTopLeftRadius: "16px",
               borderTopRightRadius: "16px",
               justifyContent: "space-between",
-              gap: isMobile && "5px",
+              gap: isMobile ? "5px" : undefined,
             }}
           >
             <Typography
@@ -203,6 +202,7 @@ function JobTable({ job, isMobile, isTablet }) {
           {/* ---------- rows ---------- */}
           {executions.map((execution) => (
             <Box
+              key={execution.job_execution_id}
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -319,7 +319,7 @@ function JobTable({ job, isMobile, isTablet }) {
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Typography
-                  sx={{ fontWeight: 600, fontSize: 12, color: "#8698b0", }}
+                  sx={{ fontWeight: 600, fontSize: 12, color: "#8698b0" }}
                 >
                   JOB EXEC ID:
                 </Typography>

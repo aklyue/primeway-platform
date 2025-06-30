@@ -156,7 +156,6 @@ function ConfigureModelForm({
               ? "Имя базовой модели (Hugging Face)"
               : "Имя модели (Hugging Face)"
           }
-          z
           value={modelName}
           onChange={handleModelNameChange}
           fullWidth
@@ -228,8 +227,8 @@ function ConfigureModelForm({
                     size={isSmall ? "small" : "medium"}
                     FormHelperTextProps={{
                       sx: {
-                        maxHeight: isMobile && "20px",
-                        mb: isMobile && "15px",
+                        maxHeight: isMobile ? "20px" : undefined,
+                        mb: isMobile ? "15px" : undefined,
                       },
                     }}
                     inputProps={{
@@ -252,7 +251,10 @@ function ConfigureModelForm({
                 size={isSmall ? "small" : "medium"}
                 helperText="Значение аргумента"
                 FormHelperTextProps={{
-                  sx: { maxHeight: isMobile && "20px", mb: isMobile && "15px" },
+                  sx: {
+                    maxHeight: isMobile ? "20px" : undefined,
+                    mb: isMobile ? "15px" : undefined,
+                  },
                 }}
                 sx={{ flex: 1 }}
               />
@@ -326,8 +328,8 @@ function ConfigureModelForm({
                   size={isSmall ? "small" : "medium"}
                   FormHelperTextProps={{
                     sx: {
-                      maxHeight: isMobile && "20px",
-                      mb: isMobile && "21px",
+                      maxHeight: isMobile ? "20px" : undefined,
+                      mb: isMobile ? "21px" : undefined,
                     },
                   }}
                 />
@@ -572,64 +574,62 @@ function ConfigureModelForm({
         />
 
         {/* Max requests */}
-        {isCreate && (
-          <Box>
+        <Box>
+          <TextField
+            data-tour-id="max-reqs"
+            label="Макс. кол-во запросов на один GPU"
+            type="number"
+            value={modelConfig?.max_requests}
+            onChange={(e) =>
+              setModelConfig({
+                ...modelConfig,
+                max_requests: e.target.value,
+              })
+            }
+            fullWidth
+            margin="normal"
+            size={isSmall ? "small" : "medium"}
+            disabled={loading}
+            helperText="Количество запросов"
+          />
+          <Box
+            data-tour-id="max-min-gpu-count"
+            sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+          >
             <TextField
-              data-tour-id="max-reqs"
-              label="Максимальное количество запросов на один GPU"
+              label="Макс. кол-во GPU"
               type="number"
-              value={modelConfig?.max_requests}
+              value={modelConfig?.max_gpu_count}
               onChange={(e) =>
                 setModelConfig({
                   ...modelConfig,
-                  max_requests: e.target.value,
+                  max_gpu_count: e.target.value,
                 })
               }
               fullWidth
               margin="normal"
               size={isSmall ? "small" : "medium"}
               disabled={loading}
-              helperText="Количество запросов"
+              helperText="Максимальное количество GPU"
             />
-            <Box
-              data-tour-id="max-min-gpu-count"
-              sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
-            >
-              <TextField
-                label="Максимальное количество GPU"
-                type="number"
-                value={modelConfig?.max_gpu_count}
-                onChange={(e) =>
-                  setModelConfig({
-                    ...modelConfig,
-                    max_gpu_count: e.target.value,
-                  })
-                }
-                fullWidth
-                margin="normal"
-                size={isSmall ? "small" : "medium"}
-                disabled={loading}
-                helperText="Количество GPU"
-              />
-              <TextField
-                label="Минимальное количество GPU"
-                type="number"
-                value={modelConfig?.min_gpu_count}
-                onChange={(e) =>
-                  setModelConfig({
-                    ...modelConfig,
-                    min_gpu_count: e.target.value,
-                  })
-                }
-                fullWidth
-                margin="normal"
-                size={isSmall ? "small" : "medium"}
-                disabled={loading}
-                helperText="Количество GPU"
-              />
-            </Box>
+            <TextField
+              label="Мин. кол-во GPU"
+              type="number"
+              value={modelConfig?.min_gpu_count}
+              onChange={(e) =>
+                setModelConfig({
+                  ...modelConfig,
+                  min_gpu_count: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              size={isSmall ? "small" : "medium"}
+              disabled={loading}
+              helperText="Минимальное количество GPU"
+            />
           </Box>
-        )}
+        </Box>
 
         {/* Schedule */}
         <Typography variant="h6" sx={{ mt: 3 }}>

@@ -43,7 +43,7 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
                 model: defaultConfig.modelName,
                 initialConfig: defaultConfig,
                 isMobile,
-                jobId: defaultConfig.finetuned_job_id
+                jobId: defaultConfig.finetuned_job_id,
               },
             }
           );
@@ -62,6 +62,10 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
           sx={{
             flexBasis: "40%",
             fontSize: isMobile ? "9px !important" : "12px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            maxWidth: "40%",
           }}
         >
           {ft.artifact_name}

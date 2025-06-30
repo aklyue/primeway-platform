@@ -59,7 +59,7 @@ const GPUList = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", height: "80dvh", alignItems: "center"}}>
         <CircularProgress />
       </Box>
     );

@@ -14,7 +14,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
   const [gpuQuantity, setGpuQuantity] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
 
   const DEFAULT_INFERENCE_MODEL_NAME = "Qwen/Qwen2.5-Coder-7B-Instruct";
   const DEFAULT_EMBEDDING_MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B";
@@ -86,7 +86,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     } catch (error) {
       console.error("Ошибка при получении проектов Tabby:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
@@ -138,8 +138,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     }
   };
 
-  const handleStartSession = async (jobId) => {
-    if (!jobId) {
+  const handleStartSession = async (inferenceJobId, embeddingJobId) => {
+    if (!inferenceJobId && !embeddingJobId) {
       return setSnackbar({
         open: true,
         message: "ID задачи отсутствует",
@@ -147,12 +147,20 @@ export const useTabby = ({ currentOrganization, authToken }) => {
       });
     }
 
-    setLoadingId(jobId);
+    setLoadingId(embeddingJobId ?? inferenceJobId);
     try {
-      await axiosInstance.post("/jobs/job-start", null, {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
+      if (inferenceJobId) {
+        await axiosInstance.post("/jobs/job-start", null, {
+          params: { job_id: inferenceJobId },
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      }
+      if (embeddingJobId) {
+        await axiosInstance.post("/jobs/job-start", null, {
+          params: { job_id: embeddingJobId },
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      }
       refreshSessions();
       setSnackbar({
         open: true,
@@ -160,7 +168,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Ошибка при запуске:", error);
+      console.error("Ошибка при запуске:", error.response?.data || error);
       setSnackbar({
         open: true,
         message: "Ошибка при запуске задачи",
@@ -171,8 +179,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     }
   };
 
-  const handleStopSession = async (jobId) => {
-    if (!jobId) {
+  const handleStopSession = async (inferenceJobId, embeddingJobId) => {
+    if (!inferenceJobId && !embeddingJobId) {
       return setSnackbar({
         open: true,
         message: "ID задачи отсутствует",
@@ -180,10 +188,14 @@ export const useTabby = ({ currentOrganization, authToken }) => {
       });
     }
 
-    setLoadingId(jobId);
+    setLoadingId(embeddingJobId ?? inferenceJobId);
     try {
       await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: jobId },
+        params: { job_id: inferenceJobId },
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      await axiosInstance.post("/jobs/job-stop", null, {
+        params: { job_id: embeddingJobId },
         headers: { Authorization: `Bearer ${authToken}` },
       });
       refreshSessions();

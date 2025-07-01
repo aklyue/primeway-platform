@@ -78,7 +78,6 @@ function Tabby({ isMobile, isTablet }) {
       navigate("/tabby-create");
     }
   }, [sessions, isLoading, navigate]);
-  console.log(sessions);
 
   if (isLoading) {
     return (
@@ -177,7 +176,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={startDisabled}
-                      onClick={() => handleStartSession(session.id)}
+                      onClick={() => handleStartSession(session.inference_job_id, session.embedding_job_id)}
                       color="success"
                       title="Запустить"
                     >
@@ -187,7 +186,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={stopDisabled}
-                      onClick={() => handleStopSession(session.id)}
+                      onClick={() => handleStopSession(session.inference_job_id, session.embedding_job_id)}
                       color="error"
                       title="Остановить"
                     >
@@ -384,7 +383,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={startDisabled}
-                          onClick={() => handleStartSession(session.id)}
+                          onClick={() => handleStartSession(session.inference_job_id, session.embedding_job_id)}
                           color="success"
                           title="Запустить"
                         >
@@ -394,7 +393,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={stopDisabled}
-                          onClick={() => handleStopSession(session.id)}
+                          onClick={() => handleStopSession(session.inference_job_id, session.embedding_job_id)}
                           color="error"
                           title="Остановить"
                         >

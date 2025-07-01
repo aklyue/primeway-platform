@@ -16,6 +16,7 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
     message: "",
     severity: "success", // "success" | "error" | "info" | "warning"
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleSnackbarClose = (_, reason) => {
     if (reason === "clickaway") return;
@@ -41,6 +42,8 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
       setSessions(response.data); // Обновляем список сессий
     } catch (error) {
       console.error("Ошибка при получении проектов:", error);
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -189,5 +192,6 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
     handleCreateSession,
     snackbar,
     handleSnackbarClose,
+    isLoading
   };
 };

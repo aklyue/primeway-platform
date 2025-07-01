@@ -14,6 +14,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
   const [gpuQuantity, setGpuQuantity] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true)
 
   const DEFAULT_INFERENCE_MODEL_NAME = "Qwen/Qwen2.5-Coder-7B-Instruct";
   const DEFAULT_EMBEDDING_MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B";
@@ -78,12 +79,14 @@ export const useTabby = ({ currentOrganization, authToken }) => {
 
   const refreshSessions = async () => {
     try {
-      // const response = await axiosInstance.get("/tabby/get-projects", {
-      //   params: { organization_id: currentOrganization.id },
-      // });
-      // setSessions(response.data);
+      const response = await axiosInstance.get("/tabby/instances", {
+        params: { organization_id: currentOrganization.id },
+      });
+      setSessions(response.data);
     } catch (error) {
       console.error("Ошибка при получении проектов Tabby:", error);
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -225,6 +228,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     handleCreateSession,
     snackbar,
     handleSnackbarClose,
+    isLoading,
     // flags and args
     embeddingArgs,
     setEmbeddingArgs,

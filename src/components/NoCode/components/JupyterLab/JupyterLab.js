@@ -55,7 +55,23 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
     handleCreateSession,
     snackbar,
     handleSnackbarClose,
+    isLoading,
   } = useJupyterLab({ currentOrganization, authToken });
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80dvh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>

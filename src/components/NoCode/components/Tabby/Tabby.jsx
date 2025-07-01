@@ -13,9 +13,10 @@ import {
   TableCell,
   TableBody,
   useTheme,
+  Tooltip,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Code } from "@mui/icons-material";
+import { Code, ContentCopy } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../../../store/selectors/organizationsSelectors";
 import useJupyterLab from "../../../../hooks/NoCode/useJupyterLab";
@@ -25,11 +26,13 @@ import { Link, useNavigate } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import StopIcon from "@mui/icons-material/Stop";
 import BackArrow from "../../../../UI/BackArrow";
+import Check from "@mui/icons-material/Check";
 
 function Tabby({ isMobile, isTablet }) {
   const currentOrganization = useSelector(selectCurrentOrganization);
   const authToken = useSelector((state) => state.auth.authToken);
   const navigate = useNavigate();
+  const [copiedId, setCopiedId] = useState(null);
 
   const {
     setOpenCreateModal,
@@ -55,6 +58,7 @@ function Tabby({ isMobile, isTablet }) {
     handleCreateSession,
     snackbar,
     handleSnackbarClose,
+    isLoading,
     embeddingArgs,
     setEmbeddingArgs,
     embeddingFlags,
@@ -70,8 +74,26 @@ function Tabby({ isMobile, isTablet }) {
   } = useTabby({ currentOrganization, authToken });
 
   useEffect(() => {
-    if (!sessions?.length) navigate("/tabby-create");
-  }, [sessions, navigate]);
+    if (!sessions.length && !isLoading) {
+      navigate("/tabby-create");
+    }
+  }, [sessions, isLoading, navigate]);
+  console.log(sessions);
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80dvh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -103,18 +125,17 @@ function Tabby({ isMobile, isTablet }) {
           <Box>
             {sessions.map((session) => {
               const startDisabled =
-                loadingId === session.job_id ||
+                loadingId === session.id ||
                 ["running", "starting", "queued", "creating"].includes(
-                  session.last_execution_status
+                  session.status
                 );
 
               const stopDisabled =
-                session.last_execution_status !== "running" ||
-                loadingId === session.job_id;
+                session.status !== "running" || loadingId === session.id;
 
               return (
                 <Box
-                  key={session.job_id}
+                  key={session.id}
                   sx={{
                     border: "1px solid lightgray",
                     borderRadius: "8px",
@@ -123,28 +144,31 @@ function Tabby({ isMobile, isTablet }) {
                   }}
                 >
                   <Typography variant="h6" sx={{ fontSize: "14px" }}>
-                    {session.job_name}
+                    {session.tabby_name}
                   </Typography>
                   <Typography sx={{ fontSize: "12px" }}>
-                    <b>Тип GPU:</b> {session.gpu_type?.type || "N/A"}
+                    <b>Code Gen job ID:</b> {session.inference_job_id}
                   </Typography>
                   <Typography sx={{ fontSize: "12px" }}>
-                    <b>Статус:</b> {session.last_execution_status}
-                    {loadingId === session.job_id ||
-                    session.last_execution_status === "creating" ? (
+                    <b>Embedding job ID:</b> {session.embedding_job_id}
+                  </Typography>
+                  <Typography sx={{ fontSize: "12px" }}>
+                    <b>Статус:</b> {session.status}
+                    {loadingId === session.id ||
+                    session.status === "creating" ? (
                       <CircularProgress size={14} sx={{ ml: 1 }} />
                     ) : null}
                   </Typography>
                   <Typography sx={{ fontSize: "12px" }}>
                     <b>URL:</b>{" "}
                     <Link
-                      to={session.job_url}
+                      to={session.endpoint_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       underline="hover"
                     >
                       <span style={{ textDecoration: "underline" }}>
-                        {session.job_url || "N/A"}
+                        {session.endpoint_url || "N/A"}
                       </span>
                     </Link>
                   </Typography>
@@ -153,7 +177,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={startDisabled}
-                      onClick={() => handleStartSession(session.job_id)}
+                      onClick={() => handleStartSession(session.id)}
                       color="success"
                       title="Запустить"
                     >
@@ -163,7 +187,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={stopDisabled}
-                      onClick={() => handleStopSession(session.job_id)}
+                      onClick={() => handleStopSession(session.id)}
                       color="error"
                       title="Остановить"
                     >
@@ -180,7 +204,12 @@ function Tabby({ isMobile, isTablet }) {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontSize: "12px" }}>Имя проекта</TableCell>
-                  <TableCell sx={{ fontSize: "12px" }}>Тип GPU</TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Code Gen job ID
+                  </TableCell>
+                  <TableCell sx={{ fontSize: "12px" }}>
+                    Embedding job ID
+                  </TableCell>
                   <TableCell sx={{ fontSize: "12px" }}>Статус</TableCell>
                   <TableCell sx={{ fontSize: "12px" }}>URL</TableCell>
                   <TableCell sx={{ fontSize: "12px" }}>Действие</TableCell>
@@ -189,43 +218,165 @@ function Tabby({ isMobile, isTablet }) {
               <TableBody>
                 {sessions.map((session) => {
                   const startDisabled =
-                    loadingId === session.job_id ||
+                    loadingId === session.id ||
                     ["running", "starting", "queued", "creating"].includes(
-                      session.last_execution_status
+                      session.status
                     );
 
                   const stopDisabled =
-                    session.last_execution_status !== "running" ||
-                    loadingId === session.job_id;
+                    session.status !== "running" || loadingId === session.id;
 
                   return (
-                    <TableRow key={session.job_id} hover>
+                    <TableRow key={session.id} hover>
                       <TableCell sx={{ fontSize: "11px" }}>
-                        {session.job_name}
+                        {session.tabby_name}
                       </TableCell>
-                      <TableCell sx={{ fontSize: "11px" }}>
-                        {session.gpu_type?.type || "N/A"}
+                      <TableCell
+                        sx={{
+                          fontSize: "11px",
+                          maxWidth: 120,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {session.inference_job_id ? (
+                          <Tooltip title={session.inference_job_id} arrow>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                                maxWidth: "100%",
+                              }}
+                            >
+                              <Box
+                                component="span"
+                                sx={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  flexGrow: 1,
+                                }}
+                              >
+                                {session.inference_job_id}
+                              </Box>
+                              <IconButton
+                                size="small"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(
+                                      session.inference_job_id
+                                    );
+                                    setCopiedId(session.inference_job_id);
+                                    setTimeout(() => setCopiedId(null), 1500);
+                                  } catch (error) {
+                                    console.error(
+                                      "Ошибка при копировании:",
+                                      error
+                                    );
+                                  }
+                                }}
+                                sx={{
+                                  p: 0.5,
+                                }}
+                              >
+                                {copiedId === session.inference_job_id ? (
+                                  <Check sx={{ fontSize: "14px" }} />
+                                ) : (
+                                  <ContentCopy sx={{ fontSize: "14px" }} />
+                                )}
+                              </IconButton>
+                            </Box>
+                          </Tooltip>
+                        ) : (
+                          "N/A"
+                        )}
                       </TableCell>
+
+                      <TableCell
+                        sx={{
+                          fontSize: "11px",
+                          maxWidth: 120,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {session.embedding_job_id ? (
+                          <Tooltip title={session.embedding_job_id} arrow>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                                maxWidth: "100%",
+                              }}
+                            >
+                              <Box
+                                component="span"
+                                sx={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  flexGrow: 1,
+                                }}
+                              >
+                                {session.embedding_job_id}
+                              </Box>
+                              <IconButton
+                                size="small"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(
+                                      session.embedding_job_id
+                                    );
+                                    setCopiedId(session.embedding_job_id);
+                                    setTimeout(() => setCopiedId(null), 1500);
+                                  } catch (error) {
+                                    console.error(
+                                      "Ошибка при копировании:",
+                                      error
+                                    );
+                                  }
+                                }}
+                                sx={{
+                                  p: 0.5,
+                                }}
+                              >
+                                {copiedId === session.embedding_job_id ? (
+                                  <Check sx={{ fontSize: "14px" }} />
+                                ) : (
+                                  <ContentCopy sx={{ fontSize: "14px" }} />
+                                )}
+                              </IconButton>
+                            </Box>
+                          </Tooltip>
+                        ) : (
+                          "N/A"
+                        )}
+                      </TableCell>
+
                       <TableCell sx={{ fontSize: "11px" }}>
                         <Box
                           sx={{ display: "inline-flex", alignItems: "center" }}
                         >
-                          {(loadingId === session.job_id ||
-                            session.last_execution_status === "creating") && (
+                          {(loadingId === session.id ||
+                            session.status === "creating") && (
                             <CircularProgress size={14} sx={{ mr: 1 }} />
                           )}
-                          {session.last_execution_status}
+                          {session.status}
                         </Box>
                       </TableCell>
                       <TableCell sx={{ fontSize: "11px" }}>
                         <Link
-                          to={session.job_url}
+                          to={session.endpoint_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           underline="hover"
                         >
                           <span style={{ textDecoration: "underline" }}>
-                            {session.job_url || "N/A"}
+                            {session.endpoint_url || "N/A"}
                           </span>
                         </Link>
                       </TableCell>
@@ -233,7 +384,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={startDisabled}
-                          onClick={() => handleStartSession(session.job_id)}
+                          onClick={() => handleStartSession(session.id)}
                           color="success"
                           title="Запустить"
                         >
@@ -243,7 +394,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={stopDisabled}
-                          onClick={() => handleStopSession(session.job_id)}
+                          onClick={() => handleStopSession(session.id)}
                           color="error"
                           title="Остановить"
                         >

@@ -44,6 +44,25 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
   const [metadata, setMetadata] = useState({});
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
+  const [iconsLoaded, setIconsLoaded] = useState(false);
+
+  useEffect(() => {
+    let loadedCount = 0;
+
+    const handleLoad = () => {
+      loadedCount += 1;
+      if (loadedCount === cardsInfo.length) {
+        setIconsLoaded(true);
+      }
+    };
+
+    cardsInfo.forEach((card) => {
+      const img = new Image();
+      img.src = card.icon;
+      img.onload = handleLoad;
+      img.onerror = handleLoad;
+    });
+  }, []);
 
   const filteredCards = cardsInfo.filter(
     (card) =>
@@ -67,8 +86,15 @@ function ChangeProjectsPage({ isMobile, isTablet }) {
         </Box>
       </Box>
 
-      {!cardsInfo.length ? (
-        <Box display="flex" justifyContent="center" mt={4}>
+      {!iconsLoaded ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "80dvh",
+          }}
+        >
           <CircularProgress />
         </Box>
       ) : (

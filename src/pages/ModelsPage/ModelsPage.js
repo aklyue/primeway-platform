@@ -192,7 +192,7 @@ function ModelsPage({ isMobile, isTablet }) {
             alignItems: "center",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center" }} data-tour-id="model-page">
             <ModelTraining />
             <Typography ml={1} fontSize={"1.25rem"} fontWeight={500}>
               Models

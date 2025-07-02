@@ -13,11 +13,6 @@ html {
   scroll-behavior: smooth;
 }
 
-html.react-joyride-active,
-body.react-joyride-active {
-  scroll-behavior: auto !important;
-}
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -33,42 +28,29 @@ a {
   cursor: pointer !important;
 }
 
-.react-joyride__tooltip button[data-action="primary"] {
-  font-size: 14px !important;
+@keyframes fadeInUpPopover {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.react-joyride__tooltip button[data-action="close"] {
-  border-radius: 50% !important;
-  width: 30px;
-  padding: 3px !important;
-  height: 30px;
-  margin-top: 4px;
-  margin-right: 4px;
+@keyframes fadeInUpMask {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.7;
+  }
 }
 
-.react-joyride__tooltip button[data-action="primary"]:hover {
-  background-color: #7c97de !important;
+.reactour__popover {
+  animation: fadeInUpPopover 0.2s ease;
+  border-radius: 4px;
 }
 
-.react-joyride__tooltip button[data-action="close"]:hover {
-  background-color: rgba(0, 0, 0, 0.04) !important;
-}
-
-
-.react-joyride__tooltip button[data-action="skip"] {
-  color: #888 !important;
-  font-size: 14px !important;
-}
-
-.react-joyride__tooltip button[data-action="skip"]:hover {
-  color: #555 !important;
-  background-color: rgba(0, 0, 0, 0.04) !important;
-}
-
-.react-joyride__tooltip button[data-action="back"] {
-  font-size: 14px !important;
-}
-
-.react-joyride__tooltip button[data-action="back"]:hover {
-  background-color: rgba(0, 0, 0, 0.04) !important;
+.reactour__mask {
+  animation: fadeInUpMask 0.2s ease;
 }

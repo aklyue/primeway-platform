@@ -11,6 +11,10 @@ export const stepsMap = {
   ],
   "/models": [
     {
+      selector: '[data-tour-id="model-page"]',
+      content: "Этот раздел полностью посвящен работе с LLM моделями.",
+    },
+    {
       selector: '[data-tour-id="model-create"]',
       content: "Вы можете создать модель просто нажав на эту кнопку.",
     },

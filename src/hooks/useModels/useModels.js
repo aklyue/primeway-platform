@@ -91,6 +91,17 @@ export default function useModels({
     }
   }, [fineTunedModels, decodedModelId, fineTunedData]);
 
+  useEffect(() => {
+    if (!authToken || !currentOrganization?.id) return;
+
+    const interval = setInterval(() => {
+      fetchLaunchedModels();
+      fetchFineTunedModels();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [authToken, currentOrganization?.id]);
+
   const isLaunchedModel = !!launchedModel;
   const isFineTuned = !!fineTunedModel;
 

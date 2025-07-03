@@ -15,7 +15,7 @@ export const useModelButtonLogic = ({
   handleConfirmLaunchClose,
   args,
   flags,
-  modelConfig
+  modelConfig,
 }) => {
   const {
     handleStart,
@@ -33,7 +33,7 @@ export const useModelButtonLogic = ({
     authToken,
     args,
     flags,
-    modelConfig
+    modelConfig,
   });
 
   let actionButtonText = "";
@@ -44,7 +44,9 @@ export const useModelButtonLogic = ({
     actionButtonHandler = (e) => {
       e.stopPropagation();
       handleRun();
-      handleConfirmLaunchClose()
+      if (handleConfirmLaunchClose) {
+        handleConfirmLaunchClose();
+      }
     };
     isActionButtonDisabled = actionLoading;
   } else {

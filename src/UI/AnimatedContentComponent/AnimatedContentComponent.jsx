@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { IconButton, Stack, Tooltip, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";

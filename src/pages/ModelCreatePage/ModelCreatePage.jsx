@@ -8,10 +8,10 @@ function ModelCreatePage({ isMobile }) {
     const location = useLocation()
     const { isCreate } = location.state || {};
     return (
-        <div>
+        <Box>
             <BackArrow path={"/models"} name={"Models"} />
             <ModelCreate isMobile={isMobile} isCreate={isCreate} />
-        </div>
+        </Box>
     )
 }
 

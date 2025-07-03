@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axiosInstance from "../../api";
-import { modelsData } from "../../data/modelsData";
 import { useNavigate } from "react-router-dom";
 
 export const useModelActions = ({
@@ -13,9 +12,9 @@ export const useModelActions = ({
   setModelStatus,
   args,
   flags,
-  modelConfig
+  modelConfig,
 }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -32,7 +31,7 @@ export const useModelActions = ({
         params: { job_id: jobId },
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      console.log("launched")
+      console.log("launched");
       setModelStatus("running");
       alert("Модель успешно запущена.");
     } catch (error) {
@@ -58,7 +57,7 @@ export const useModelActions = ({
       });
 
       setModelStatus("stopped");
-      console.log("launched")
+      console.log("launched");
       alert("Модель успешно остановлена.");
     } catch (error) {
       console.error("Ошибка при остановке модели:", error);
@@ -66,49 +65,48 @@ export const useModelActions = ({
       setLoading(false);
     }
   };
-  
+
   const handleRun = async () => {
     setLoading(true);
     try {
       const { defaultConfig } = model;
 
-
       const vllmConfig = {
         model: defaultConfig.modelName,
-        args: (args && args.length > 0)
-          ? args.reduce(
-            (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
-            {}
-          )
-          : (defaultConfig.args && defaultConfig.args.length > 0)
+        args:
+          args && args.length > 0
+            ? args.reduce((acc, arg) => ({ ...acc, [arg.key]: arg.value }), {})
+            : defaultConfig.args && defaultConfig.args.length > 0
             ? defaultConfig.args.reduce(
-              (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
-              {}
-            )
+                (acc, arg) => ({ ...acc, [arg.key]: arg.value }),
+                {}
+              )
             : {},
 
-        flags: (flags && flags.length > 0)
-          ? flags.reduce(
-            (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
-            {}
-          )
-          : (defaultConfig.flags && defaultConfig.flags.length > 0)
+        flags:
+          flags && flags.length > 0
+            ? flags.reduce(
+                (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
+                {}
+              )
+            : defaultConfig.flags && defaultConfig.flags.length > 0
             ? defaultConfig.flags.reduce(
-              (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
-              {}
-            )
+                (acc, flag) => ({ ...acc, [flag.key]: flag.value }),
+                {}
+              )
             : {},
 
         finetuned_job_id: defaultConfig.finetuned_job_id,
       };
 
       const formData = new FormData();
-      console.log(currentOrganization)
       formData.append("organization_id", currentOrganization?.id || "");
       formData.append("vllm_config_str", JSON.stringify(vllmConfig));
-      formData.append("config_str", JSON.stringify(modelConfig));
+      formData.append(
+        "config_str",
+        JSON.stringify(modelConfig || model?.defaultConfig.modelConfig)
+      );
 
-      console.log(formData);
 
       const response = await axiosInstance.post("/models/run", formData, {
         headers: {
@@ -122,8 +120,8 @@ export const useModelActions = ({
       alert(
         'Модель успешно запущена! Вы можете просмотреть ее в разделе "Задачи".'
       );
-      console.log("not launched")
-      navigate("/models")
+      console.log("not launched");
+      navigate("/models");
     } catch (error) {
       console.error("Ошибка при запуске модели:", error);
     } finally {

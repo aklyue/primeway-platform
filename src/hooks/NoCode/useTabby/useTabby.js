@@ -112,14 +112,12 @@ export const useTabby = ({ currentOrganization, authToken }) => {
       organization_id: currentOrganization?.id,
     };
 
-    console.log(payload);
-
     try {
       await axiosInstance.post("/tabby/start", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
-      // refreshSessions();
+      refreshSessions();
       navigate("/tabby");
       setSnackbar({
         open: true,
@@ -138,8 +136,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     }
   };
 
-  const handleStartSession = async (inferenceJobId, embeddingJobId) => {
-    if (!inferenceJobId && !embeddingJobId) {
+  const handleStartSession = async (id) => {
+    if (!id) {
       return setSnackbar({
         open: true,
         message: "ID задачи отсутствует",
@@ -147,17 +145,11 @@ export const useTabby = ({ currentOrganization, authToken }) => {
       });
     }
 
-    setLoadingId(embeddingJobId ?? inferenceJobId);
+    setLoadingId(id);
     try {
-      if (inferenceJobId) {
-        await axiosInstance.post("/jobs/job-start", null, {
-          params: { job_id: inferenceJobId },
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-      }
-      if (embeddingJobId) {
-        await axiosInstance.post("/jobs/job-start", null, {
-          params: { job_id: embeddingJobId },
+      if (id) {
+        await axiosInstance.post("/tabby/job-start", null, {
+          params: { tabby_id: id },
           headers: { Authorization: `Bearer ${authToken}` },
         });
       }
@@ -179,8 +171,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     }
   };
 
-  const handleStopSession = async (inferenceJobId, embeddingJobId) => {
-    if (!inferenceJobId && !embeddingJobId) {
+  const handleStopSession = async (id) => {
+    if (!id) {
       return setSnackbar({
         open: true,
         message: "ID задачи отсутствует",
@@ -188,14 +180,10 @@ export const useTabby = ({ currentOrganization, authToken }) => {
       });
     }
 
-    setLoadingId(embeddingJobId ?? inferenceJobId);
+    setLoadingId(id);
     try {
-      await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: inferenceJobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      await axiosInstance.post("/jobs/job-stop", null, {
-        params: { job_id: embeddingJobId },
+      await axiosInstance.post("/tabby/job-stop", null, {
+        params: { tabby_id: id },
         headers: { Authorization: `Bearer ${authToken}` },
       });
       refreshSessions();

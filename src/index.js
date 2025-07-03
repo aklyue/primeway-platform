@@ -17,6 +17,7 @@ root.render(
       <TourProvider
         steps={[]}
         scrollSmooth={true}
+        disableInteraction={true}
         ContentComponent={AnimatedContentComponent}
       >
         <App />

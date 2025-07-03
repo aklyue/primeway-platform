@@ -124,16 +124,13 @@ function Tabby({ isMobile, isTablet }) {
           <Box>
             {sessions.map((session) => {
               const startDisabled =
-                loadingId === session.inference_job_id ||
-                loadingId === session.embedding_job_id ||
+                loadingId === session.id ||
                 ["running", "starting", "queued", "creating"].includes(
                   session.status
                 );
 
               const stopDisabled =
-                session.status !== "running" ||
-                loadingId === session.inference_job_id ||
-                loadingId === session.embedding_job_id;
+                session.status !== "running" || loadingId === session.id;
 
               return (
                 <Box
@@ -179,12 +176,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={startDisabled}
-                      onClick={() =>
-                        handleStartSession(
-                          session.inference_job_id,
-                          session.embedding_job_id
-                        )
-                      }
+                      onClick={() => handleStartSession(session.id)}
                       color="success"
                       title="Запустить"
                     >
@@ -194,12 +186,7 @@ function Tabby({ isMobile, isTablet }) {
                     <IconButton
                       size="small"
                       disabled={stopDisabled}
-                      onClick={() =>
-                        handleStopSession(
-                          session.inference_job_id,
-                          session.embedding_job_id
-                        )
-                      }
+                      onClick={() => handleStopSession(session.id)}
                       color="error"
                       title="Остановить"
                     >
@@ -230,16 +217,13 @@ function Tabby({ isMobile, isTablet }) {
               <TableBody>
                 {sessions.map((session) => {
                   const startDisabled =
-                    loadingId === session.inference_job_id ||
-                    loadingId === session.embedding_job_id ||
+                    loadingId === session.id ||
                     ["running", "starting", "queued", "creating"].includes(
                       session.status
                     );
 
                   const stopDisabled =
-                    session.status !== "running" ||
-                    loadingId === session.inference_job_id ||
-                    loadingId === session.embedding_job_id;
+                    session.status !== "running" || loadingId === session.id;
 
                   return (
                     <TableRow key={session.id} hover>
@@ -399,12 +383,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={startDisabled}
-                          onClick={() =>
-                            handleStartSession(
-                              session.inference_job_id,
-                              session.embedding_job_id
-                            )
-                          }
+                          onClick={() => handleStartSession(session.id)}
                           color="success"
                           title="Запустить"
                         >
@@ -414,12 +393,7 @@ function Tabby({ isMobile, isTablet }) {
                         <IconButton
                           size="small"
                           disabled={stopDisabled}
-                          onClick={() =>
-                            handleStopSession(
-                              session.inference_job_id,
-                              session.embedding_job_id
-                            )
-                          }
+                          onClick={() => handleStopSession(session.id)}
                           color="error"
                           title="Остановить"
                         >

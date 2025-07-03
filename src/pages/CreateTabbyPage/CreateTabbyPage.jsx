@@ -1,4 +1,3 @@
-import React from "react";
 import CreateTabbyForm from "../../UI/CreateTabbyForm";
 import useTabby from "../../hooks/NoCode/useTabby";
 import { useSelector } from "react-redux";

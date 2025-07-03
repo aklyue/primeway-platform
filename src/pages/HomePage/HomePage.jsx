@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -11,14 +10,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import IntroSlider from "../../components/IntroSlider";
 import useIntroSlider from "../../hooks/useIntroSlider";
-import Marketplace from "../../images/marketplace.png";
-import Primeway from "../../images/primeway.png";
-import Navigation from "../../images/navigation.png";
-import Hints from "../../images/hints.png";
-import FineTuning from "../../images/finetuning.png";
-import Models from "../../images/models.png";
-import { useDispatch, useSelector } from "react-redux";
-import { hideIntroSlider } from "../../store/slices/introSliderSlice";
+import { useSelector } from "react-redux";
 import { getIntroSlides } from "../../constants/getIntroSlides";
 
 const HomePage = ({
@@ -32,7 +24,6 @@ const HomePage = ({
     useIntroSlider("intro_shown");
 
   const { visible } = useSelector((state) => state.introSlider);
-  const dispatch = useDispatch();
 
   const slides = getIntroSlides(close)
 

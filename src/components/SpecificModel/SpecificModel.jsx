@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
 import { fineTunedData } from "../../data/fineTunedData";
@@ -12,7 +6,6 @@ import {
   Box,
   Typography,
   Button,
-  Modal,
   Grid,
   Collapse,
   Dialog,
@@ -20,19 +13,13 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import ConfigureModelForm from "../ConfigureModelForm";
 import useModelActions from "../../hooks/useModelActions";
 import useModelButtonLogic from "../../hooks/useModelButtonLogic";
 import ModelActions from "../../UI/ModelActions";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
-import axiosInstance from "../../api";
-import { Description, ExpandMore } from "@mui/icons-material";
 import useModels from "../../hooks/useModels";
 
 function SpecificModel({
@@ -206,7 +193,7 @@ function SpecificModel({
                     { label: "Created At", value: renderData.created_at },
                     {
                       label: "Last Execution Status",
-                      value: renderData.last_execution_status,
+                      value: modelStatus,
                     },
                     { label: "Job URL", value: renderData.job_url },
                     { label: "GPU Type", value: renderData.gpu_type?.type },

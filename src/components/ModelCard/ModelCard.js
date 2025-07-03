@@ -1,18 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
-  Button,
   Box,
   Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Tooltip,
 } from "@mui/material";
-import axiosInstance from "../../api";
-import ModelsDialog from "../ModelsDialog";
 
 // Импорт SVG как React-компонентов
 import { ReactComponent as DeepSeek } from "../../assets/deepseek-color.svg";
@@ -22,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import useModelActions from "../../hooks/useModelActions";
 import useModelButtonLogic from "../../hooks/useModelButtonLogic";
 import ModelActions from "../../UI/ModelActions";
-import { ContentCopy } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { selectCurrentOrganization } from "../../store/selectors/organizationsSelectors";
 import { format, parseISO } from "date-fns";
@@ -31,15 +21,6 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
   const authToken = useSelector((state) => state.auth.authToken);
   const currentOrganization = useSelector(selectCurrentOrganization);
   const navigate = useNavigate();
-
-  // **Состояния**
-  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
-  const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
-
-  // **Состояния для логов**
-  const [logsModalOpen, setLogsModalOpen] = useState(false);
-  const [currentLogs, setCurrentLogs] = useState("");
-  const [logsLoading, setLogsLoading] = useState(false);
 
   // **Переменные модели**
   const isLaunched = !isBasic;
@@ -87,12 +68,6 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
     ModelImageComponent = HuggingFace;
   }
 
-  // **Обработчики открытия и закрытия модальных окон**
-
-  const handleModelDialogClose = () => {
-    setIsModelDialogOpen(false);
-  };
-
   const { handleRun, handleStart, handleStop, loading } = useModelActions({
     model,
     currentOrganization,
@@ -114,49 +89,6 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
       authToken,
       currentOrganization,
     });
-
-  // **Функция для получения логов модели**
-  const handleLogsClick = async (e) => {
-    e.stopPropagation(); // Предотвращаем всплытие события
-    if (isBasic) return; // Получать логи можно только для запущенных моделей
-    setLogsModalOpen(true);
-    setLogsLoading(true);
-    setCurrentLogs(""); // Сбрасываем предыдущие логи
-
-    try {
-      if (!jobId) {
-        setCurrentLogs("Идентификатор задачи отсутствует.");
-        setLogsLoading(false);
-        return;
-      }
-
-      const response = await axiosInstance.get("/jobs/job-logs", {
-        params: { job_id: jobId },
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      const logs = response.data.logs || "Логи отсутствуют.";
-      setCurrentLogs(logs);
-    } catch (error) {
-      console.error(`Ошибка при получении логов для задачи ${jobId}:`, error);
-      const errorMessage =
-        error.response?.data?.detail ||
-        (error.response?.status === 404
-          ? "Логи недоступны."
-          : "Ошибка при получении логов.");
-      setCurrentLogs(errorMessage);
-    } finally {
-      setLogsLoading(false);
-    }
-  };
-
-  const handleCopy = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (err) {
-      alert("Не удалось скопировать");
-    }
-  };
 
   // **Определяем текст и действие кнопки в зависимости от статуса модели**
 
@@ -315,187 +247,9 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
                 Базовая
               </Typography>
             </Box>
-
-            {/* **Состояние** */}
-            {/* <Grid item xs={isMobile ? 1 : 2} sx={{ textAlign: "center" }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                  width: isMobile ? "50px" : "120px",
-                  mx: "auto",
-                  fontSize: isMobile ? "9px !important" : "12px",
-                }}
-              >
-                {modelStatus || "N/A"}
-              </Typography>
-            </Grid> */}
-
-            {/* **URL** */}
-            {/* <Grid item xs={isMobile ? 3 : 2} sx={{ textAlign: "center" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Tooltip
-                  title={model.job_url || "N/A"}
-                  arrow
-                  placement="top"
-                  open={tooltipOpen}
-                  onOpen={() => setTooltipOpen(true)}
-                  onClose={() => setTooltipOpen(false)}
-                >
-                  <Typography
-                    variant="body2"
-                    onMouseEnter={() => setTooltipOpen(true)}
-                    onMouseLeave={() => setTooltipOpen(false)}
-                    sx={{
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      width: isMobile ? "100px" : "auto",
-                      textAlign: "center",
-                      mx: isMobile ? "5px" : "10px",
-                      marginLeft: !isMobile && "0",
-                      fontSize: isMobile ? "9px !important" : "12px",
-                      cursor: "pointer",
-                      userSelect: "text",
-                    }}
-                  >
-                    {model.job_url || "N/A"}
-                  </Typography>
-                </Tooltip>
-                {model.job_url && (
-                  <Tooltip
-                    title="Скопировать"
-                    placement="top"
-                    open={tooltipCopyOpen}
-                    onOpen={() => setTooltipCopyOpen(true)}
-                    onClose={() => setTooltipCopyOpen(false)}
-                  >
-                    <IconButton
-                      onMouseEnter={() => setTooltipCopyOpen(true)}
-                      onMouseLeave={() => setTooltipCopyOpen(false)}
-                      data-no-navigate
-                      size="small"
-                      onClick={() => handleCopy(model.job_url)}
-                      sx={{ p: isMobile ? "2px" : "5px" }}
-                    >
-                      <ContentCopy
-                        sx={{ fontSize: isMobile ? "12px" : "18px" }}
-                      />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </div>
-            </Grid> */}
-
-            {/* **Действия (Кнопка получения логов)** */}
-            {/* {!isMobile && (
-              <Grid
-                item
-                xs={isMobile ? 3 : 3}
-                sx={{
-                  textAlign: "center",
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 0.5,
-                  pr: "10px",
-                }}
-              >
-                <Button
-                  onClick={handleLogsClick}
-                  variant="outlined"
-                  sx={{
-                    bgcolor: "#597ad3",
-                    "&:hover": {
-                      bgcolor: "#7c97de",
-                    },
-                    color: "white",
-                    fontSize: "12px",
-                  }}
-                >
-                  Логи
-                </Button>
-              </Grid>
-            )} */}
           </>
         )}
       </Grid>
-
-      {/* {!isLast && <Divider sx={{ mb: 1 }} />} */}
-
-      {/* **Модальное окно с деталями модели** */}
-      <ModelsDialog
-        open={isModelDialogOpen}
-        onClose={handleModelDialogClose}
-        model={model}
-        isBasic={isBasic}
-      />
-
-      {/* **Диалоговое окно логов модели** */}
-      <Dialog
-        open={logsModalOpen}
-        onClose={() => setLogsModalOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>{`Логи модели: ${modelName}`}</DialogTitle>
-        <DialogContent dividers>
-          {logsLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "200px",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Typography
-              variant="body2"
-              style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
-            >
-              {currentLogs}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLogsModalOpen(false)}>Закрыть</Button>
-          <Button
-            onClick={() => {
-              // Копирование логов в буфер обмена
-              if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(currentLogs).catch((error) => {
-                  console.error("Ошибка при копировании:", error);
-                });
-              } else {
-                const textarea = document.createElement("textarea");
-                textarea.value = currentLogs;
-                textarea.style.position = "fixed";
-                document.body.appendChild(textarea);
-                textarea.focus();
-                textarea.select();
-                try {
-                  document.execCommand("copy");
-                } catch (error) {
-                  console.error("Ошибка при копировании:", error);
-                }
-                document.body.removeChild(textarea);
-              }
-            }}
-          >
-            Скопировать Логи
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

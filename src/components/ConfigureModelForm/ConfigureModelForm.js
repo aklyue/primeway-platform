@@ -597,22 +597,6 @@ function ConfigureModelForm({
             sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
           >
             <TextField
-              label="Макс. кол-во GPU"
-              type="number"
-              value={modelConfig?.max_gpu_count}
-              onChange={(e) =>
-                setModelConfig({
-                  ...modelConfig,
-                  max_gpu_count: e.target.value,
-                })
-              }
-              fullWidth
-              margin="normal"
-              size={isSmall ? "small" : "medium"}
-              disabled={loading}
-              helperText="Максимальное количество GPU"
-            />
-            <TextField
               label="Мин. кол-во GPU"
               type="number"
               value={modelConfig?.min_gpu_count}
@@ -625,8 +609,24 @@ function ConfigureModelForm({
               fullWidth
               margin="normal"
               size={isSmall ? "small" : "medium"}
-              disabled={loading}
+              disabled={loading || isInference || isEmbedding}
               helperText="Минимальное количество GPU"
+            />
+            <TextField
+              label="Макс. кол-во GPU"
+              type="number"
+              value={modelConfig?.max_gpu_count}
+              onChange={(e) =>
+                setModelConfig({
+                  ...modelConfig,
+                  max_gpu_count: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              size={isSmall ? "small" : "medium"}
+              disabled={loading || isInference || isEmbedding}
+              helperText="Максимальное количество GPU"
             />
           </Box>
         </Box>

@@ -409,46 +409,6 @@ function Tabby({ isMobile, isTablet }) {
         )}
       </Paper>
 
-      <CreateTabbyModal
-        openCreateModal={openCreateModal}
-        setOpenCreateModal={setOpenCreateModal}
-        jobName={jobName}
-        setJobName={setJobName}
-        selectedGpu={selectedGpu}
-        setSelectedGpu={setSelectedGpu}
-        isCreating={isCreating}
-        availableGpus={availableGpus}
-        diskSpace={diskSpace}
-        setDiskSpace={setDiskSpace}
-        gpuQuantity={gpuQuantity}
-        setGpuQuantity={setGpuQuantity}
-        setInferenceModelName={setInferenceModelName}
-        inferenceModel={{
-          modelName: inferenceModelName,
-          args: inferenceArgs,
-          flags: inferenceFlags,
-          modelConfig: inferenceModel || {},
-        }}
-        setInferenceModel={setInferenceModel}
-        setEmbeddingModelName={setEmbeddingModelName}
-        embeddingModel={{
-          modelName: embeddingModelName,
-          args: embeddingArgs,
-          flags: embeddingFlags,
-          modelConfig: embeddingModel || {},
-        }}
-        setEmbeddingModel={setEmbeddingModel}
-        handleCreateSession={handleCreateSession}
-        inferenceArgs={inferenceArgs}
-        setInferenceArgs={setInferenceArgs}
-        inferenceFlags={inferenceFlags}
-        setInferenceFlags={setInferenceFlags}
-        embeddingArgs={embeddingArgs}
-        setEmbeddingArgs={setEmbeddingArgs}
-        embeddingFlags={embeddingFlags}
-        setEmbeddingFlags={setEmbeddingFlags}
-      />
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

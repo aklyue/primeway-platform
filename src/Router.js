@@ -97,7 +97,7 @@ const Router = ({
                 path="/gpu-list"
                 element={
                   <ProtectedRoute>
-                    <GPUList />
+                    <GPUList isMobile={isMobile} isTablet={isTablet}/>
                   </ProtectedRoute>
                 }
               />

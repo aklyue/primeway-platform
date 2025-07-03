@@ -26,6 +26,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     health_check_timeout: 600,
     autoscaler_timeout: 600,
     gpu_types: [{ type: "A40", count: 1 }],
+    min_gpu_count: "0",
+    max_gpu_count: "1",
   };
 
   const DEFAULT_EMBEDDING_MODEL = {
@@ -35,6 +37,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     health_check_timeout: 600,
     autoscaler_timeout: 600,
     gpu_types: [{ type: "RTX 2000 Ada", count: 1 }],
+    min_gpu_count: "0",
+    max_gpu_count: "1",
   };
 
   const DEFAULT_EMBEDDING_ARGS = [
@@ -59,6 +63,8 @@ export const useTabby = ({ currentOrganization, authToken }) => {
 
   const [embeddingArgs, setEmbeddingArgs] = useState(DEFAULT_EMBEDDING_ARGS);
   const [embeddingFlags, setEmbeddingFlags] = useState(DEFAULT_FLAGS);
+
+  console.log(inferenceModel);
 
   const [snackbar, setSnackbar] = useState({
     open: false,

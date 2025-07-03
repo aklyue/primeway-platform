@@ -6,13 +6,21 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  TableBody,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
-import { DeveloperBoard } from "@mui/icons-material";
+import { ContentCopy, DeveloperBoard } from "@mui/icons-material";
 
 import axiosInstance from "../../api";
-import GpuCard from "../GpuCard";
 
-const GPUList = () => {
+const GPUList = ({ isMobile, isTablet }) => {
   const [gpuData, setGpuData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +39,7 @@ const GPUList = () => {
       const data = response.data || [];
       setGpuData(data);
       setLoading(false);
+      console.log(data);
     } catch (err) {
       console.error("Ошибка при получении списка GPU:", err);
       setError(
@@ -59,7 +68,14 @@ const GPUList = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", height: "80dvh", alignItems: "center"}}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          height: "80dvh",
+          alignItems: "center",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -83,16 +99,77 @@ const GPUList = () => {
           Доступные GPU
         </Typography>
       </Box>
+
       <Typography variant="body1" paragraph>
-        Ознакомьтесь с доступными GPU и их характеристиками. Кликните по
-        карточке, чтобы скопировать имя и использовать его в вашем конфиге.
+        Ознакомьтесь с доступными GPU и их характеристиками. Кликните по имени
+        GPU, чтобы скопировать его для использования в конфиге.
       </Typography>
 
-      <Grid container spacing={4.5} justifyContent="flex-start" sx={{ mt: 2 }}>
-        {gpuData.map((gpu, index) => (
-          <GpuCard key={gpu.name || index} gpu={gpu} onCopy={handleCopy} />
-        ))}
-      </Grid>
+      <Paper
+        sx={{
+          border: "1px solid rgba(0,0,0,0.12)",
+          borderRadius: 2,
+          overflow: "hidden",
+          boxShadow: "none",
+        }}
+      >
+        <Table size={"medium"}>
+          <TableHead sx={{ backgroundColor: "rgba(102,179,238,0.1)" }}>
+            <TableRow>
+              <TableCell>GPU</TableCell>
+              {!isMobile && <TableCell>ПАМЯТЬ</TableCell>}
+              <TableCell>СТОИМОСТЬ</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {gpuData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  Нет доступных GPU.
+                </TableCell>
+              </TableRow>
+            ) : (
+              gpuData.map((gpu, index) => (
+                <TableRow
+                  key={gpu.name || index}
+                  hover
+                  onClick={() => handleCopy(gpu.name)}
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      background: "rgba(102, 179, 238, 0.2) !important",
+                    },
+                  }}
+                >
+                  <TableCell
+                    sx={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 13,
+                    }}
+                  >
+                    <Tooltip title="Нажмите, чтобы скопировать имя GPU">
+                      <span>{gpu.name}</span>
+                    </Tooltip>
+                  </TableCell>
+
+                  {!isMobile && (
+                    <TableCell sx={{ fontSize: 13 }}>
+                      {gpu.memoryInGb} GB
+                    </TableCell>
+                  )}
+
+                  <TableCell sx={{ fontSize: 13 }}>
+                    {gpu.costPerHour} ₽/час
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Paper>
 
       {/* Snackbar для отображения сообщения о копировании */}
       <Snackbar

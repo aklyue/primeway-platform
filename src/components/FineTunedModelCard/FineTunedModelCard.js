@@ -15,8 +15,12 @@ const buildDefaultConfig = (ft) => {
     modelName: cfg.modelName ?? ft.base_model,
     finetuned_job_id: ft.job_id,
     modelConfig: {
-      ...(cfg.modelConfig || {}),
       job_name: `${ft.artifact_name}-deploy`,
+      port: 8000,
+      disk_space: 80,
+      health_check_timeout: 3500,
+      autoscaler_timeout: 600,
+      gpu_types: [{ type: "A40", count: 1 }],
     },
   };
 };
@@ -25,6 +29,7 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
   const navigate = useNavigate();
   const [openCfg, setOpenCfg] = useState(false);
   const defaultConfig = buildDefaultConfig(ft);
+  console.log(defaultConfig);
 
   return (
     <>

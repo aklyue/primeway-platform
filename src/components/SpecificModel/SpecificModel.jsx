@@ -119,6 +119,8 @@ function SpecificModel({
       modelConfig,
     });
 
+    console.log(modelConfig)
+
   if (!renderData) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>

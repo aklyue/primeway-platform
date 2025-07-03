@@ -603,7 +603,7 @@ function ConfigureModelForm({
               onChange={(e) =>
                 setModelConfig({
                   ...modelConfig,
-                  min_gpu_count: e.target.value,
+                  min_gpu_count: Number(e.target.value),
                 })
               }
               fullWidth
@@ -619,7 +619,7 @@ function ConfigureModelForm({
               onChange={(e) =>
                 setModelConfig({
                   ...modelConfig,
-                  max_gpu_count: e.target.value,
+                  max_gpu_count: Number(e.target.value),
                 })
               }
               fullWidth

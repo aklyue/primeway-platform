@@ -34,7 +34,6 @@ function ModelsPage({ isMobile, isTablet }) {
     <Box sx={{ boxSizing: "border-box" }}>
       {/* ---------- container for sections -------------------------------- */}
       <Box sx={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
-        {/* ============ Запущенные модели ================================= */}
 
         <Box
           sx={{
@@ -78,7 +77,6 @@ function ModelsPage({ isMobile, isTablet }) {
             </Button>
           </Box>
         </Box>
-        {/* === Дообученные модели ============================================= */}
         <Box
           sx={{
             maxHeight: "60vh",

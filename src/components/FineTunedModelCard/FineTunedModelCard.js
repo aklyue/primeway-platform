@@ -21,6 +21,14 @@ const buildDefaultConfig = (ft) => {
       health_check_timeout: 3500,
       autoscaler_timeout: 600,
       gpu_types: [{ type: "A40", count: 1 }],
+      env: [
+        {
+          name: "HUGGING_FACE_HUB_TOKEN",
+          value: "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",
+        },
+      ],
+      min_gpu_count: 0,
+      max_gpu_count: 1,
     },
   };
 };

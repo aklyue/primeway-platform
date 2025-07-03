@@ -74,8 +74,8 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
           },
         ],
         disk_space: parseInt(diskSpace),
-        min_gpu_count: "0",
-        max_gpu_count: "1",
+        min_gpu_count: 0,
+        max_gpu_count: 1,
       })
     );
     formData.append("organization_id", String(currentOrganization.id));

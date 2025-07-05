@@ -6,7 +6,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { useTheme } from "@mui/material/styles";
 import { wrap } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CircularProgress, useMediaQuery } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -82,7 +82,7 @@ export const useTasks = ({ authToken, currentOrganization }) => {
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMinDesktop = useMediaQuery(theme.breakpoints.down("lg"));
 
-  const fetchJobs = () => {
+  const fetchJobs = useCallback(() => {
     if (initialLoadRef.current) {
       setLoading(true);
     }
@@ -137,7 +137,15 @@ export const useTasks = ({ authToken, currentOrganization }) => {
       }
       setJobTypeLoading(false);
     }
-  };
+  }, [
+    currentOrganization,
+    authToken,
+    isScheduledFilter,
+    selectedStatus,
+    selectedJobType,
+    triedSwitchJobType,
+    dispatch,
+  ]);
 
   useEffect(() => {
     // Фетчим данные сразу при монтировании или изменении зависимостей
@@ -169,12 +177,12 @@ export const useTasks = ({ authToken, currentOrganization }) => {
     applyFilters();
   }, [selectedStatus, selectedJobType, isScheduledFilter, allJobs]);
 
-  const handleTaskClick = (job) => {
+  const handleTaskClick = useCallback((job) => {
     setCurrentJob(job);
     setDetailsModalOpen(true);
-  };
+  }, []);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filteredJobs = [...allJobs];
 
     if (selectedJobType) {
@@ -199,7 +207,7 @@ export const useTasks = ({ authToken, currentOrganization }) => {
     );
 
     setJobs(filteredJobs);
-  };
+  }, [allJobs, selectedJobType, selectedStatus, isScheduledFilter]);
 
   const formatJobId = (jobId) => {
     if (!jobId || typeof jobId !== "string") return "N/A";
@@ -250,102 +258,111 @@ export const useTasks = ({ authToken, currentOrganization }) => {
   };
 
   // Обновленная функция handleLogsClick
-  const handleLogsClick = (job, jobExecutionId = null) => {
-    setLogsModalOpen(true); // Открываем диалог сразу
-    setLogsLoading(true);
-    setCurrentLogs(""); // Сброс предыдущих логов
-    setCurrentJobName(job.job_name || "N/A");
+  const handleLogsClick = useCallback(
+    (job, jobExecutionId = null) => {
+      setLogsModalOpen(true); // Открываем диалог сразу
+      setLogsLoading(true);
+      setCurrentLogs(""); // Сброс предыдущих логов
+      setCurrentJobName(job.job_name || "N/A");
 
-    const params = {};
-    if (jobExecutionId) {
-      params.job_execution_id = jobExecutionId;
-    } else {
-      params.job_id = job.job_id;
-    }
-    console.log(params);
-    axiosInstance
-      .get("/jobs/job-logs", {
-        params: params,
-      })
-      .then((response) => {
-        const logs = response.data.logs || "Логи отсутствуют.";
-        setCurrentLogs(logs);
-      })
-      .catch((error) => {
-        console.error(
-          `Ошибка при получении логов для задачи ${job.id}:`,
-          error
-        );
-        const errorMessage =
-          error.response?.data?.detail ||
-          (error.response?.status === 404
-            ? "Логи недоступны."
-            : "Ошибка при получении логов.");
-        setCurrentLogs(errorMessage);
-      })
-      .finally(() => {
-        setLogsLoading(false);
-      });
-  };
+      const params = {};
+      if (jobExecutionId) {
+        params.job_execution_id = jobExecutionId;
+      } else {
+        params.job_id = job.job_id;
+      }
+      console.log(params);
+      axiosInstance
+        .get("/jobs/job-logs", {
+          params: params,
+        })
+        .then((response) => {
+          const logs = response.data.logs || "Логи отсутствуют.";
+          setCurrentLogs(logs);
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при получении логов для задачи ${job.id}:`,
+            error
+          );
+          const errorMessage =
+            error.response?.data?.detail ||
+            (error.response?.status === 404
+              ? "Логи недоступны."
+              : "Ошибка при получении логов.");
+          setCurrentLogs(errorMessage);
+        })
+        .finally(() => {
+          setLogsLoading(false);
+        });
+    },
+    [axiosInstance]
+  );
 
   // Обновленная функция handleBuildLogsClick
-  const handleBuildLogsClick = (job) => {
-    setBuildLogsModalOpen(true); // Открываем диалог сразу
-    setBuildLogsLoading(true);
-    setCurrentLogs(""); // Сброс предыдущих логов
-    setCurrentJobName(job.job_name || "N/A");
+  const handleBuildLogsClick = useCallback(
+    (job) => {
+      setBuildLogsModalOpen(true); // Открываем диалог сразу
+      setBuildLogsLoading(true);
+      setCurrentLogs(""); // Сброс предыдущих логов
+      setCurrentJobName(job.job_name || "N/A");
 
-    axiosInstance
-      .get("/jobs/build-logs", {
-        params: { job_id: job.job_id },
-      })
-      .then((response) => {
-        const logs = response.data.build_logs || "Логи сборки отсутствуют.";
-        setCurrentLogs(logs);
-      })
-      .catch((error) => {
-        console.error(
-          `Ошибка при получении логов сборки для задачи ${job.id}:`,
-          error
-        );
-        const errorMessage =
-          error.response?.data?.detail ||
-          (error.response?.status === 404
-            ? "Логи сборки недоступны."
-            : "Ошибка при получении логов сборки.");
-        setCurrentLogs(errorMessage);
-      })
-      .finally(() => {
-        setBuildLogsLoading(false);
-      });
-  };
+      axiosInstance
+        .get("/jobs/build-logs", {
+          params: { job_id: job.job_id },
+        })
+        .then((response) => {
+          const logs = response.data.build_logs || "Логи сборки отсутствуют.";
+          setCurrentLogs(logs);
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при получении логов сборки для задачи ${job.id}:`,
+            error
+          );
+          const errorMessage =
+            error.response?.data?.detail ||
+            (error.response?.status === 404
+              ? "Логи сборки недоступны."
+              : "Ошибка при получении логов сборки.");
+          setCurrentLogs(errorMessage);
+        })
+        .finally(() => {
+          setBuildLogsLoading(false);
+        });
+    },
+    [axiosInstance]
+  );
 
   // Обновленная функция handleExecutionsClick
-  const handleExecutionsClick = (job) => {
-    setExecutionsModalOpen(true); // Открываем диалог сразу
-    setExecutionsLoading(true);
-    setCurrentJobName(job.job_name || "N/A");
-    setLogsByExecutionId({}); // Сброс данных
+  const handleExecutionsClick = useCallback(
+    (job) => {
+      setExecutionsModalOpen(true); // Открываем диалог сразу
+      setExecutionsLoading(true);
+      setCurrentJobName(job.job_name || "N/A");
+      setLogsByExecutionId({}); // Сброс данных
 
-    axiosInstance
-      .get("/jobs/executions", {
-        params: { job_id: job.job_id },
-      })
-      .then((response) => {
-        const executions = response.data || [];
-        setCurrentExecutions(executions);
-      })
-      .catch((error) => {
-        console.error(
-          `Ошибка при получении выполнений для задачи ${job.id}:`,
-          error
-        );
-        setCurrentExecutions([]);
-      })
-      .finally(() => {
-        setExecutionsLoading(false);
-      });
-  };
+      axiosInstance
+        .get("/jobs/executions", {
+          params: { job_id: job.job_id },
+        })
+        .then((response) => {
+          const executions = response.data || [];
+          setCurrentExecutions(executions);
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при получении выполнений для задачи ${job.id}:`,
+            error
+          );
+          setCurrentExecutions([]);
+        })
+        .finally(() => {
+          setExecutionsLoading(false);
+        });
+    },
+    [axiosInstance]
+  );
 
   // Обновленная функция handleScheduleClick
   const handleScheduleClick = (job) => {
@@ -374,56 +391,59 @@ export const useTasks = ({ authToken, currentOrganization }) => {
       });
   };
 
-  const handleExecutionLogsToggle = (execution) => {
-    const executionId = execution.job_execution_id || execution.execution_id;
+  const handleExecutionLogsToggle = useCallback(
+    (execution) => {
+      const executionId = execution.job_execution_id || execution.execution_id;
 
-    if (logsByExecutionId[executionId]) {
-      setLogsByExecutionId((prevLogs) => {
-        const newLogs = { ...prevLogs };
-        delete newLogs[executionId];
-        return newLogs;
-      });
-    } else {
-      const params = { job_execution_id: executionId };
-
-      setLogsByExecutionId((prevLogs) => ({
-        ...prevLogs,
-        [executionId]: { logs: "", loading: true },
-      }));
-
-      axiosInstance
-        .get("/jobs/job-logs", { params })
-        .then((response) => {
-          const logs = response.data.logs || "Логи отсутствуют.";
-          setLogsByExecutionId((prevLogs) => ({
-            ...prevLogs,
-            [executionId]: { logs, loading: false },
-          }));
-        })
-        .catch((error) => {
-          console.error(
-            `Ошибка при получении логов для выполнения ${executionId}:`,
-            error
-          );
-          const errorMessage =
-            error.response?.data?.detail ||
-            (error.response?.status === 404
-              ? "Логи недоступны."
-              : "Ошибка при получении логов.");
-          setLogsByExecutionId((prevLogs) => ({
-            ...prevLogs,
-            [executionId]: { logs: errorMessage, loading: false },
-          }));
+      if (logsByExecutionId[executionId]) {
+        setLogsByExecutionId((prevLogs) => {
+          const newLogs = { ...prevLogs };
+          delete newLogs[executionId];
+          return newLogs;
         });
-    }
-  };
+      } else {
+        const params = { job_execution_id: executionId };
+
+        setLogsByExecutionId((prevLogs) => ({
+          ...prevLogs,
+          [executionId]: { logs: "", loading: true },
+        }));
+
+        axiosInstance
+          .get("/jobs/job-logs", { params })
+          .then((response) => {
+            const logs = response.data.logs || "Логи отсутствуют.";
+            setLogsByExecutionId((prevLogs) => ({
+              ...prevLogs,
+              [executionId]: { logs, loading: false },
+            }));
+          })
+          .catch((error) => {
+            console.error(
+              `Ошибка при получении логов для выполнения ${executionId}:`,
+              error
+            );
+            const errorMessage =
+              error.response?.data?.detail ||
+              (error.response?.status === 404
+                ? "Логи недоступны."
+                : "Ошибка при получении логов.");
+            setLogsByExecutionId((prevLogs) => ({
+              ...prevLogs,
+              [executionId]: { logs: errorMessage, loading: false },
+            }));
+          });
+      }
+    },
+    [logsByExecutionId, axiosInstance]
+  );
 
   const handleStopClick = (job) => {
     setJobToStop(job);
     setConfirmDialogOpen(true);
   };
 
-  const confirmStopJob = () => {
+  const confirmStopJob = useCallback(() => {
     const params = {};
 
     if (jobToStop.job_execution_id) {
@@ -457,65 +477,68 @@ export const useTasks = ({ authToken, currentOrganization }) => {
         setConfirmDialogOpen(false);
         setJobToStop(null);
       });
-  };
+  }, [jobToStop, fetchJobs]);
 
-  const handleDownloadArtifacts = (job) => {
-    // Показываем Snackbar
-    setAlertMessage("Скачивание артефактов началось...");
-    setAlertSeverity("info");
-    setAlertOpen(true);
+  const handleDownloadArtifacts = useCallback(
+    (job) => {
+      // Показываем Snackbar
+      setAlertMessage("Скачивание артефактов началось...");
+      setAlertSeverity("info");
+      setAlertOpen(true);
 
-    // Проверяем, что задача имеет тип "run"
-    if (job.job_type !== "run") {
-      alert("Артефакты доступны только для задач типа 'run'.");
-      return;
-    }
+      // Проверяем, что задача имеет тип "run"
+      if (job.job_type !== "run") {
+        alert("Артефакты доступны только для задач типа 'run'.");
+        return;
+      }
 
-    const params = {};
-    if (job.last_execution_id) {
-      params.job_execution_id = job.last_execution_id;
-    } else if (job.job_id) {
-      params.job_id = job.job_id;
-    } else {
-      alert("Не указан идентификатор задачи или выполнения.");
-      return;
-    }
+      const params = {};
+      if (job.last_execution_id) {
+        params.job_execution_id = job.last_execution_id;
+      } else if (job.job_id) {
+        params.job_id = job.job_id;
+      } else {
+        alert("Не указан идентификатор задачи или выполнения.");
+        return;
+      }
 
-    axiosInstance
-      .get("/jobs/get-job-artifacts", {
-        params: params,
-        responseType: "blob",
-      })
-      .then((response) => {
-        const blob = new Blob([response.data], { type: "application/zip" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
+      axiosInstance
+        .get("/jobs/get-job-artifacts", {
+          params: params,
+          responseType: "blob",
+        })
+        .then((response) => {
+          const blob = new Blob([response.data], { type: "application/zip" });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
 
-        const contentDisposition = response.headers["content-disposition"];
-        let fileName = "artifacts.zip";
-        if (contentDisposition) {
-          const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
-          if (fileNameMatch && fileNameMatch.length === 2) {
-            fileName = fileNameMatch[1];
+          const contentDisposition = response.headers["content-disposition"];
+          let fileName = "artifacts.zip";
+          if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+            if (fileNameMatch && fileNameMatch.length === 2) {
+              fileName = fileNameMatch[1];
+            }
           }
-        }
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      })
-      .catch((error) => {
-        console.error(
-          `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
-          error
-        );
-        const errorMessage =
-          error.response?.data?.detail || "Ошибка при скачивании артефактов.";
-        alert(errorMessage);
-      });
-  };
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        })
+        .catch((error) => {
+          console.error(
+            `Ошибка при скачивании артефактов для задачи ${job.job_id}:`,
+            error
+          );
+          const errorMessage =
+            error.response?.data?.detail || "Ошибка при скачивании артефактов.";
+          alert(errorMessage);
+        });
+    },
+    [axiosInstance]
+  );
 
   const getStatusIndicator = (job) => {
     const status = job.last_execution_status;

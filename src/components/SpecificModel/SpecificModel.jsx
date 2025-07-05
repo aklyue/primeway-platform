@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import { modelsData } from "../../data/modelsData";
 import { fineTunedData } from "../../data/fineTunedData";
@@ -40,17 +40,17 @@ function SpecificModel({
   const [args, setArgs] = useState([]);
   const [modelConfig, setModelConfig] = useState({});
 
-  const handleFlagsChange = (newFlags) => {
+  const handleFlagsChange = useCallback((newFlags) => {
     setFlags(newFlags);
-  };
+  }, []);
 
-  const handleArgsChange = (newArgs) => {
+  const handleArgsChange = useCallback((newArgs) => {
     setArgs(newArgs);
-  };
+  }, []);
 
-  const handleModelConfigChange = (newConfig) => {
+  const handleModelConfigChange = useCallback((newConfig) => {
     setModelConfig(newConfig);
-  };
+  }, []);
 
   const handleConfirmLaunchOpen = () => {
     setConfirmLaunchOpen(true);
@@ -118,8 +118,6 @@ function SpecificModel({
       flags,
       modelConfig,
     });
-
-    console.log(modelConfig)
 
   if (!renderData) {
     return (

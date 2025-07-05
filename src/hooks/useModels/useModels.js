@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../api";
 
 export default function useModels({
@@ -16,7 +16,7 @@ export default function useModels({
   const [fineTunedModel, setFineTunedModel] = useState(null);
   const [modelStatus, setModelStatus] = useState(null);
 
-  const fetchLaunchedModels = async () => {
+  const fetchLaunchedModels = useCallback(async () => {
     if (!currentOrganization || !authToken) return;
     try {
       const { data = [] } = await axiosInstance.get(
@@ -30,9 +30,9 @@ export default function useModels({
     } catch (err) {
       console.error("Ошибка при получении запущенных моделей:", err);
     }
-  };
+  }, [currentOrganization, authToken]);
 
-  const fetchFineTunedModels = async () => {
+  const fetchFineTunedModels = useCallback(async () => {
     if (!currentOrganization || !authToken) return;
     try {
       const { data = [] } = await axiosInstance.get("/models/finetuned", {
@@ -43,7 +43,7 @@ export default function useModels({
     } catch (err) {
       console.error("Ошибка при получении fine-tune моделей:", err);
     }
-  };
+  }, [currentOrganization, authToken]);
 
   useEffect(() => {
     fetchLaunchedModels();
@@ -100,7 +100,7 @@ export default function useModels({
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [authToken, currentOrganization?.id]);
+  }, [fetchLaunchedModels, fetchFineTunedModels]);
 
   const isLaunchedModel = !!launchedModel;
   const isFineTuned = !!fineTunedModel;

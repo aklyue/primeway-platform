@@ -4,7 +4,7 @@ import axiosInstance from "../../../api";
 import { ru } from "date-fns/locale";
 import yaml from "js-yaml";
 import { format, parseISO } from "date-fns";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 
 export const useJobDetailsDialogMobile = ({
@@ -53,18 +53,21 @@ export const useJobDetailsDialogMobile = ({
   });
   const [editedSchedule, setEditedSchedule] = useState(null);
 
-  const formatJobExecutionId = (id) => {
+  const formatJobExecutionId = useCallback((id) => {
     if (!id) return "N/A";
     return id.length > 12 ? `${id.slice(0, 3)}**${id.slice(-3)}` : id;
-  };
+  }, []);
 
   // Функции-обработчики
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    showAlert("Скопировано в буфер обмена.");
-  };
+  const handleCopy = useCallback(
+    (text) => {
+      navigator.clipboard.writeText(text);
+      showAlert("Скопировано в буфер обмена.");
+    },
+    [showAlert]
+  );
 
-  const formatDateTime = (dateTimeString) => {
+  const formatDateTime = useCallback((dateTimeString) => {
     if (!dateTimeString) return "N/A";
     try {
       const date = parseISO(dateTimeString);
@@ -73,7 +76,7 @@ export const useJobDetailsDialogMobile = ({
       console.error("Ошибка при форматировании даты:", error);
       return dateTimeString;
     }
-  };
+  }, []);
 
   const showAlert = (message, severity = "success") => {
     setAlertMessage(message);
@@ -81,34 +84,38 @@ export const useJobDetailsDialogMobile = ({
     setAlertOpen(true);
   };
 
-  const handleLogsClick = (execution = null) => {
-    setLogsModalOpen(true);
-    setLogsLoading(true);
-    setCurrentLogs("");
-    setCurrentJobName(job.job_name || "N/A");
+  const handleLogsClick = useCallback(
+    (execution = null) => {
+      setLogsModalOpen(true);
+      setLogsLoading(true);
+      setCurrentLogs("");
+      setCurrentJobName(job.job_name || "N/A");
 
-    const params = execution
-      ? { job_execution_id: execution.job_execution_id }
-      : { job_id: job.job_id };
+      const params = execution
+        ? { job_execution_id: execution.job_execution_id }
+        : { job_id: job.job_id };
 
-    axiosInstance
-      .get("/jobs/job-logs", { params })
-      .then((response) => {
-        const logs = response.data.logs || "Логи отсутствуют.";
-        setCurrentLogs(logs);
-      })
-      .catch((error) => {
-        console.error("Ошибка при получении логов задачи:", error);
-        const errorMessage =
-          error.response?.data?.detail || "Ошибка при получении логов задачи.";
-        setCurrentLogs(errorMessage);
-      })
-      .finally(() => {
-        setLogsLoading(false);
-      });
-  };
+      axiosInstance
+        .get("/jobs/job-logs", { params })
+        .then((response) => {
+          const logs = response.data.logs || "Логи отсутствуют.";
+          setCurrentLogs(logs);
+        })
+        .catch((error) => {
+          console.error("Ошибка при получении логов задачи:", error);
+          const errorMessage =
+            error.response?.data?.detail ||
+            "Ошибка при получении логов задачи.";
+          setCurrentLogs(errorMessage);
+        })
+        .finally(() => {
+          setLogsLoading(false);
+        });
+    },
+    [job]
+  );
 
-  const handleDownloadArtifacts = (job, execution = null) => {
+  const handleDownloadArtifacts = useCallback((job, execution = null) => {
     showAlert("Скачивание артефактов началось...", "info");
 
     if (job.job_type !== "run") {
@@ -163,9 +170,9 @@ export const useJobDetailsDialogMobile = ({
           error.response?.data?.detail || "Ошибка при скачивании артефактов.";
         showAlert(errorMessage, "error");
       });
-  };
+  }, []);
 
-  const fetchExecutions = async () => {
+  const fetchExecutions = useCallback(async () => {
     if (initialExecutionsLoadRef.current) {
       setExecutionsLoading(true);
     }
@@ -185,9 +192,9 @@ export const useJobDetailsDialogMobile = ({
         initialExecutionsLoadRef.current = false;
       }
     }
-  };
+  }, [job.job_id]);
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     setSchedulesLoading(true);
     setSchedulesError(null);
     try {
@@ -202,9 +209,9 @@ export const useJobDetailsDialogMobile = ({
     } finally {
       setSchedulesLoading(false);
     }
-  };
+  }, [job.job_id]);
 
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     setConfigLoading(true);
     try {
       const response = await axiosInstance.get("/jobs/get-config", {
@@ -219,10 +226,10 @@ export const useJobDetailsDialogMobile = ({
     } finally {
       setConfigLoading(false);
     }
-  };
+  }, [job.job_id]);
 
   // Заглушка для получения событий. Пока просто устанавливаем пустой объект.
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setEventsLoading(true);
     setEventsError(null);
     try {
@@ -237,7 +244,7 @@ export const useJobDetailsDialogMobile = ({
     } finally {
       setEventsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (job && open) {
@@ -263,15 +270,15 @@ export const useJobDetailsDialogMobile = ({
     }
   }, [job, open]);
 
-  const handleStartClick = () => {
+  const handleStartClick = useCallback(() => {
     alert("запуск");
-  };
-  const handleStopClick = () => {
+  }, []);
+  const handleStopClick = useCallback(() => {
     alert("stop");
-  };
+  }, []);
 
   // Функция для отображения деталей расписания
-  const renderScheduleDetails = (schedule) => {
+  const renderScheduleDetails = useCallback((schedule) => {
     const { schedule_type, start_time, end_time, day_of_week } = schedule;
     return (
       <Box>
@@ -291,10 +298,10 @@ export const useJobDetailsDialogMobile = ({
         )}
       </Box>
     );
-  };
+  }, []);
 
   // Функция для добавления расписания
-  const handleAddSchedule = () => {
+  const handleAddSchedule = useCallback(() => {
     setIsEditingSchedule(false);
     setEditedSchedule(null);
     setNewSchedule({
@@ -303,18 +310,18 @@ export const useJobDetailsDialogMobile = ({
       specific_days: [],
     });
     setScheduleFormOpen(true);
-  };
+  }, []);
 
   // Функция для закрытия формы расписания
-  const handleScheduleFormClose = () => {
+  const handleScheduleFormClose = useCallback(() => {
     setScheduleFormOpen(false);
     setIsEditingSchedule(false);
     setCurrentSchedule(null);
     setEditedSchedule(null);
-  };
+  }, []);
 
   // Валидация расписания перед отправкой
-  const validateSchedule = () => {
+  const validateSchedule = useCallback(() => {
     const { workdays, weekends, specific_days } = newSchedule;
 
     if (
@@ -330,29 +337,32 @@ export const useJobDetailsDialogMobile = ({
     }
 
     return true;
-  };
+  }, [newSchedule, showAlert]);
 
   // Обработка ошибок API
-  const handleApiError = (error, defaultMessage) => {
-    console.error(defaultMessage, error);
-    const errorDetail = error.response?.data;
-    console.log("Детали ошибки:", errorDetail);
+  const handleApiError = useCallback(
+    (error, defaultMessage) => {
+      console.error(defaultMessage, error);
+      const errorDetail = error.response?.data;
+      console.log("Детали ошибки:", errorDetail);
 
-    let errorMessage = defaultMessage;
+      let errorMessage = defaultMessage;
 
-    if (Array.isArray(errorDetail?.detail)) {
-      errorMessage = errorDetail.detail.map((err) => err.msg).join(", ");
-    } else if (typeof errorDetail?.detail === "string") {
-      errorMessage = errorDetail.detail;
-    } else if (typeof errorDetail === "object" && errorDetail !== null) {
-      errorMessage = errorDetail.detail?.msg || JSON.stringify(errorDetail);
-    }
+      if (Array.isArray(errorDetail?.detail)) {
+        errorMessage = errorDetail.detail.map((err) => err.msg).join(", ");
+      } else if (typeof errorDetail?.detail === "string") {
+        errorMessage = errorDetail.detail;
+      } else if (typeof errorDetail === "object" && errorDetail !== null) {
+        errorMessage = errorDetail.detail?.msg || JSON.stringify(errorDetail);
+      }
 
-    showAlert(errorMessage, "error");
-  };
+      showAlert(errorMessage, "error");
+    },
+    [showAlert]
+  );
 
   // Отправка формы расписания на сервер
-  const handleScheduleFormSubmit = () => {
+  const handleScheduleFormSubmit = useCallback(() => {
     if (isEditingSchedule) {
       // Обработка редактирования расписания
       // ...
@@ -404,32 +414,45 @@ export const useJobDetailsDialogMobile = ({
           handleApiError(error, "Ошибка при добавлении расписания.");
         });
     }
-  };
+  }, [
+    isEditingSchedule,
+    newSchedule,
+    currentSchedule,
+    editedSchedule,
+    job.job_id,
+    fetchSchedules,
+    showAlert,
+    handleApiError,
+    validateSchedule,
+  ]);
 
   // Обработка удаления расписания
-  const handleDeleteSchedule = async (scheduleId) => {
-    try {
-      await axiosInstance.delete("/jobs/delete-schedules", {
-        params: {
-          job_id: job.job_id,
-          schedule_id: scheduleId,
-        },
-      });
+  const handleDeleteSchedule = useCallback(
+    async (scheduleId) => {
+      try {
+        await axiosInstance.delete("/jobs/delete-schedules", {
+          params: {
+            job_id: job.job_id,
+            schedule_id: scheduleId,
+          },
+        });
 
-      showAlert(`Расписание ${scheduleId} успешно удалено.`);
-      fetchSchedules();
-    } catch (error) {
-      handleApiError(error, `Ошибка при удалении расписания ${scheduleId}.`);
-    }
-  };
+        showAlert(`Расписание ${scheduleId} успешно удалено.`);
+        fetchSchedules();
+      } catch (error) {
+        handleApiError(error, `Ошибка при удалении расписания ${scheduleId}.`);
+      }
+    },
+    [showAlert, fetchSchedules, handleApiError]
+  );
 
   // Обработка редактирования расписания
-  const handleEditSchedule = (schedule) => {
+  const handleEditSchedule = useCallback((schedule) => {
     setIsEditingSchedule(true);
     setCurrentSchedule(schedule);
     setEditedSchedule({ ...schedule });
     setScheduleFormOpen(true);
-  };
+  }, []);
   return {
     formatDateTime,
     handleStopClick,

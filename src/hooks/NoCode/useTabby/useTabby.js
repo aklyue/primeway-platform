@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axiosInstance from "../../../api";
 import { AVAILABLE_GPUS } from "../../../constants/AVAILABLE_GPUS";
 import { useNavigate } from "react-router-dom";
@@ -83,7 +83,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     ...AVAILABLE_GPUS[gpuKey],
   }));
 
-  const refreshSessions = async () => {
+  const refreshSessions = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/tabby/instances", {
         params: { organization_id: currentOrganization.id },
@@ -94,7 +94,7 @@ export const useTabby = ({ currentOrganization, authToken }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentOrganization.id]);
 
   useEffect(() => {
     refreshSessions();

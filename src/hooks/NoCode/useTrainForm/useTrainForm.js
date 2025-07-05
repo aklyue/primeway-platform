@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axiosInstance from "../../../api";
 import { getDatasets } from "../../../components/NoCode/api/datasetsApi";
 
@@ -33,7 +33,7 @@ export const useTrainForm = ({
       .catch((err) => console.error("Ошибка загрузки датасетов:", err));
   }, [currentOrganization.id]);
 
-  const handleDatasetChange = (event) => {
+  const handleDatasetChange = useCallback((event) => {
     const value = event.target.value;
     setDatasetOption(value);
 
@@ -45,12 +45,13 @@ export const useTrainForm = ({
       setHfDatasetId("");
       setDatasetName(value);
     }
-  };
-  const handleGpuChange = (event) => {
-    setSelectedGpu(event.target.value); // Обновляем выбранный GPU
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleGpuChange = useCallback((event) => {
+    setSelectedGpu(event.target.value); // Обновляем выбранный GPU
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     const isHf = hfMode;
     const config = {
       job_name: baseModel,
@@ -81,7 +82,6 @@ export const useTrainForm = ({
     };
 
     const finetuningConfigStr = JSON.stringify(config);
-    console.log(config);
 
     const formData = new FormData();
     formData.append("finetuning_config_str", finetuningConfigStr);
@@ -106,7 +106,26 @@ export const useTrainForm = ({
           (error.response?.data?.detail || error.message)
       );
     }
-  };
+  }, [
+    baseModel,
+    selectedGpu,
+    hfMode,
+    hfDatasetId,
+    datasetName,
+    epochs,
+    learningRate,
+    maxSeqLen,
+    batchSize,
+    gradAccum,
+    weightDecay,
+    seed,
+    loraAlpha,
+    loraR,
+    loraDropout,
+    hfToken,
+    currentOrganization.id,
+  ]);
+
   return {
     selectedGpu,
     handleGpuChange,

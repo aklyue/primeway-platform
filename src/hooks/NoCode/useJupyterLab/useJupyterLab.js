@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axiosInstance from "../../../api";
 import { AVAILABLE_GPUS } from "../../../constants/AVAILABLE_GPUS";
 
@@ -29,7 +29,7 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
     ...AVAILABLE_GPUS[gpuKey],
   }));
 
-  const refreshSessions = async () => {
+  const refreshSessions = useCallback(async () => {
     try {
       const response = await axiosInstance.get(
         "/jupyter/get-jupyter-projects",
@@ -45,7 +45,7 @@ export const useJupyterLab = ({ currentOrganization, authToken }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentOrganization.id]);
 
   useEffect(() => {
     refreshSessions();

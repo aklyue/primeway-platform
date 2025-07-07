@@ -107,6 +107,7 @@ function Tabby({ isMobile, isTablet }) {
           </Box>
         </Box>
         <Button
+          data-tour-id="tabby-create-btn"
           variant="contained"
           onClick={() => navigate("/tabby-create")}
           sx={{
@@ -119,10 +120,14 @@ function Tabby({ isMobile, isTablet }) {
         </Button>
       </Box>
 
-      <Paper elevation={0} sx={{ p: isMobile || isTablet ? 0 : 2 }}>
+      <Paper
+        elevation={0}
+        sx={{ p: isMobile || isTablet ? 0 : 2 }}
+        data-tour-id="sessions"
+      >
         {isMobile || isTablet ? (
           <Box>
-            {sessions.map((session) => {
+            {sessions.map((session, idx) => {
               const startDisabled =
                 loadingId === session.id ||
                 ["running", "starting", "queued", "creating"].includes(
@@ -134,6 +139,7 @@ function Tabby({ isMobile, isTablet }) {
 
               return (
                 <Box
+                  data-tour-id={idx === 0 ? "session" : undefined}
                   key={session.id}
                   sx={{
                     border: "1px solid lightgray",
@@ -158,7 +164,10 @@ function Tabby({ isMobile, isTablet }) {
                       <CircularProgress size={14} sx={{ ml: 1 }} />
                     ) : null}
                   </Typography>
-                  <Typography sx={{ fontSize: "12px" }}>
+                  <Typography
+                    sx={{ fontSize: "12px" }}
+                    data-tour-id={idx === 0 ? "url" : undefined}
+                  >
                     <b>URL:</b>{" "}
                     <Link
                       to={session.endpoint_url}
@@ -215,7 +224,7 @@ function Tabby({ isMobile, isTablet }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sessions.map((session) => {
+                {sessions.map((session, idx) => {
                   const startDisabled =
                     loadingId === session.id ||
                     ["running", "starting", "queued", "creating"].includes(
@@ -226,7 +235,11 @@ function Tabby({ isMobile, isTablet }) {
                     session.status !== "running" || loadingId === session.id;
 
                   return (
-                    <TableRow key={session.id} hover>
+                    <TableRow
+                      key={session.id}
+                      hover
+                      data-tour-id={idx === 0 ? "session" : undefined}
+                    >
                       <TableCell sx={{ fontSize: "11px" }}>
                         {session.tabby_name}
                       </TableCell>
@@ -367,7 +380,10 @@ function Tabby({ isMobile, isTablet }) {
                           {session.status}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ fontSize: "11px" }}>
+                      <TableCell
+                        sx={{ fontSize: "11px" }}
+                        data-tour-id={idx === 0 ? "url" : undefined}
+                      >
                         <Link
                           to={session.endpoint_url}
                           target="_blank"

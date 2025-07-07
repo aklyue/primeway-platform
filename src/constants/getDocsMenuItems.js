@@ -50,4 +50,8 @@ export const getDocsMenuItems = (isDocsPage = false) => [
     name: "Наборы данных",
     to: "/docs/datasets",
   },
+  {
+    name: "Tabby",
+    to: "/docs/tabby",
+  },
 ];

@@ -64,8 +64,6 @@ export const useTabby = ({ currentOrganization, authToken }) => {
   const [embeddingArgs, setEmbeddingArgs] = useState(DEFAULT_EMBEDDING_ARGS);
   const [embeddingFlags, setEmbeddingFlags] = useState(DEFAULT_FLAGS);
 
-  console.log(inferenceModel);
-
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",

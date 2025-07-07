@@ -14,7 +14,6 @@ import MarketplaceToggle from "../../UI/MarketplaceToggle";
 import { useNavigate } from "react-router-dom";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { Code, Search as SearchIcon } from "@mui/icons-material";
-import Joyride from "react-joyride";
 import { cardsInfo } from "../../constants/cardsInfo";
 
 function ChangeProjectsPage({ isMobile, isTablet }) {

@@ -13,6 +13,8 @@ const docsStructure = [
   { path: "models", title: "Модели" },
   { path: "finetuning", title: "Дообучение" },
   { path: "marketplace", title: "AI Маркетплейс" },
+  { path: "datasets", title: "Наборы данных" },
+  { path: "tabby", title: "Tabby" },
   // Добавьте другие разделы по мере необходимости
 ];
 

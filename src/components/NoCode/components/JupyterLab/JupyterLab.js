@@ -106,9 +106,14 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
             {sessions.map((session) => {
               const startDisabled =
                 loadingId === session.job_id ||
-                ["running", "starting", "queued", "creating"].includes(
-                  session.last_execution_status
-                );
+                [
+                  "running",
+                  "starting",
+                  "queued",
+                  "creating",
+                  "provisioning",
+                  "pending",
+                ].includes(session.last_execution_status);
 
               const stopDisabled =
                 session.last_execution_status !== "running" ||
@@ -197,9 +202,14 @@ export default function JupyterLabSessions({ isMobile, isTablet }) {
                 {sessions.map((session) => {
                   const startDisabled =
                     loadingId === session.job_id ||
-                    ["running", "starting", "queued", "creating"].includes(
-                      session.last_execution_status
-                    );
+                    [
+                      "running",
+                      "starting",
+                      "queued",
+                      "creating",
+                      "provisioning",
+                      "pending",
+                    ].includes(session.last_execution_status);
 
                   const stopDisabled =
                     session.last_execution_status !== "running" ||

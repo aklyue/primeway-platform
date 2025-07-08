@@ -130,9 +130,14 @@ function Tabby({ isMobile, isTablet }) {
             {sessions.map((session, idx) => {
               const startDisabled =
                 loadingId === session.id ||
-                ["running", "starting", "queued", "creating"].includes(
-                  session.status
-                );
+                [
+                  "running",
+                  "starting",
+                  "queued",
+                  "creating",
+                  "provisioning",
+                  "pending",
+                ].includes(session.status);
 
               const stopDisabled =
                 session.status !== "running" || loadingId === session.id;
@@ -227,9 +232,14 @@ function Tabby({ isMobile, isTablet }) {
                 {sessions.map((session, idx) => {
                   const startDisabled =
                     loadingId === session.id ||
-                    ["running", "starting", "queued", "creating"].includes(
-                      session.status
-                    );
+                    [
+                      "running",
+                      "starting",
+                      "queued",
+                      "creating",
+                      "provisioning",
+                      "pending",
+                    ].includes(session.status);
 
                   const stopDisabled =
                     session.status !== "running" || loadingId === session.id;

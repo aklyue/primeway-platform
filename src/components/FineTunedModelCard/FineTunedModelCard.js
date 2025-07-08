@@ -188,4 +188,4 @@ function FineTunedModelCard({ ft, isLast, onRun, isMobile }) {
   );
 }
 
-export default FineTunedModelCard;
+export default React.memo(FineTunedModelCard);

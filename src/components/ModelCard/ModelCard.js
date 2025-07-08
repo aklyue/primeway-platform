@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Typography,
-  Box,
-  Grid,
-} from "@mui/material";
+import { Typography, Box, Grid } from "@mui/material";
 
 // Импорт SVG как React-компонентов
 import { ReactComponent as DeepSeek } from "../../assets/deepseek-color.svg";
@@ -254,4 +250,4 @@ function ModelCard({ model, isLast, isBasic, isMobile, isTablet }) {
   );
 }
 
-export default ModelCard;
+export default React.memo(ModelCard);

@@ -50,6 +50,7 @@ const OrganizationSettings = () => {
   // Загрузка участников при изменении текущей организации
   useEffect(() => {
     if (currentOrganization) {
+      setIsLoadingMembers(true);
       fetchMembers();
     }
   }, [currentOrganization]);
@@ -128,7 +129,7 @@ const OrganizationSettings = () => {
         sx={{
           display: "flex",
           width: "100%",
-          height: "calc(100vh - 64px)", // Скорректируйте, если у вас есть AppBar
+          height: "calc(100vh - 64px)",
           justifyContent: "center",
           alignItems: "center",
         }}

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Современный таргет
+    "module": "ESNext", // Современные модули
+    "jsx": "react-jsx", // Для React 17+ (CRA)
+    "moduleResolution": "node",
+    "strict": true, // Строгая типизация для реального обучения
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node", "jest"],
+    "skipLibCheck": true,
+    "allowJs": true, // Для поэтапной миграции
+    "checkJs": false, // Можно true позже, если хочешь видеть ошибки в js
+    "noEmit": true, // Не генерирует .js, так как CRA и так билдит
+    "resolveJsonModule": true, // Чтобы можно было импортировать .json
+    "lib": ["ESNext", "dom", "dom.iterable"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "build", "dist"]
+}
